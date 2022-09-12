@@ -1,0 +1,42 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:yomu/Data/Manga.dart';
+
+class ComfortableTile extends StatelessWidget {
+  const ComfortableTile(this.manga, {Key? key}) : super(key: key);
+
+  final Manga manga;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: Image(
+            image: CachedNetworkImageProvider(manga.mangaCover),
+            fit: BoxFit.cover,
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomLeft,
+          child: Container(
+            padding: const EdgeInsets.all(5),
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.black45,
+            ),
+            child: Text(
+              manga.mangaName,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
