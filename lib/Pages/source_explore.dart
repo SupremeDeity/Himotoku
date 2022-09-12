@@ -79,7 +79,6 @@ class CustomSearchDelegate extends SearchDelegate {
       searchPagingController,
       searchQuery: query,
     );
-    // return Container();
   }
 
   @override
