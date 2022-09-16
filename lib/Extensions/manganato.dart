@@ -1,3 +1,4 @@
+import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 
 class Manganato extends Extension {
@@ -15,5 +16,11 @@ class Manganato extends Extension {
   @override
   String getName() {
     return "Manganato";
+  }
+
+  @override
+  Manga getMangaDetails(Manga manga) {
+    // TODO: implement getMangaDetails
+    throw UnimplementedError();
   }
 }

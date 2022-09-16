@@ -4,8 +4,8 @@ import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:yomu/Widgets/Library/ComfortableTile.dart';
 
-class MangaView extends StatefulWidget {
-  MangaView(this.extension, this.pagingController,
+class MangaGridView extends StatefulWidget {
+  MangaGridView(this.extension, this.pagingController,
       {Key? key, this.searchQuery = ""})
       : super(key: key);
 
@@ -14,10 +14,10 @@ class MangaView extends StatefulWidget {
   String searchQuery;
 
   @override
-  State<MangaView> createState() => _MangaViewState();
+  State<MangaGridView> createState() => _MangaGridViewState();
 }
 
-class _MangaViewState extends State<MangaView> {
+class _MangaGridViewState extends State<MangaGridView> {
   @override
   void initState() {
     widget.pagingController.addPageRequestListener((pageKey) {

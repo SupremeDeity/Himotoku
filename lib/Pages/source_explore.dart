@@ -3,7 +3,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:yomu/Widgets/Library/ComfortableTile.dart';
-import 'package:yomu/Widgets/Library/MangaView.dart';
+import 'package:yomu/Widgets/Library/MangaGridView.dart';
 
 class SourceExplore extends StatefulWidget {
   const SourceExplore(this.extension, {Key? key}) : super(key: key);
@@ -20,16 +20,24 @@ class _SourceExploreState extends State<SourceExplore> {
       PagingController(firstPageKey: 1);
 
   @override
+  void didUpdateWidget(SourceExplore oldWidget) {
+    if (oldWidget.extension != widget.extension) {
+      _pagingController.refresh();
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         actions: [
           IconButton(
               onPressed: () {
-                showSearch(
-                  context: context,
-                  delegate: CustomSearchDelegate(widget.extension),
-                );
+                // showSearch(
+                //   context: context,
+                //   delegate: CustomSearchDelegate(widget.extension),
+                // );
               },
               icon: const Icon(Icons.search))
         ],
@@ -38,52 +46,7 @@ class _SourceExploreState extends State<SourceExplore> {
         ),
       ),
       // TODO: customize refreshindicator
-      body: MangaView(widget.extension, _pagingController),
+      body: MangaGridView(widget.extension, _pagingController),
     );
-  }
-}
-
-class CustomSearchDelegate extends SearchDelegate {
-  CustomSearchDelegate(this.extension);
-
-  final Extension extension;
-  final PagingController<int, Manga> searchPagingController =
-      PagingController(firstPageKey: 1);
-
-  @override
-  List<Widget>? buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
-
-  @override
-  Widget? buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, null);
-      },
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return MangaView(
-      extension,
-      searchPagingController,
-      searchQuery: query,
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    // TODO: implement buildSuggestions
-    return Column();
   }
 }

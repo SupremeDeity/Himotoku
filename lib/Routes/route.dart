@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:yomu/Pages/explore.dart';
 import 'package:yomu/Pages/library.dart';
+import 'package:yomu/Pages/manga_view.dart';
 import 'package:yomu/Pages/settings.dart';
 import 'package:yomu/Pages/source_explore.dart';
 
@@ -21,6 +22,10 @@ import 'package:yomu/Pages/source_explore.dart';
     ),
     AutoRoute(
       page: SourceExplore,
+      maintainState: true,
+    ),
+    AutoRoute(
+      page: MangaView,
       maintainState: true,
     ),
   ],
