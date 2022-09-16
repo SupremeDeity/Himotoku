@@ -1,5 +1,4 @@
-import 'package:flutter/cupertino.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:yomu/Data/Chapter.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
@@ -12,7 +11,6 @@ class Asura extends Extension {
   final _mangaAuthorQuery = ".fmed span";
   final _mangaStatusQuery = ".imptdt i";
   final _baseChapterListQuery = "#chapterlist .eph-num a";
-  final _ChapterListNum = ".chapternum";
 
   final _defaultSort = "/manga";
 
@@ -47,11 +45,13 @@ class Asura extends Extension {
         var mangaLink = q1[x].attributes['href'];
         var mangaCover = q2[x].attributes['src'];
 
-        mangaList.add(Manga(
-            source: this,
+        Manga m = Manga(
+            extensionSource: getName(),
             mangaName: title!,
             mangaCover: mangaCover!,
-            mangaLink: mangaLink!));
+            mangaLink: mangaLink!);
+
+        mangaList.add(m);
       }
 
       return mangaList;
@@ -67,12 +67,7 @@ class Asura extends Extension {
 
   @override
   getMangaDetails(Manga manga) async {
-    // TODO: ADD SHAREDPREFRENCES HERE
-    // Obtain shared preferences.
-    final prefs = await SharedPreferences.getInstance();
-    
-
-
+    print("This got called ooo");
     try {
       var url = Uri.parse(manga.mangaLink);
 
@@ -89,8 +84,10 @@ class Asura extends Extension {
 
       var q3 = parsedHtml.querySelectorAll(_baseChapterListQuery);
 
+      var mangaBox = await Hive.openBox<Manga>('mangaBox');
+
       Manga updatedManga = Manga(
-        source: manga.source,
+        extensionSource: manga.extensionSource,
         mangaName: manga.mangaName,
         mangaCover: manga.mangaCover,
         mangaLink: manga.mangaLink,
@@ -114,6 +111,10 @@ class Asura extends Extension {
         chapterList.add(Chapter(chapterName, chapterLink));
       }
       updatedManga.setChapters = chapterList;
+
+      mangaBox.put('${updatedManga.extensionSource}-${updatedManga.mangaName}',
+          updatedManga);
+
       return updatedManga;
     } catch (e) {
       print(e);

@@ -1,6 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yomu/Data/Manga.dart';
+import 'package:yomu/Extensions/ExtensionHelper.dart';
 import 'package:yomu/Extensions/asura.dart';
 
 class MangaView extends StatefulWidget {
@@ -17,24 +20,21 @@ class _MangaViewState extends State<MangaView> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
-  getManga() async {
-    Manga m =
-        await widget.mangaInstance.source.getMangaDetails(widget.mangaInstance);
+  initGetManga() async {
+    var box = await Hive.openBox<Manga>('mangaBox');
+    Manga m = box.get(
+            '${widget.mangaInstance.extensionSource}-${widget.mangaInstance.mangaName}') ??
+        await ExtensionsMap[widget.mangaInstance.extensionSource]!
+            .getMangaDetails(widget.mangaInstance);
+
     setState(() {
       manga = m;
     });
   }
 
   @override
-  void didUpdateWidget(covariant MangaView oldWidget) {
-    // TODO: implement didUpdateWidget
-    super.didUpdateWidget(oldWidget);
-  }
-
-  @override
   void initState() {
-    manga = widget.mangaInstance;
-    getManga();
+    initGetManga();
     super.initState();
   }
 
@@ -120,7 +120,11 @@ class _MangaViewState extends State<MangaView> {
                             Column(
                               children: [
                                 IconButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      launchUrl(
+                                        Uri.parse(manga!.mangaLink),
+                                      );
+                                    },
                                     icon: const Icon(Icons.open_in_browser)),
                                 const Text("Open in browser")
                               ],
@@ -143,6 +147,8 @@ class _MangaViewState extends State<MangaView> {
                           manga!.chapters.length,
                           (index) => ListTile(
                                 title: Text(manga!.chapters[index].name),
+                                dense: true,
+                                contentPadding: EdgeInsets.all(10),
                                 onTap: () => print(manga!.chapters[index].link),
                               )),
                     ),
