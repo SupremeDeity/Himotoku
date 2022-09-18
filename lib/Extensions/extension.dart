@@ -2,10 +2,10 @@
 import 'package:yomu/Data/Manga.dart';
 
 abstract class Extension {
-  // First stage:
-  String getName();
-
-  String getIconUrl();
+  /// Bypass cloudflare with baseurl referer header
+  final baseUrl = "";
+  final name = "";
+  final iconUrl = "";
 
   getMangaList(int pageKey, {String searchQuery = ""});
 
@@ -14,4 +14,6 @@ abstract class Extension {
   ///
   /// Source field of `manga` param must be valid.
   getMangaDetails(Manga manga);
+
+  getChapterPageList(String startLink, int pageKey);
 }

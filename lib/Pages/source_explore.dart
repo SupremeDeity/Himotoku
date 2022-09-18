@@ -9,7 +9,6 @@ class SourceExplore extends StatefulWidget {
   const SourceExplore(this.extension, {Key? key}) : super(key: key);
 
   final Extension extension;
-
   @override
   _SourceExploreState createState() => _SourceExploreState();
 }
@@ -42,7 +41,7 @@ class _SourceExploreState extends State<SourceExplore> {
               icon: const Icon(Icons.search))
         ],
         title: Text(
-          widget.extension.getName(),
+          widget.extension.name,
         ),
       ),
       // TODO: customize refreshindicator

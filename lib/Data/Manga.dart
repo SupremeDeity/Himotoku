@@ -45,6 +45,9 @@ class Manga {
   @HiveField(7)
   List<Chapter> chapters = [];
 
+  @HiveField(8)
+  String synopsis = "";
+
   set setChapters(List<Chapter> updatedChapters) {
     chapters.addAll(updatedChapters);
   }
@@ -59,5 +62,9 @@ class Manga {
 
   set setMangaStudio(String updatedStudio) {
     mangaStudio = updatedStudio;
+  }
+
+  set setSynopsis(String updatedSynopsis) {
+    synopsis = updatedSynopsis;
   }
 }

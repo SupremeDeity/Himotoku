@@ -37,7 +37,6 @@ class ComfortableTile extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white,
                 ),
               ),
             ),

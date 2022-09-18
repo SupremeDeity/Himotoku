@@ -6,17 +6,99 @@ import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 
 class Asura extends Extension {
-  final _mangaListQuery = ".listupd .bs a"; // base query to get manga list
-  final _baseUrl = "asurascans.com";
-  final _mangaAuthorQuery = ".fmed span";
-  final _mangaStatusQuery = ".imptdt i";
   final _baseChapterListQuery = "#chapterlist .eph-num a";
-
+  final _baseUrl = "asurascans.com";
+  final _chapterPageListQuery = "p > img";
   final _defaultSort = "/manga";
+  final _mangaAuthorQuery = ".fmed span";
+  final _mangaListQuery = ".listupd .bs a"; // base query to get manga list
+  final _mangaStatusQuery = ".imptdt i";
+  final _mangaSynopsisQuery = "div ~ p";
 
   @override
-  String getIconUrl() {
-    return "https://www.asurascans.com/wp-content/uploads/2021/03/Group_1.png";
+  String get baseUrl => "https://www.asurascans.com/";
+
+  @override
+  getChapterPageList(String startLink, int pageKey) async {
+    try {
+      var url = Uri.parse(startLink);
+
+      var response = await http.get(url);
+      var parsedHtml = parse(response.body);
+
+      List<String> pageList = [];
+
+      // Query1: gets author, artist
+      var q1 = parsedHtml.querySelectorAll(_chapterPageListQuery);
+
+      for (int x = 1; x < q1.length; x++) {
+        pageList.add(q1[x].attributes['src']!);
+      }
+
+      return pageList;
+    } catch (e) {
+      print(e);
+      // return manga;
+    }
+  }
+
+  @override
+  getMangaDetails(Manga manga) async {
+    try {
+      var url = Uri.parse(manga.mangaLink);
+
+      var response = await http.get(url);
+      var parsedHtml = parse(response.body);
+
+      List<Chapter> chapterList = [];
+
+      // Query1: gets author, artist
+      var q1 = parsedHtml.querySelectorAll(_mangaAuthorQuery);
+      // Query2: gets status
+      var q2 = parsedHtml.querySelectorAll(_mangaStatusQuery);
+      // Query3: Gets chapter list
+      var q3 = parsedHtml.querySelectorAll(_baseChapterListQuery);
+      // Query4: Gets synopsis
+      var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
+
+      var mangaBox = await Hive.openBox<Manga>('mangaBox');
+
+      Manga updatedManga = Manga(
+        extensionSource: manga.extensionSource,
+        mangaName: manga.mangaName,
+        mangaCover: manga.mangaCover,
+        mangaLink: manga.mangaLink,
+      );
+      if (q1[1].previousElementSibling?.text == "Author") {
+        updatedManga.setAuthorName = q1[1].text;
+      }
+      if (q1[1].previousElementSibling?.text == "Artist") {
+        updatedManga.setMangaStudio = q1[2].text;
+      }
+
+      updatedManga.setSynopsis = q4?.text ?? "";
+
+      updatedManga.setStatus = q2[0].text;
+
+      // Get chapter list
+      print("Chapters: ${q3.length}");
+      for (int x = 0; x < q3.length; x++) {
+        // TODO: IMPLMENT ERROR CATCH FOR NULL HERE
+        var chapterName = q3[x].children[0].text;
+        var chapterLink = q3[x].attributes['href']!;
+
+        chapterList.add(Chapter(chapterName, chapterLink));
+      }
+      updatedManga.setChapters = chapterList;
+
+      mangaBox.put('${updatedManga.extensionSource}-${updatedManga.mangaName}',
+          updatedManga);
+
+      return updatedManga;
+    } catch (e) {
+      print(e);
+      // return manga;
+    }
   }
 
   // TODO: IMPLEMENT SORT AND FILTER
@@ -46,7 +128,7 @@ class Asura extends Extension {
         var mangaCover = q2[x].attributes['src'];
 
         Manga m = Manga(
-            extensionSource: getName(),
+            extensionSource: name,
             mangaName: title!,
             mangaCover: mangaCover!,
             mangaLink: mangaLink!);
@@ -61,64 +143,9 @@ class Asura extends Extension {
   }
 
   @override
-  String getName() {
-    return "Asura Scans";
-  }
+  String get iconUrl =>
+      "https://www.asurascans.com/wp-content/uploads/2021/03/Group_1.png";
 
   @override
-  getMangaDetails(Manga manga) async {
-    print("This got called ooo");
-    try {
-      var url = Uri.parse(manga.mangaLink);
-
-      var response = await http.get(url);
-      var parsedHtml = parse(response.body);
-
-      List<Chapter> chapterList = [];
-
-      // Query1: gets author, artist
-      var q1 = parsedHtml.querySelectorAll(_mangaAuthorQuery);
-      // Query2: gets status
-      var q2 = parsedHtml.querySelectorAll(_mangaStatusQuery);
-      // Query3: Gets chapter list
-
-      var q3 = parsedHtml.querySelectorAll(_baseChapterListQuery);
-
-      var mangaBox = await Hive.openBox<Manga>('mangaBox');
-
-      Manga updatedManga = Manga(
-        extensionSource: manga.extensionSource,
-        mangaName: manga.mangaName,
-        mangaCover: manga.mangaCover,
-        mangaLink: manga.mangaLink,
-      );
-      if (q1[1].previousElementSibling?.text == "Author") {
-        updatedManga.setAuthorName = q1[1].text;
-      }
-      if (q1[1].previousElementSibling?.text == "Artist") {
-        updatedManga.setMangaStudio = q1[2].text;
-      }
-
-      updatedManga.setStatus = q2[0].text;
-
-      // Get chapter list
-      print("Chapters: ${q3.length}");
-      for (int x = 0; x < q3.length; x++) {
-        // TODO: IMPLMENT ERROR CATCH FOR NULL HERE
-        var chapterName = q3[x].children[0].text;
-        var chapterLink = q3[x].attributes['href']!;
-
-        chapterList.add(Chapter(chapterName, chapterLink));
-      }
-      updatedManga.setChapters = chapterList;
-
-      mangaBox.put('${updatedManga.extensionSource}-${updatedManga.mangaName}',
-          updatedManga);
-
-      return updatedManga;
-    } catch (e) {
-      print(e);
-      // return manga;
-    }
-  }
+  String get name => "Asura Scans";
 }

@@ -6,56 +6,39 @@ import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 
 class Manganato extends Extension {
-  final _mangaListQuery = ".genres-item-img"; // base query to get manga list
-  final _baseUrl = "manganato.com";
-  final _mangaAuthorQuery = ".table-value";
-  final _baseChapterListQuery = ".chapter-name";
-
   final sort = "all";
 
-  @override
-  String getIconUrl() {
-    return "https://manganato.com/themes/hm/images/logo.png";
-  }
+  final _baseChapterListQuery = ".chapter-name";
+  final _baseUrl = "manganato.com";
+  final String _chapterPageListQuery = ".container-chapter-reader > img";
+  final _mangaAuthorQuery = ".table-value";
+  final _mangaListQuery = ".genres-item-img"; // base query to get manga list
 
-  // TODO: IMPLEMENT SORT AND FILTER
   @override
-  getMangaList(int pageKey, {String searchQuery = ""}) async {
+  String get baseUrl => "https://readmanganato.com/";
+
+  @override
+  getChapterPageList(String startLink, int pageKey) async {
     try {
-      var url = Uri.https(
-          _baseUrl, "/advanced_search", {'s': sort, 'page': '$pageKey'});
+      var url = Uri.parse(startLink);
 
       var response = await http.get(url);
       var parsedHtml = parse(response.body);
-      List<Manga> mangaList = [];
 
-      // Query1: gets title and link
-      var q1 = parsedHtml.querySelectorAll(_mangaListQuery);
+      List<String> pageList = [];
+
+      // Query1: gets author, artist
+      var q1 = parsedHtml.querySelectorAll(_chapterPageListQuery);
 
       for (int x = 0; x < q1.length; x++) {
-        // TODO: IMPLMENT ERROR CATCH FOR NULL HERE
-        var title = q1[x].attributes['title'];
-        var mangaLink = q1[x].attributes['href'];
-        var mangaCover = q1[x].children[0].attributes['src'];
-
-        Manga m = Manga(
-            extensionSource: getName(),
-            mangaName: title!,
-            mangaCover: mangaCover!,
-            mangaLink: mangaLink!);
-
-        mangaList.add(m);
+        pageList.add(q1[x].attributes['src']!);
       }
 
-      return mangaList;
+      return pageList;
     } catch (e) {
       print(e);
+      // return manga;
     }
-  }
-
-  @override
-  String getName() {
-    return "Manganato";
   }
 
   @override
@@ -63,7 +46,9 @@ class Manganato extends Extension {
     try {
       var url = Uri.parse(manga.mangaLink);
 
-      var response = await http.get(url);
+      var response = await http.get(
+        url,
+      );
       var parsedHtml = parse(response.body);
 
       List<Chapter> chapterList = [];
@@ -103,4 +88,45 @@ class Manganato extends Extension {
       // return manga;
     }
   }
+
+  // TODO: IMPLEMENT SORT AND FILTER
+  @override
+  getMangaList(int pageKey, {String searchQuery = ""}) async {
+    try {
+      var url = Uri.https(
+          _baseUrl, "/advanced_search", {'s': sort, 'page': '$pageKey'});
+
+      var response = await http.get(url);
+      var parsedHtml = parse(response.body);
+      List<Manga> mangaList = [];
+
+      // Query1: gets title and link
+      var q1 = parsedHtml.querySelectorAll(_mangaListQuery);
+
+      for (int x = 0; x < q1.length; x++) {
+        // TODO: IMPLMENT ERROR CATCH FOR NULL HERE
+        var title = q1[x].attributes['title'];
+        var mangaLink = q1[x].attributes['href'];
+        var mangaCover = q1[x].children[0].attributes['src'];
+
+        Manga m = Manga(
+            extensionSource: name,
+            mangaName: title!,
+            mangaCover: mangaCover!,
+            mangaLink: mangaLink!);
+
+        mangaList.add(m);
+      }
+
+      return mangaList;
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  @override
+  String get iconUrl => "https://manganato.com/themes/hm/images/logo.png";
+
+  @override
+  String get name => "Manganato";
 }

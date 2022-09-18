@@ -4,6 +4,7 @@ import 'package:yomu/Pages/library.dart';
 import 'package:yomu/Pages/manga_view.dart';
 import 'package:yomu/Pages/settings.dart';
 import 'package:yomu/Pages/source_explore.dart';
+import 'package:yomu/Widgets/Library/ChapterListView.dart';
 
 @CustomAutoRouter(
   routes: <AutoRoute>[
@@ -28,6 +29,10 @@ import 'package:yomu/Pages/source_explore.dart';
       page: MangaView,
       maintainState: true,
     ),
+    AutoRoute(
+      page: ChapterListView,
+      maintainState: true,
+    )
   ],
   replaceInRouteName: 'Page,Route',
 )

@@ -55,8 +55,7 @@ class _ExploreState extends State<Explore> {
                             },
                         title: Text(sources.keys.elementAt(index)),
                         leading: CachedNetworkImage(
-                          imageUrl:
-                              sources.values.elementAt(index).getIconUrl(),
+                          imageUrl: sources.values.elementAt(index).iconUrl,
                           width: 32,
                           height: 32,
                         )),

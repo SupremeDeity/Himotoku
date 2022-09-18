@@ -25,13 +25,14 @@ class MangaAdapter extends TypeAdapter<Manga> {
       ..authorName = fields[4] as String
       ..mangaStudio = fields[5] as String
       ..status = fields[6] as String
-      ..chapters = (fields[7] as List).cast<Chapter>();
+      ..chapters = (fields[7] as List).cast<Chapter>()
+      ..synopsis = fields[8] as String;
   }
 
   @override
   void write(BinaryWriter writer, Manga obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.extensionSource)
       ..writeByte(1)
@@ -47,7 +48,9 @@ class MangaAdapter extends TypeAdapter<Manga> {
       ..writeByte(6)
       ..write(obj.status)
       ..writeByte(7)
-      ..write(obj.chapters);
+      ..write(obj.chapters)
+      ..writeByte(8)
+      ..write(obj.synopsis);
   }
 
   @override

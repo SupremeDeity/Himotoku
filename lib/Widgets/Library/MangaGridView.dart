@@ -54,7 +54,7 @@ class _MangaGridViewState extends State<MangaGridView> {
           itemBuilder: (context, item, index) => ComfortableTile(item),
         ),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10),
+            crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4),
       ),
     );
   }
