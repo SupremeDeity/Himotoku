@@ -1,4 +1,5 @@
 // Parent class for all "Extensions"
+import 'package:isar/isar.dart';
 import 'package:yomu/Data/Manga.dart';
 
 abstract class Extension {

@@ -1,5 +1,4 @@
-import 'package:hive_flutter/adapters.dart';
-import 'package:yomu/Data/Chapter.dart';
+import 'package:isar/isar.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +12,7 @@ class Manganato extends Extension {
   final String _chapterPageListQuery = ".container-chapter-reader > img";
   final _mangaAuthorQuery = ".table-value";
   final _mangaListQuery = ".genres-item-img"; // base query to get manga list
+  final _mangaSynopsisQuery = "#panel-story-info-description";
 
   @override
   String get baseUrl => "https://readmanganato.com/";
@@ -56,11 +56,13 @@ class Manganato extends Extension {
       // Query1: gets author, status
       var q1 = parsedHtml.querySelectorAll(_mangaAuthorQuery);
       var q2 = parsedHtml.querySelectorAll(_baseChapterListQuery);
+      var q3 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
-      var mangaBox = await Hive.openBox<Manga>('mangaBox');
+      // var mangaBox = await Hive.openBox<Manga>('mangaBox');
+      var isarInstance = Isar.getInstance('mangaInstance');
 
       Manga updatedManga = Manga(
-        extensionSource: manga.extensionSource,
+        extensionSource: name,
         mangaName: manga.mangaName,
         mangaCover: manga.mangaCover,
         mangaLink: manga.mangaLink,
@@ -68,6 +70,7 @@ class Manganato extends Extension {
 
       updatedManga.setAuthorName = q1[1].text;
       updatedManga.setStatus = q1[2].text;
+      updatedManga.setSynopsis = q3!.text;
 
       // Get chapter list
       for (int x = 0; x < q2.length; x++) {
@@ -75,12 +78,31 @@ class Manganato extends Extension {
         var chapterName = q2[x].text;
         var chapterLink = q2[x].attributes['href']!;
 
-        chapterList.add(Chapter(chapterName, chapterLink));
+        final nChap = Chapter()
+          ..name = chapterName
+          ..link = chapterLink;
+
+        chapterList.add(nChap);
       }
       updatedManga.setChapters = chapterList;
 
-      mangaBox.put('${updatedManga.extensionSource}-${updatedManga.mangaName}',
-          updatedManga);
+      try {
+        final allManga = isarInstance?.mangas;
+        // check if manga already exists
+        final _manga = await allManga!
+            .where()
+            .mangaNameExtensionSourceEqualTo(manga.mangaName, name)
+            .findAll();
+
+        isarInstance?.writeTxn(() async {
+          if (_manga.isNotEmpty) {
+            updatedManga.id = _manga[0].id;
+          }
+          allManga.put(updatedManga);
+        });
+      } catch (e) {
+        print(e);
+      }
 
       return updatedManga;
     } catch (e) {

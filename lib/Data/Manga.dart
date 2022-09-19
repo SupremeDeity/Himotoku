@@ -1,10 +1,9 @@
-import 'package:hive/hive.dart';
-import 'package:yomu/Data/Chapter.dart';
+import 'package:isar/isar.dart';
 import 'package:yomu/Extensions/extension.dart';
 
 part 'Manga.g.dart';
 
-@HiveType(typeId: 0)
+@Collection()
 class Manga {
   Manga({
     required this.extensionSource,
@@ -13,58 +12,76 @@ class Manga {
     required this.mangaLink,
   });
 
+  /// Required id by IsarDB
+  Id? id;
+
   /// Source of Manga
-  @HiveField(0)
+  @Index()
   final String extensionSource;
 
+  @Index()
+  bool inLibrary = false;
+
   /// Image link to cover image.
-  @HiveField(1)
   final String mangaCover;
 
   /// Title of manga.
-  @HiveField(2)
+  @Index(composite: [CompositeIndex('extensionSource')])
   final String mangaName;
 
   /// Link to main page of manga.
-  @HiveField(3)
   final String mangaLink;
 
   /// Author of manga
-  @HiveField(4)
   String authorName = "Unknown";
 
   /// Studio of manga
-  @HiveField(5)
   String mangaStudio = "Unknown";
 
   /// Status of manga
-  @HiveField(6)
   String status = "Unknown";
 
   /// Read chapters
-  @HiveField(7)
   List<Chapter> chapters = [];
 
-  @HiveField(8)
   String synopsis = "";
 
+  @Ignore()
   set setChapters(List<Chapter> updatedChapters) {
     chapters.addAll(updatedChapters);
   }
 
+  @Ignore()
   set setStatus(String updatedStatus) {
     status = updatedStatus;
   }
 
+  @Ignore()
   set setAuthorName(String updatedAuthorName) {
     authorName = updatedAuthorName;
   }
 
+  @Ignore()
   set setMangaStudio(String updatedStudio) {
     mangaStudio = updatedStudio;
   }
 
+  @Ignore()
   set setSynopsis(String updatedSynopsis) {
     synopsis = updatedSynopsis;
   }
+
+  @Ignore()
+  set setInLibrary(bool updatedInLibrary) {
+    inLibrary = updatedInLibrary;
+  }
+}
+
+@Embedded()
+class Chapter {
+  String? name;
+
+  String? link;
+
+  bool isRead = false;
 }

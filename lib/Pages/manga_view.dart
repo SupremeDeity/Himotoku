@@ -2,12 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/adapters.dart';
+import 'package:isar/isar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Data/Theme.dart';
 import 'package:yomu/Extensions/ExtensionHelper.dart';
-import 'package:yomu/Extensions/asura.dart';
 import 'package:yomu/Routes/route.gr.dart';
 
 class MangaView extends StatefulWidget {
@@ -23,22 +21,32 @@ class _MangaViewState extends State<MangaView> {
   Manga? manga;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
+  bool isInLibrary = false;
+  var isarInstance = Isar.getInstance('mangaInstance');
 
   initGetManga() async {
-    var box = await Hive.openBox<Manga>('mangaBox');
-    Manga m = box.get(
-            '${widget.mangaInstance.extensionSource}-${widget.mangaInstance.mangaName}') ??
-        await ExtensionsMap[widget.mangaInstance.extensionSource]!
+    var isarInstance = Isar.getInstance('mangaInstance');
+    print(isarInstance?.isOpen);
+    var mangas = await isarInstance?.mangas
+        .where()
+        .mangaNameExtensionSourceEqualTo(widget.mangaInstance.mangaName,
+            widget.mangaInstance.extensionSource)
+        .findAll();
+    Manga m = mangas!.isNotEmpty
+        ? mangas[0]
+        : await ExtensionsMap[widget.mangaInstance.extensionSource]!
             .getMangaDetails(widget.mangaInstance);
 
     setState(() {
       manga = m;
+      isInLibrary = m.inLibrary;
     });
   }
 
   @override
   void initState() {
     initGetManga();
+
     super.initState();
   }
 
@@ -52,6 +60,7 @@ class _MangaViewState extends State<MangaView> {
 
         setState(() {
           manga = m;
+          isInLibrary = m.inLibrary;
         });
       },
       triggerMode: RefreshIndicatorTriggerMode.anywhere,
@@ -62,7 +71,7 @@ class _MangaViewState extends State<MangaView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SingleChildScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
+                    physics: const AlwaysScrollableScrollPhysics(),
                     dragStartBehavior: DragStartBehavior.start,
                     child: Container(
                       padding: EdgeInsets.all(10),
@@ -100,12 +109,15 @@ class _MangaViewState extends State<MangaView> {
                                             const EdgeInsets.only(top: 4.0),
                                         child: Row(
                                           children: [
-                                            Text(
-                                              "${manga!.authorName}\n${manga!.mangaStudio}",
-                                              style: const TextStyle(
-                                                overflow: TextOverflow.ellipsis,
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 15,
+                                            Expanded(
+                                              child: Text(
+                                                "${manga!.authorName}\n${manga!.mangaStudio}",
+                                                style: const TextStyle(
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  fontWeight: FontWeight.w400,
+                                                  fontSize: 15,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -133,12 +145,23 @@ class _MangaViewState extends State<MangaView> {
                                 children: [
                                   IconButton(
                                     iconSize: 22,
-                                    onPressed: () {},
-                                    icon:
-                                        const Icon(Icons.library_add_outlined),
+                                    onPressed: addToLibrary,
+                                    icon: Icon(
+                                        isInLibrary
+                                            ? Icons.library_add
+                                            : Icons.library_add_outlined,
+                                        color: isInLibrary
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .onBackground),
                                   ),
-                                  const Text(
-                                    "Add to library",
+                                  Text(
+                                    isInLibrary
+                                        ? "In Library"
+                                        : "Add to library",
                                     style: TextStyle(fontSize: 10),
                                   )
                                 ],
@@ -161,7 +184,10 @@ class _MangaViewState extends State<MangaView> {
                               ),
                             ],
                           ),
-                          Text(manga!.synopsis),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(manga!.synopsis),
+                          ),
                         ],
                       ),
                     ),
@@ -170,7 +196,7 @@ class _MangaViewState extends State<MangaView> {
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       "${manga!.chapters.length} Chapters",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -181,9 +207,9 @@ class _MangaViewState extends State<MangaView> {
                       children: List.generate(
                           manga!.chapters.length,
                           (index) => ListTile(
-                                title: Text(manga!.chapters[index].name),
+                                title: Text(manga!.chapters[index].name!),
                                 dense: true,
-                                contentPadding: EdgeInsets.all(10),
+                                contentPadding: const EdgeInsets.all(10),
                                 onTap: () => AutoRouter.of(context).navigate(
                                     ChapterListView(
                                         manga: manga!, chapterIndex: index)),
@@ -196,15 +222,14 @@ class _MangaViewState extends State<MangaView> {
       ),
     );
   }
+
+  void addToLibrary() async {
+    await isarInstance!.writeTxn(() async {
+      manga!.setInLibrary = !manga!.inLibrary;
+      await isarInstance!.mangas.put(manga!);
+    });
+    setState(() {
+      isInLibrary = manga!.inLibrary;
+    });
+  }
 }
-
-// key: _refreshIndicatorKey,
-//         onRefresh: () async {
-//           Manga m = await ExtensionsMap[widget.mangaInstance.extensionSource]!
-//               .getMangaDetails(widget.mangaInstance);
-
-//           setState(() {
-//             manga = m;
-//           });
-//         },
-//         triggerMode: RefreshIndicatorTriggerMode.anywhere,

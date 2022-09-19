@@ -1,5 +1,4 @@
-import 'package:hive_flutter/adapters.dart';
-import 'package:yomu/Data/Chapter.dart';
+import 'package:isar/isar.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:http/http.dart' as http;
@@ -61,14 +60,15 @@ class Asura extends Extension {
       // Query4: Gets synopsis
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
-      var mangaBox = await Hive.openBox<Manga>('mangaBox');
+      var isarInstance = Isar.getInstance('mangaInstance');
 
       Manga updatedManga = Manga(
-        extensionSource: manga.extensionSource,
+        extensionSource: name,
         mangaName: manga.mangaName,
         mangaCover: manga.mangaCover,
         mangaLink: manga.mangaLink,
       );
+
       if (q1[1].previousElementSibling?.text == "Author") {
         updatedManga.setAuthorName = q1[1].text;
       }
@@ -87,12 +87,31 @@ class Asura extends Extension {
         var chapterName = q3[x].children[0].text;
         var chapterLink = q3[x].attributes['href']!;
 
-        chapterList.add(Chapter(chapterName, chapterLink));
+        final nChap = Chapter()
+          ..name = chapterName
+          ..link = chapterLink;
+
+        chapterList.add(nChap);
       }
       updatedManga.setChapters = chapterList;
 
-      mangaBox.put('${updatedManga.extensionSource}-${updatedManga.mangaName}',
-          updatedManga);
+      try {
+        final allManga = isarInstance?.mangas;
+        // check if manga already exists
+        final _manga = await allManga!
+            .where()
+            .mangaNameExtensionSourceEqualTo(manga.mangaName, name)
+            .findAll();
+
+        isarInstance?.writeTxn(() async {
+          if (_manga.isNotEmpty) {
+            updatedManga.id = _manga[0].id;
+          }
+          allManga.put(updatedManga);
+        });
+      } catch (e) {
+        print(e);
+      }
 
       return updatedManga;
     } catch (e) {

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:yomu/Data/Chapter.dart';
+import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
+
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Theme.dart';
 import 'package:yomu/Routes/route.gr.dart';
 
 void main() async {
-  await Hive.initFlutter();
-  // preload manga
-  Hive.registerAdapter(MangaAdapter());
-  Hive.registerAdapter(ChapterAdapter());
-  var mangaBox = await Hive.openBox<Manga>('mangaBox');
-  mangaBox.deleteFromDisk();
-  runApp(YomuMain());
+  await Isar.open(
+    [MangaSchema],
+    // directory: applicationSupportDir.path,
+    name: "mangaInstance",
+  );
+  runApp(const YomuMain());
 }
 
 class YomuMain extends StatefulWidget {
@@ -27,11 +27,8 @@ class _YomuMainState extends State<YomuMain> {
 
   @override
   void initState() {
-    initHive();
     super.initState();
   }
-
-  initHive() async {}
 
   @override
   Widget build(BuildContext context) {

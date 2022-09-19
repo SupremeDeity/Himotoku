@@ -47,7 +47,7 @@ class _ChapterListViewState extends State<ChapterListView> {
       //TODO: FIX THIS LOL
       final newItems = await ExtensionsMap[widget.manga.extensionSource]!
           .getChapterPageList(
-              widget.manga.chapters[widget.chapterIndex].link, pageKey);
+              widget.manga.chapters[widget.chapterIndex].link!, pageKey);
       _pagingController.appendLastPage(newItems);
     } catch (error) {
       _pagingController.error = error;
