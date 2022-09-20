@@ -33,10 +33,10 @@ class _SourceExploreState extends State<SourceExplore> {
         actions: [
           IconButton(
               onPressed: () {
-                // showSearch(
-                //   context: context,
-                //   delegate: CustomSearchDelegate(widget.extension),
-                // );
+                showSearch(
+                  context: context,
+                  delegate: CustomSearchClass(),
+                );
               },
               icon: const Icon(Icons.search))
         ],
@@ -47,5 +47,75 @@ class _SourceExploreState extends State<SourceExplore> {
       // TODO: customize refreshindicator
       body: MangaGridView(widget.extension, _pagingController),
     );
+  }
+}
+
+class CustomSearchClass extends SearchDelegate {
+  var results = [];
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+// this will show clear query button
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+// adding a back button to close the search
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  getResults() {
+    if (query.isNotEmpty) {
+      results.clear();
+      // results = isarInstance!.mangas
+      //     .filter()
+      //     .inLibraryEqualTo(true)
+      //     .mangaNameContains(query, caseSensitive: false)
+      //     .findAllSync();
+      print("got called: $query");
+      print(results);
+    }
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return query.isNotEmpty
+        ? GridView.builder(
+            itemCount: results.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4),
+            itemBuilder: (context, index) {
+              return ComfortableTile(results[index]);
+            },
+          )
+        : Container();
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    getResults();
+    return query.isNotEmpty
+        ? GridView.builder(
+            itemCount: results.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4),
+            itemBuilder: (context, index) {
+              return ComfortableTile(results[index]);
+            },
+          )
+        : Container();
   }
 }

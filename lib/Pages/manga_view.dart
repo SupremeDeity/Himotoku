@@ -24,18 +24,22 @@ class _MangaViewState extends State<MangaView> {
   bool isInLibrary = false;
   var isarInstance = Isar.getInstance('mangaInstance');
 
+  // field to accomodate a somewhat temporary fix for updating chapter list
+  int causeUpdate = 0;
+
   initGetManga() async {
-    var isarInstance = Isar.getInstance('mangaInstance');
-    print(isarInstance?.isOpen);
     var mangas = await isarInstance?.mangas
         .where()
         .mangaNameExtensionSourceEqualTo(widget.mangaInstance.mangaName,
             widget.mangaInstance.extensionSource)
         .findAll();
-    Manga m = mangas!.isNotEmpty
-        ? mangas[0]
-        : await ExtensionsMap[widget.mangaInstance.extensionSource]!
-            .getMangaDetails(widget.mangaInstance);
+    Manga m;
+    if (mangas != null && mangas.isNotEmpty) {
+      m = mangas.first;
+    } else {
+      m = await ExtensionsMap[widget.mangaInstance.extensionSource]!
+          .getMangaDetails(widget.mangaInstance);
+    }
 
     setState(() {
       manga = m;
@@ -46,6 +50,16 @@ class _MangaViewState extends State<MangaView> {
   @override
   void initState() {
     initGetManga();
+
+    // Somewhat temporary fix to update chapter list after pressing back button
+    isarInstance!.mangas.watchLazy().listen((event) {
+      if (mounted) {
+        setState(() {
+          print("object");
+          causeUpdate += 1;
+        });
+      }
+    });
 
     super.initState();
   }
@@ -67,16 +81,16 @@ class _MangaViewState extends State<MangaView> {
       child: Scaffold(
         appBar: AppBar(),
         body: manga != null
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    dragStartBehavior: DragStartBehavior.start,
-                    child: Container(
+            ? ListView.builder(
+                shrinkWrap: true,
+                itemCount: manga!.chapters.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return Container(
                       padding: EdgeInsets.all(10),
                       // color: Colors.black45,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,37 +202,39 @@ class _MangaViewState extends State<MangaView> {
                             padding: const EdgeInsets.all(8.0),
                             child: Text(manga!.synopsis),
                           ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              textAlign: TextAlign.left,
+                              "${manga!.chapters.length} Chapters",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "${manga!.chapters.length} Chapters",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      children: List.generate(
-                          manga!.chapters.length,
-                          (index) => ListTile(
-                                title: Text(manga!.chapters[index].name!),
-                                dense: true,
-                                contentPadding: const EdgeInsets.all(10),
-                                onTap: () => AutoRouter.of(context).navigate(
-                                    ChapterListView(
-                                        manga: manga!, chapterIndex: index)),
-                              )),
-                    ),
-                  )
-                ],
+                    );
+                  } else {
+                    return ListTile(
+                        onTap: () => AutoRouter.of(context).navigate(
+                            ChapterListView(
+                                manga: manga!, chapterIndex: index - 1)),
+                        title: Text(
+                          manga!.chapters[index - 1].name!,
+                          style: TextStyle(
+                            color: manga!.chapters[index - 1].isRead
+                                ? Theme.of(context).disabledColor
+                                : Colors.white,
+                          ),
+                        ));
+                  }
+                },
               )
-            : Center(child: const CircularProgressIndicator()),
+            : Center(
+                child: CircularProgressIndicator(),
+              ),
       ),
     );
   }

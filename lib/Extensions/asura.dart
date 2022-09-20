@@ -18,7 +18,7 @@ class Asura extends Extension {
   String get baseUrl => "https://www.asurascans.com/";
 
   @override
-  getChapterPageList(String startLink, int pageKey) async {
+  getChapterPageList(String startLink) async {
     try {
       var url = Uri.parse(startLink);
 
@@ -81,19 +81,6 @@ class Asura extends Extension {
       updatedManga.setStatus = q2[0].text;
 
       // Get chapter list
-      print("Chapters: ${q3.length}");
-      for (int x = 0; x < q3.length; x++) {
-        // TODO: IMPLMENT ERROR CATCH FOR NULL HERE
-        var chapterName = q3[x].children[0].text;
-        var chapterLink = q3[x].attributes['href']!;
-
-        final nChap = Chapter()
-          ..name = chapterName
-          ..link = chapterLink;
-
-        chapterList.add(nChap);
-      }
-      updatedManga.setChapters = chapterList;
 
       try {
         final allManga = isarInstance?.mangas;
@@ -103,17 +90,36 @@ class Asura extends Extension {
             .mangaNameExtensionSourceEqualTo(manga.mangaName, name)
             .findAll();
 
-        isarInstance?.writeTxn(() async {
+        for (int x = 0; x < q3.length; x++) {
+          // TODO: IMPLMENT ERROR CATCH FOR NULL HERE
+          var chapterName = q3[x].children[0].text;
+          var chapterLink = q3[x].attributes['href']!;
+          print("Manga fetched: ${_manga.length}, x index: $x");
+          var isRead = _manga.isNotEmpty
+              ? (x < _manga[0].chapters.length
+                  ? _manga[0].chapters[x].isRead
+                  : false)
+              : false;
+
+          final nChap = Chapter()
+            ..name = chapterName
+            ..link = chapterLink
+            ..isRead = isRead;
+          chapterList.add(nChap);
+        }
+        updatedManga.setChapters = chapterList;
+
+        await isarInstance?.writeTxn(() async {
           if (_manga.isNotEmpty) {
             updatedManga.id = _manga[0].id;
+            updatedManga.setInLibrary = _manga[0].inLibrary;
           }
-          allManga.put(updatedManga);
+          await allManga.put(updatedManga);
         });
+        return updatedManga;
       } catch (e) {
-        print(e);
+        print("Error: $e");
       }
-
-      return updatedManga;
     } catch (e) {
       print(e);
       // return manga;

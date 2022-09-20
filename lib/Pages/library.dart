@@ -45,7 +45,9 @@ class _LibraryState extends State<Library> {
         title: const Text("Library"),
         actions: [
           IconButton(
-            onPressed: () {}, // TODO: Add search functionality
+            onPressed: () {
+              showSearch(context: context, delegate: CustomSearchClass());
+            }, // TODO: Add search functionality
             icon: const Icon(Icons.search),
           )
         ],
@@ -64,14 +66,12 @@ class _LibraryState extends State<Library> {
           : Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                      ["(ﾉಥ益ಥ）ﾉ ┻━┻", "ಠ_ಠ", "¯\\_(ツ)_/¯"]
-                          .elementAt(Random().nextInt(3)),
-                      style: const TextStyle(
-                          fontSize: 35, fontWeight: FontWeight.bold)),
-                  const Text("You have nothing in your library."),
-                  const Padding(
+                children: const [
+                  Text("(ﾉಥ益ಥ）ﾉ ┻━┻",
+                      style:
+                          TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
+                  Text("You have nothing in your library."),
+                  Padding(
                     padding: EdgeInsets.all(8.0),
                     child: Text.rich(
                       TextSpan(children: [
@@ -95,5 +95,74 @@ class _LibraryState extends State<Library> {
               ),
             ),
     );
+  }
+}
+
+class CustomSearchClass extends SearchDelegate {
+  var isarInstance = Isar.getInstance('mangaInstance');
+  var results = [];
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+// this will show clear query button
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+// adding a back button to close the search
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  getResults() {
+    if (query.isNotEmpty) {
+      results.clear();
+      results = isarInstance!.mangas
+          .filter()
+          .inLibraryEqualTo(true)
+          .mangaNameContains(query, caseSensitive: false)
+          .findAllSync();
+    }
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return query.isNotEmpty
+        ? GridView.builder(
+            itemCount: results.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4),
+            itemBuilder: (context, index) {
+              return ComfortableTile(results[index]);
+            },
+          )
+        : Container();
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    getResults();
+    return query.isNotEmpty
+        ? GridView.builder(
+            itemCount: results.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4),
+            itemBuilder: (context, index) {
+              return ComfortableTile(results[index]);
+            },
+          )
+        : Container();
   }
 }

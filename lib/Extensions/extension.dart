@@ -16,5 +16,5 @@ abstract class Extension {
   /// Source field of `manga` param must be valid.
   getMangaDetails(Manga manga);
 
-  getChapterPageList(String startLink, int pageKey);
+  getChapterPageList(String startLink);
 }

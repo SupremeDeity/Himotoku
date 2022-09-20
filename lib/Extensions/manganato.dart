@@ -18,7 +18,7 @@ class Manganato extends Extension {
   String get baseUrl => "https://readmanganato.com/";
 
   @override
-  getChapterPageList(String startLink, int pageKey) async {
+  getChapterPageList(String startLink) async {
     try {
       var url = Uri.parse(startLink);
 
@@ -72,20 +72,6 @@ class Manganato extends Extension {
       updatedManga.setStatus = q1[2].text;
       updatedManga.setSynopsis = q3!.text;
 
-      // Get chapter list
-      for (int x = 0; x < q2.length; x++) {
-        // TODO: IMPLMENT ERROR CATCH FOR NULL HERE
-        var chapterName = q2[x].text;
-        var chapterLink = q2[x].attributes['href']!;
-
-        final nChap = Chapter()
-          ..name = chapterName
-          ..link = chapterLink;
-
-        chapterList.add(nChap);
-      }
-      updatedManga.setChapters = chapterList;
-
       try {
         final allManga = isarInstance?.mangas;
         // check if manga already exists
@@ -94,17 +80,37 @@ class Manganato extends Extension {
             .mangaNameExtensionSourceEqualTo(manga.mangaName, name)
             .findAll();
 
-        isarInstance?.writeTxn(() async {
+        // Get chapter list
+        for (int x = 0; x < q2.length; x++) {
+          // TODO: IMPLMENT ERROR CATCH FOR NULL HERE
+          var chapterName = q2[x].text;
+          var chapterLink = q2[x].attributes['href']!;
+          var isRead = _manga.isNotEmpty
+              ? (x < _manga[0].chapters.length
+                  ? _manga[0].chapters[x].isRead
+                  : false)
+              : false;
+
+          final nChap = Chapter()
+            ..name = chapterName
+            ..link = chapterLink
+            ..isRead = isRead;
+
+          chapterList.add(nChap);
+        }
+        updatedManga.setChapters = chapterList;
+
+        await isarInstance?.writeTxn(() async {
           if (_manga.isNotEmpty) {
             updatedManga.id = _manga[0].id;
+            updatedManga.setInLibrary = _manga[0].inLibrary;
           }
-          allManga.put(updatedManga);
+          await allManga.put(updatedManga);
         });
+        return updatedManga;
       } catch (e) {
         print(e);
       }
-
-      return updatedManga;
     } catch (e) {
       print(e);
       // return manga;
