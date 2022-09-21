@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar/isar.dart';
+import 'package:logger/logger.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/ExtensionHelper.dart';
 import 'package:yomu/Routes/route.gr.dart' as routes;
@@ -35,7 +36,9 @@ class _ChapterListViewState extends State<ChapterListView> {
         pages = newItems;
       });
     } catch (e) {
-      print(e);
+      var logger = Logger();
+
+      logger.e(e);
     }
   }
 
@@ -86,7 +89,8 @@ class _ChapterListViewState extends State<ChapterListView> {
       }
     } catch (error) {
       _pagingController.error = error;
-      print(error);
+      var logger = Logger();
+      logger.e(error);
     }
   }
 

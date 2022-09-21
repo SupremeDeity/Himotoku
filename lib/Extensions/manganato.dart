@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:logger/logger.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:http/http.dart' as http;
@@ -36,8 +37,9 @@ class Manganato extends Extension {
 
       return pageList;
     } catch (e) {
-      print(e);
-      // return manga;
+      var logger = Logger();
+
+      logger.e(e);
     }
   }
 
@@ -109,11 +111,14 @@ class Manganato extends Extension {
         });
         return updatedManga;
       } catch (e) {
-        print(e);
+        var logger = Logger();
+
+        logger.e(e);
       }
     } catch (e) {
-      print(e);
-      // return manga;
+      var logger = Logger();
+
+      logger.e(e);
     }
   }
 
@@ -148,7 +153,9 @@ class Manganato extends Extension {
 
       return mangaList;
     } catch (e) {
-      print(e);
+      var logger = Logger();
+
+      logger.e(e);
     }
   }
 

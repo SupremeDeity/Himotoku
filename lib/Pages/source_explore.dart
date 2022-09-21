@@ -80,13 +80,6 @@ class CustomSearchClass extends SearchDelegate {
   getResults() {
     if (query.isNotEmpty) {
       results.clear();
-      // results = isarInstance!.mangas
-      //     .filter()
-      //     .inLibraryEqualTo(true)
-      //     .mangaNameContains(query, caseSensitive: false)
-      //     .findAllSync();
-      print("got called: $query");
-      print(results);
     }
   }
 

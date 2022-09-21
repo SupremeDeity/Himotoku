@@ -36,8 +36,8 @@ class _ExploreState extends State<Explore> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              '${sources.length} sources available',
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
+              '${sources.length} Sources available',
+              style: const TextStyle(fontSize: 12),
             ),
           ),
           ListView(

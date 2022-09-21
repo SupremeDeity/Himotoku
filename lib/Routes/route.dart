@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:yomu/Pages/Settings/settings-theme.dart';
 import 'package:yomu/Pages/explore.dart';
 import 'package:yomu/Pages/library.dart';
 import 'package:yomu/Pages/manga_view.dart';
@@ -31,6 +32,10 @@ import 'package:yomu/Widgets/Library/ChapterListView.dart';
     ),
     AutoRoute(
       page: ChapterListView,
+      maintainState: true,
+    ),
+    AutoRoute(
+      page: SettingsTheme,
       maintainState: true,
     )
   ],

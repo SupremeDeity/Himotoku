@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Theme.dart';
@@ -24,16 +26,30 @@ class YomuMain extends StatefulWidget {
 
 class _YomuMainState extends State<YomuMain> {
   final _router = YomuRouter();
+  SharedPreferences? prefs;
+
+  initPrefs() async {
+    prefs = await SharedPreferences.getInstance();
+    if (!(prefs!.containsKey("theme"))) {
+      var brightness = SchedulerBinding.instance.window.platformBrightness;
+      bool isDarkMode = brightness == Brightness.dark;
+      prefs!.setString(
+          "theme", isDarkMode ? "strawberryDark" : "strawberryLight");
+    }
+    print("object");
+  }
 
   @override
   void initState() {
+    initPrefs();
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      theme: Themes.strawberryTheme,
+      theme: themeMap[prefs?.getString("theme")],
       routerDelegate: _router.delegate(),
       routeInformationParser: _router.defaultRouteParser(),
     );

@@ -30,11 +30,12 @@ class ComfortableTile extends StatelessWidget {
               padding: const EdgeInsets.all(5),
               width: double.infinity,
               decoration: const BoxDecoration(
-                color: Colors.black45,
+                color: Colors.black54,
               ),
               child: Text(
                 manga.mangaName,
                 style: const TextStyle(
+                  color: Colors.white70,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),

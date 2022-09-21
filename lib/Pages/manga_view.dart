@@ -55,7 +55,6 @@ class _MangaViewState extends State<MangaView> {
     isarInstance!.mangas.watchLazy().listen((event) {
       if (mounted) {
         setState(() {
-          print("object");
           causeUpdate += 1;
         });
       }

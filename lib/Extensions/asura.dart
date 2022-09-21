@@ -1,4 +1,8 @@
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:logger/logger.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:http/http.dart' as http;
@@ -36,7 +40,9 @@ class Asura extends Extension {
 
       return pageList;
     } catch (e) {
-      print(e);
+      var logger = Logger();
+
+      logger.e(e);
       // return manga;
     }
   }
@@ -94,7 +100,7 @@ class Asura extends Extension {
           // TODO: IMPLMENT ERROR CATCH FOR NULL HERE
           var chapterName = q3[x].children[0].text;
           var chapterLink = q3[x].attributes['href']!;
-          print("Manga fetched: ${_manga.length}, x index: $x");
+
           var isRead = _manga.isNotEmpty
               ? (x < _manga[0].chapters.length
                   ? _manga[0].chapters[x].isRead
@@ -118,10 +124,14 @@ class Asura extends Extension {
         });
         return updatedManga;
       } catch (e) {
-        print("Error: $e");
+        var logger = Logger();
+
+        logger.e(e);
       }
     } catch (e) {
-      print(e);
+      var logger = Logger();
+
+      logger.e(e);
       // return manga;
     }
   }
@@ -134,7 +144,6 @@ class Asura extends Extension {
       if (searchQuery.isEmpty) {
         url = Uri.https(_baseUrl, _defaultSort, {'page': "$pageKey"});
       } else {
-        print(searchQuery);
         url = Uri.https(_baseUrl, "/page/$pageKey", {'s': searchQuery});
       }
       var response = await http.get(url);
@@ -163,7 +172,9 @@ class Asura extends Extension {
 
       return mangaList;
     } catch (e) {
-      print(e);
+      var logger = Logger();
+
+      logger.e(e);
     }
   }
 
