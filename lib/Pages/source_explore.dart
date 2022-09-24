@@ -14,7 +14,6 @@ class SourceExplore extends StatefulWidget {
 }
 
 class _SourceExploreState extends State<SourceExplore> {
-  // TODO: maybe allow extra loading using paramater of pagingcontroller
   final PagingController<int, Manga> _pagingController =
       PagingController(firstPageKey: 1);
 
@@ -44,7 +43,6 @@ class _SourceExploreState extends State<SourceExplore> {
           widget.extension.name,
         ),
       ),
-      // TODO: customize refreshindicator
       body: MangaGridView(widget.extension, _pagingController),
     );
   }

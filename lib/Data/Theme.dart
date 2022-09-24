@@ -4,11 +4,6 @@ import 'package:flutter/material.dart';
 class Themes {
   static ThemeData get strawberryDarkTheme {
     return ThemeData(
-      // brightness: Brightness.dark,
-      // primaryColor: strawberryPrimary,
-      // scaffoldBackgroundColor: strawberrySecondary,
-      // fontFamily: 'Montserrat',
-      // buttonTheme: ButtonThemeData(buttonColor: strawberryPrimary));
       colorScheme: ColorScheme.fromSeed(
         seedColor: strawberryPrimary,
         brightness: Brightness.dark,
@@ -20,11 +15,6 @@ class Themes {
 
   static ThemeData get strawberryLightTheme {
     return ThemeData(
-      // brightness: Brightness.dark,
-      // primaryColor: strawberryPrimary,
-      // scaffoldBackgroundColor: strawberrySecondary,
-      // fontFamily: 'Montserrat',
-      // buttonTheme: ButtonThemeData(buttonColor: strawberryPrimary));
       colorScheme: ColorScheme.fromSeed(
         seedColor: strawberryPrimary,
         brightness: Brightness.light,
@@ -38,6 +28,8 @@ class Themes {
 }
 
 Map<String, ThemeData> themeMap = {
-  "strawberryLight": Themes.strawberryLightTheme,
-  "strawberryDark": Themes.strawberryDarkTheme
+  "Default Light": ThemeData.light(),
+  "Default Dark": ThemeData.dark(),
+  "Strawberry Light": Themes.strawberryLightTheme,
+  "Strawberry Dark": Themes.strawberryDarkTheme
 };

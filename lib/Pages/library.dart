@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:yomu/Data/Manga.dart';
+import 'package:yomu/Data/Theme.dart';
 import 'package:yomu/Widgets/BottomNavBar.dart';
 import 'package:yomu/Widgets/Library/ComfortableTile.dart';
 import 'package:yomu/Widgets/Library/MangaGridView.dart';
@@ -42,12 +44,13 @@ class _LibraryState extends State<Library> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: context.theme.appBarTheme.backgroundColor,
         title: const Text("Library"),
         actions: [
           IconButton(
             onPressed: () {
               showSearch(context: context, delegate: CustomSearchClass());
-            }, // TODO: Add search functionality
+            },
             icon: const Icon(Icons.search),
           )
         ],

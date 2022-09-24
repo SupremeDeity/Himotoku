@@ -1,6 +1,8 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:yomu/Routes/route.gr.dart';
+import 'package:get/get.dart';
+import 'package:yomu/Pages/explore.dart';
+import 'package:yomu/Pages/library.dart';
+import 'package:yomu/Pages/settings.dart';
 
 class BottomNavBar extends StatelessWidget {
   const BottomNavBar(this.index, {Key? key}) : super(key: key);
@@ -23,8 +25,9 @@ class BottomNavBar extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings")
       ],
       currentIndex: index,
-      onTap: (itemIndex) =>
-          {AutoRouter.of(context).navigate(routes[itemIndex])},
+      onTap: (itemIndex) {
+        Get.to(routes[itemIndex], transition: Transition.noTransition);
+      },
     );
   }
 }

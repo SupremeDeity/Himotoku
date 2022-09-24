@@ -16,7 +16,7 @@ class Manganato extends Extension {
   final _mangaSynopsisQuery = "#panel-story-info-description";
 
   @override
-  String get baseUrl => "https://readmanganato.com/";
+  String get baseUrl => _baseUrl;
 
   @override
   getChapterPageList(String startLink) async {
@@ -70,9 +70,9 @@ class Manganato extends Extension {
         mangaLink: manga.mangaLink,
       );
 
-      updatedManga.setAuthorName = q1[1].text;
-      updatedManga.setStatus = q1[2].text;
-      updatedManga.setSynopsis = q3!.text;
+      updatedManga.setAuthorName = q1[1].text.trim();
+      updatedManga.setStatus = q1[2].text.trim();
+      updatedManga.setSynopsis = q3!.text.trim();
 
       try {
         final allManga = isarInstance?.mangas;
@@ -84,8 +84,7 @@ class Manganato extends Extension {
 
         // Get chapter list
         for (int x = 0; x < q2.length; x++) {
-          // TODO: IMPLMENT ERROR CATCH FOR NULL HERE
-          var chapterName = q2[x].text;
+          var chapterName = q2[x].text.trim();
           var chapterLink = q2[x].attributes['href']!;
           var isRead = _manga.isNotEmpty
               ? (x < _manga[0].chapters.length
@@ -137,7 +136,6 @@ class Manganato extends Extension {
       var q1 = parsedHtml.querySelectorAll(_mangaListQuery);
 
       for (int x = 0; x < q1.length; x++) {
-        // TODO: IMPLMENT ERROR CATCH FOR NULL HERE
         var title = q1[x].attributes['title'];
         var mangaLink = q1[x].attributes['href'];
         var mangaCover = q1[x].children[0].attributes['src'];

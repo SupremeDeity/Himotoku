@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:logger/logger.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:yomu/Widgets/Library/ComfortableTile.dart';
@@ -27,6 +28,7 @@ class _MangaGridViewState extends State<MangaGridView> {
   }
 
   Future<void> fetchPage(int pageKey) async {
+    Logger logger = Logger();
     try {
       final newItems = await widget.extension
           .getMangaList(pageKey, searchQuery: widget.searchQuery);
@@ -40,6 +42,8 @@ class _MangaGridViewState extends State<MangaGridView> {
       }
     } catch (error) {
       widget.pagingController.error = error;
+
+      logger.e(error);
     }
   }
 

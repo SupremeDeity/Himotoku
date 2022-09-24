@@ -1,12 +1,12 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/ExtensionHelper.dart';
-import 'package:yomu/Routes/route.gr.dart';
+import 'package:yomu/Widgets/Library/ChapterListView.dart';
 
 class MangaView extends StatefulWidget {
   const MangaView(this.mangaInstance, {Key? key}) : super(key: key);
@@ -18,14 +18,31 @@ class MangaView extends StatefulWidget {
 }
 
 class _MangaViewState extends State<MangaView> {
-  Manga? manga;
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      GlobalKey<RefreshIndicatorState>();
-  bool isInLibrary = false;
-  var isarInstance = Isar.getInstance('mangaInstance');
-
   // field to accomodate a somewhat temporary fix for updating chapter list
   int causeUpdate = 0;
+
+  bool isInLibrary = false;
+  var isarInstance = Isar.getInstance('mangaInstance');
+  Manga? manga;
+
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+
+  @override
+  void initState() {
+    initGetManga();
+
+    // Somewhat temporary fix to update chapter list after pressing back button
+    isarInstance!.mangas.watchLazy().listen((event) {
+      if (mounted) {
+        setState(() {
+          causeUpdate += 1;
+        });
+      }
+    });
+
+    super.initState();
+  }
 
   initGetManga() async {
     var mangas = await isarInstance?.mangas
@@ -47,20 +64,14 @@ class _MangaViewState extends State<MangaView> {
     });
   }
 
-  @override
-  void initState() {
-    initGetManga();
-
-    // Somewhat temporary fix to update chapter list after pressing back button
-    isarInstance!.mangas.watchLazy().listen((event) {
-      if (mounted) {
-        setState(() {
-          causeUpdate += 1;
-        });
-      }
+  void addToLibrary() async {
+    await isarInstance!.writeTxn(() async {
+      manga!.setInLibrary = !manga!.inLibrary;
+      await isarInstance!.mangas.put(manga!);
     });
-
-    super.initState();
+    setState(() {
+      isInLibrary = manga!.inLibrary;
+    });
   }
 
   @override
@@ -217,34 +228,27 @@ class _MangaViewState extends State<MangaView> {
                     );
                   } else {
                     return ListTile(
-                        onTap: () => AutoRouter.of(context).navigate(
-                            ChapterListView(
-                                manga: manga!, chapterIndex: index - 1)),
+                        onTap: () {
+                          Get.to(() => ChapterListView(manga!, index - 1),
+                              transition: Transition.noTransition);
+                        },
                         title: Text(
                           manga!.chapters[index - 1].name!,
                           style: TextStyle(
                             color: manga!.chapters[index - 1].isRead
                                 ? Theme.of(context).disabledColor
-                                : Colors.white,
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
                         ));
                   }
                 },
               )
             : Center(
-                child: CircularProgressIndicator(),
+                child: CircularProgressIndicator(
+                  color: context.theme.colorScheme.secondary,
+                ),
               ),
       ),
     );
-  }
-
-  void addToLibrary() async {
-    await isarInstance!.writeTxn(() async {
-      manga!.setInLibrary = !manga!.inLibrary;
-      await isarInstance!.mangas.put(manga!);
-    });
-    setState(() {
-      isInLibrary = manga!.inLibrary;
-    });
   }
 }

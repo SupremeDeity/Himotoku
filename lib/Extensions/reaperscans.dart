@@ -8,15 +8,15 @@ import 'package:yomu/Extensions/extension.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 
-class Asura extends Extension {
-  final _baseChapterListQuery = "#chapterlist .eph-num a";
-  final _baseUrl = "asurascans.com";
-  final _chapterPageListQuery = "p > img";
-  final _defaultSort = "/manga";
-  final _mangaAuthorQuery = ".fmed span";
-  final _mangaListQuery = ".listupd .bs a"; // base query to get manga list
-  final _mangaStatusQuery = ".imptdt i";
-  final _mangaSynopsisQuery = "div[itemprop=\"description\"]";
+class ReaperScans extends Extension {
+  final _baseChapterListQuery = ".chapter-link";
+  final _baseUrl = "reaperscans.com";
+  final _chapterPageListQuery = ".reading-content img";
+  final _defaultSort = "/all-series/comics";
+  final _mangaAuthorQuery = ".summary-content";
+  final _mangaListQuery =
+      "div[id*=\"manga-item-\"] a"; // base query to get manga list
+  final _mangaSynopsisQuery = ".summary__content";
 
   @override
   String get baseUrl => _baseUrl;
@@ -35,7 +35,7 @@ class Asura extends Extension {
       var q1 = parsedHtml.querySelectorAll(_chapterPageListQuery);
 
       for (int x = 1; x < q1.length; x++) {
-        pageList.add(q1[x].attributes['src']!);
+        pageList.add(q1[x].attributes['data-src']!.trim());
       }
 
       return pageList;
@@ -59,10 +59,10 @@ class Asura extends Extension {
 
       // Query1: gets author, artist
       var q1 = parsedHtml.querySelectorAll(_mangaAuthorQuery);
-      // Query2: gets status
-      var q2 = parsedHtml.querySelectorAll(_mangaStatusQuery);
+
       // Query3: Gets chapter list
-      var q3 = parsedHtml.querySelectorAll(_baseChapterListQuery);
+      var q3 = parsedHtml.querySelectorAll("$_baseChapterListQuery a");
+      var q5 = parsedHtml.querySelectorAll("$_baseChapterListQuery p");
       // Query4: Gets synopsis
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
@@ -75,17 +75,21 @@ class Asura extends Extension {
         mangaLink: manga.mangaLink,
       );
 
-      if (q1[1].previousElementSibling?.text.trim() == "Author") {
-        updatedManga.setAuthorName = q1[1].text.trim();
+      if (q1.length > 4 &&
+          q1[3].previousElementSibling!.text.trim() == "Author(s)") {
+        updatedManga.setAuthorName = q1[3].text.trim();
       }
-      if (q1[1].previousElementSibling?.text.trim() == "Artist") {
-        updatedManga.setMangaStudio = q1[2].text.trim();
+
+      if (q1.length > 4 &&
+          q1[3].previousElementSibling!.text.trim() == "Artist(s)") {
+        updatedManga.setMangaStudio = q1[4].text.trim();
+      }
+
+      if (q1.last.previousElementSibling!.text.trim() == "Status") {
+        updatedManga.setStatus = q1.last.text.trim();
       }
 
       updatedManga.setSynopsis = q4?.text.trim() ?? "";
-
-      updatedManga.setStatus = q2[0].text.trim();
-
       // Get chapter list
 
       try {
@@ -97,7 +101,7 @@ class Asura extends Extension {
             .findAll();
 
         for (int x = 0; x < q3.length; x++) {
-          var chapterName = q3[x].children[0].text.trim();
+          var chapterName = q5[x].text.trim();
           var chapterLink = q3[x].attributes['href']!;
 
           var isRead = _manga.isNotEmpty
@@ -138,26 +142,31 @@ class Asura extends Extension {
   // TODO: IMPLEMENT SORT AND FILTER
   @override
   getMangaList(int pageKey, {String searchQuery = ""}) async {
+    Logger logger = Logger();
     try {
       var url;
       if (searchQuery.isEmpty) {
-        url = Uri.https(_baseUrl, _defaultSort, {'page': "$pageKey"});
+        url = Uri.https(_baseUrl, _defaultSort);
       } else {
-        url = Uri.https(_baseUrl, "/page/$pageKey", {'s': searchQuery});
+        url = Uri.https(_baseUrl, "", {'s': searchQuery});
       }
-      var response = await http.get(url);
+      logger.i(url);
+      var response = await http.get(url, headers: {});
       var parsedHtml = parse(response.body);
+
       List<Manga> mangaList = [];
 
       // Query1: gets title and link
       var q1 = parsedHtml.querySelectorAll(_mangaListQuery);
+
+      logger.i(q1.length);
       // Query2: gets cover art
       var q2 = parsedHtml.querySelectorAll("$_mangaListQuery img");
 
       for (int x = 0; x < q1.length; x++) {
         var title = q1[x].attributes['title'];
         var mangaLink = q1[x].attributes['href'];
-        var mangaCover = q2[x].attributes['src'];
+        var mangaCover = q2[x].attributes['data-src'];
 
         Manga m = Manga(
             extensionSource: name,
@@ -178,8 +187,8 @@ class Asura extends Extension {
 
   @override
   String get iconUrl =>
-      "https://www.asurascans.com/wp-content/uploads/2021/03/Group_1.png";
+      "https://reaperscans.com/wp-content/uploads/2021/07/logo-reaper-2.png";
 
   @override
-  String get name => "Asura Scans";
+  String get name => "Reaper Scans";
 }

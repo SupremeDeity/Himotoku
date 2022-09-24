@@ -1,12 +1,13 @@
 import 'dart:convert';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:yomu/Extensions/ExtensionHelper.dart';
 import 'package:yomu/Extensions/asura.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:yomu/Extensions/manganato.dart';
-import 'package:yomu/Routes/route.gr.dart';
+import 'package:yomu/Pages/source_explore.dart';
 import 'package:yomu/Widgets/BottomNavBar.dart';
 
 class Explore extends StatefulWidget {
@@ -17,13 +18,6 @@ class Explore extends StatefulWidget {
 }
 
 class _ExploreState extends State<Explore> {
-  // Map<String, dynamic> manifest = {};
-
-  Map<String, Extension> sources = {
-    "Asura Scans": Asura(),
-    "Manganato": Manganato(),
-  };
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,26 +30,29 @@ class _ExploreState extends State<Explore> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              '${sources.length} Sources available',
+              '${ExtensionsMap.length} Sources available',
               style: const TextStyle(fontSize: 12),
             ),
           ),
           ListView(
               shrinkWrap: true,
               children: List.generate(
-                sources.length,
+                ExtensionsMap.length,
                 (index) => Column(
                   children: [
                     const Divider(),
                     ListTile(
                         contentPadding: const EdgeInsets.all(5),
-                        onTap: () => {
-                              AutoRouter.of(context).push(SourceExplore(
-                                  extension: sources.values.elementAt(index))),
-                            },
-                        title: Text(sources.keys.elementAt(index)),
+                        onTap: () {
+                          Get.to(
+                              () => SourceExplore(
+                                  ExtensionsMap.values.elementAt(index)),
+                              transition: Transition.noTransition);
+                        },
+                        title: Text(ExtensionsMap.keys.elementAt(index)),
                         leading: CachedNetworkImage(
-                          imageUrl: sources.values.elementAt(index).iconUrl,
+                          imageUrl:
+                              ExtensionsMap.values.elementAt(index).iconUrl,
                           width: 32,
                           height: 32,
                         )),
@@ -64,8 +61,7 @@ class _ExploreState extends State<Explore> {
               )),
         ],
       ),
-      bottomNavigationBar:
-          const BottomNavBar(1), // #FIXME: Add something to make this dynamic
+      bottomNavigationBar: const BottomNavBar(1),
     );
   }
 }
