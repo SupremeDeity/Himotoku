@@ -7,7 +7,7 @@ import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Theme.dart';
 import 'package:yomu/Widgets/BottomNavBar.dart';
 import 'package:yomu/Widgets/Library/ComfortableTile.dart';
-import 'package:yomu/Widgets/Library/MangaGridView.dart';
+import 'package:yomu/Widgets/SourceExplore/MangaGridView.dart';
 
 class Library extends StatefulWidget {
   const Library({Key? key}) : super(key: key);

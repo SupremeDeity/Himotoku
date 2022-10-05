@@ -125,19 +125,28 @@ class Manganato extends Extension {
   @override
   getMangaList(int pageKey, {String searchQuery = ""}) async {
     try {
-      var url = Uri.https(
-          _baseUrl, "/advanced_search", {'s': sort, 'page': '$pageKey'});
+      var url;
+      if (searchQuery.isEmpty) {
+        url = Uri.https(
+            _baseUrl, "/advanced_search", {'s': sort, 'page': '$pageKey'});
+      } else {
+        url = Uri.https(
+            _baseUrl, "/search/story/$searchQuery", {'page': '$pageKey'});
+      }
 
       var response = await http.get(url);
       var parsedHtml = parse(response.body);
       List<Manga> mangaList = [];
 
       // Query1: gets title and link
-      var q1 = parsedHtml.querySelectorAll(_mangaListQuery);
+
+      var q1 = parsedHtml.querySelectorAll(
+          searchQuery.isEmpty ? _mangaListQuery : ".item-img.bookmark_check");
 
       for (int x = 0; x < q1.length; x++) {
         var title = q1[x].attributes['title'];
         var mangaLink = q1[x].attributes['href'];
+
         var mangaCover = q1[x].children[0].attributes['src'];
 
         Manga m = Manga(

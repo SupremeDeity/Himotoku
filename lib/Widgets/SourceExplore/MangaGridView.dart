@@ -49,17 +49,25 @@ class _MangaGridViewState extends State<MangaGridView> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () => Future.sync(() => widget.pagingController.refresh()),
-      child: PagedGridView<int, Manga>(
-        shrinkWrap: true,
-        pagingController: widget.pagingController,
-        builderDelegate: PagedChildBuilderDelegate<Manga>(
-          itemBuilder: (context, item, index) => ComfortableTile(item),
-        ),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4),
+    return widget.searchQuery.isEmpty
+        ? RefreshIndicator(
+            onRefresh: () {
+              return Future.sync(() => widget.pagingController.refresh());
+            },
+            child: MangaGrid(),
+          )
+        : MangaGrid();
+  }
+
+  PagedGridView<int, Manga> MangaGrid() {
+    return PagedGridView<int, Manga>(
+      shrinkWrap: true,
+      pagingController: widget.pagingController,
+      builderDelegate: PagedChildBuilderDelegate<Manga>(
+        itemBuilder: (context, item, index) => ComfortableTile(item),
       ),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4),
     );
   }
 }

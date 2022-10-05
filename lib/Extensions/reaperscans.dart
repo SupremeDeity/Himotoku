@@ -9,13 +9,15 @@ import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 
 class ReaperScans extends Extension {
+  final baseSourceExplore = "/all-series/comics";
+
   final _baseChapterListQuery = ".chapter-link";
   final _baseUrl = "reaperscans.com";
   final _chapterPageListQuery = ".reading-content img";
-  final _defaultSort = "/all-series/comics";
   final _mangaAuthorQuery = ".summary-content";
   final _mangaListQuery =
       "div[id*=\"manga-item-\"] a"; // base query to get manga list
+
   final _mangaSynopsisQuery = ".summary__content";
 
   @override
@@ -142,31 +144,81 @@ class ReaperScans extends Extension {
   // TODO: IMPLEMENT SORT AND FILTER
   @override
   getMangaList(int pageKey, {String searchQuery = ""}) async {
-    Logger logger = Logger();
     try {
       var url;
       if (searchQuery.isEmpty) {
-        url = Uri.https(_baseUrl, _defaultSort);
+        url = Uri.https(
+            _baseUrl, baseSourceExplore, {"m_orderby": "total_views"});
       } else {
         url = Uri.https(_baseUrl, "", {'s': searchQuery});
       }
-      logger.i(url);
-      var response = await http.get(url, headers: {});
+
+      var response = await http.get(url);
+      bool popular = true;
+      var body = {
+        "action": "madara_load_more",
+        "page": (pageKey).toString(),
+        "template": "madara-core/content/content-archive",
+        // "vars[orderby]": "post_title",
+        // "vars[paged]": "1",
+        // "vars[posts_per_page]": "20",
+        // "vars[post_type]": "wp-manga",
+        // "vars[post_status]": "publish",
+        "vars[meta_key]": popular ? "_wp_manga_views" : "_latest_update",
+        // "vars[order]": "ASC",
+        "vars[sidebar]": popular ? "full" : "right",
+        "vars[manga_archives_item_layout]": "big_thumbnail",
+        "vars[paged]": "1",
+        "vars[orderby]": "meta_value_num",
+        // "vars[template]": "archive",
+        // "vars[sidebar]": "full",
+        "vars[post_type]": "wp-manga",
+        "vars[post_status]": "publish",
+        "vars[order]": "asc",
+        "vars[meta_query][0][key]": "_wp_manga_chapter_type",
+        "vars[meta_query][0][value]": "manga"
+      };
+
+      var resp2 = await http.post(
+          Uri.parse("https://$baseUrl/wp-admin/admin-ajax.php"),
+          body: body);
+      print(resp2.statusCode);
+      print(resp2.headers);
+
+      var parsedHtml2 = parse(resp2.body);
+
       var parsedHtml = parse(response.body);
 
       List<Manga> mangaList = [];
 
       // Query1: gets title and link
       var q1 = parsedHtml.querySelectorAll(_mangaListQuery);
+      var qq1 = parsedHtml2.querySelectorAll(_mangaListQuery);
 
-      logger.i(q1.length);
       // Query2: gets cover art
       var q2 = parsedHtml.querySelectorAll("$_mangaListQuery img");
+      var qq2 = parsedHtml2.querySelectorAll("$_mangaListQuery img");
 
-      for (int x = 0; x < q1.length; x++) {
-        var title = q1[x].attributes['title'];
-        var mangaLink = q1[x].attributes['href'];
-        var mangaCover = q2[x].attributes['data-src'];
+      // for (int x = 0; x < q1.length; x++) {
+      //   var title = q1[x].attributes['title'];
+      //   var mangaLink = q1[x].attributes['href'];
+      //   var mangaCover = q2[x].attributes['data-src'];
+      //   print("$x: $title");
+
+      //   Manga m = Manga(
+      //       extensionSource: name,
+      //       mangaName: title!,
+      //       mangaCover: mangaCover!,
+      //       mangaLink: mangaLink!);
+
+      //   mangaList.add(m);
+      // }
+
+      for (int x = 0; x < qq1.length; x++) {
+        var title = qq1[x].attributes['title'];
+        var mangaLink = qq1[x].attributes['href'];
+        var mangaCover = qq2[x].attributes['data-src'];
+        print("$x: $title");
 
         Manga m = Manga(
             extensionSource: name,

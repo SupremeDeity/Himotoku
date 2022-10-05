@@ -47,7 +47,7 @@ class _SettingsThemeState extends State<SettingsTheme> {
                         value: themeMap.keys.elementAt(index),
                         groupValue: theme,
                         onChanged: (value) async {
-                          preferences!.setString('theme', value!);
+                          await preferences!.setString('theme', value!);
                           Get.changeTheme(themeMap[value]!);
                         }),
                   );

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
-import 'package:yomu/Widgets/Library/ComfortableTile.dart';
-import 'package:yomu/Widgets/Library/MangaGridView.dart';
+import 'package:yomu/Widgets/SourceExplore/MangaGridView.dart';
 
 class SourceExplore extends StatefulWidget {
   const SourceExplore(this.extension, {Key? key}) : super(key: key);
 
   final Extension extension;
+
   @override
   _SourceExploreState createState() => _SourceExploreState();
 }
@@ -34,7 +34,7 @@ class _SourceExploreState extends State<SourceExplore> {
               onPressed: () {
                 showSearch(
                   context: context,
-                  delegate: CustomSearchClass(),
+                  delegate: CustomSearchClass(widget.extension),
                 );
               },
               icon: const Icon(Icons.search))
@@ -50,6 +50,12 @@ class _SourceExploreState extends State<SourceExplore> {
 
 class CustomSearchClass extends SearchDelegate {
   var results = [];
+
+  CustomSearchClass(this.extension);
+  final PagingController<int, Manga> _pagingController =
+      PagingController(firstPageKey: 1);
+
+  Extension extension;
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -75,38 +81,19 @@ class CustomSearchClass extends SearchDelegate {
     );
   }
 
-  getResults() {
-    if (query.isNotEmpty) {
-      results.clear();
-    }
-  }
-
   @override
   Widget buildResults(BuildContext context) {
     return query.isNotEmpty
-        ? GridView.builder(
-            itemCount: results.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4),
-            itemBuilder: (context, index) {
-              return ComfortableTile(results[index]);
-            },
+        ? MangaGridView(
+            extension,
+            _pagingController,
+            searchQuery: query,
           )
         : Container();
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    getResults();
-    return query.isNotEmpty
-        ? GridView.builder(
-            itemCount: results.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4),
-            itemBuilder: (context, index) {
-              return ComfortableTile(results[index]);
-            },
-          )
-        : Container();
+    return Container();
   }
 }

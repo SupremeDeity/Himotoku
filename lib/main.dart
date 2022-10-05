@@ -10,12 +10,19 @@ import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Theme.dart';
 import 'package:yomu/Pages/library.dart';
 
+// TODO: 1) Add Import & Export
+// TODO: 2) Fix Strawberry Theme
+// TODO: 3) Add Sort to Library
+// TODO: 4) Add Sort to SourceExplore
+// TODO: 5) Add Default sort setting of library to Settings
+// TODO: 6) Fix ReaperScans
+// TODO: 7) Add verbose logging while in release
+
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Isar.open(
     [MangaSchema],
-    // directory: applicationSupportDir.path,
     name: "mangaInstance",
   );
   runApp(const YomuMain());
