@@ -10,8 +10,7 @@ import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Theme.dart';
 import 'package:yomu/Pages/library.dart';
 
-// TODO: 1) Add Import & Export
-// TODO: 2) Fix Strawberry Theme
+// TODO: 2) Fix Strawberry Theme(Reader icons)
 // TODO: 3) Add Sort to Library
 // TODO: 4) Add Sort to SourceExplore
 // TODO: 5) Add Default sort setting of library to Settings

@@ -130,8 +130,10 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
             "export_location", (value) => selectedDirectory.toString());
         await preferences?.setString(
             "settings-backup", jsonEncode(BackupSettingsMap));
+        setState(() {
+          exportLocation = selectedDirectory.toString();
+        });
       }
-      print(selectedDirectory);
     }
   }
 

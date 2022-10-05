@@ -121,7 +121,6 @@ class Manganato extends Extension {
     }
   }
 
-  // TODO: IMPLEMENT SORT AND FILTER
   @override
   getMangaList(int pageKey, {String searchQuery = ""}) async {
     try {
