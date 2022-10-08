@@ -156,10 +156,10 @@ class _ChapterListViewState extends State<ChapterListView> {
 
   Container FooterView(BuildContext context) {
     return Container(
-      color: context.theme.colorScheme.primary.withAlpha(200),
-      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        IconButton(
-            iconSize: 50,
+      color: context.theme.colorScheme.primary.withAlpha(220),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+        ElevatedButton.icon(
+            label: Text("Prev"),
             onPressed: widget.chapterIndex < widget.manga.chapters.length - 1
                 ? () {
                     Get.off(
@@ -171,10 +171,11 @@ class _ChapterListViewState extends State<ChapterListView> {
                   }
                 : null,
             icon: const Icon(
-              Icons.arrow_left,
+              size: 30,
+              Icons.skip_previous_rounded,
             )),
-        IconButton(
-            iconSize: 50,
+        ElevatedButton.icon(
+            label: Text("Next"),
             // color: context.theme.colorScheme
             //     .onSecondaryContainer,
             onPressed: widget.chapterIndex > 0
@@ -187,7 +188,8 @@ class _ChapterListViewState extends State<ChapterListView> {
                   }
                 : null,
             icon: const Icon(
-              Icons.arrow_right,
+              size: 30,
+              Icons.skip_next_rounded,
             )),
       ]),
     );

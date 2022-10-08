@@ -6,12 +6,11 @@ import 'package:yomu/Extensions/extension.dart';
 import 'package:yomu/Widgets/Library/ComfortableTile.dart';
 
 class MangaGridView extends StatefulWidget {
-  MangaGridView(this.extension, this.pagingController,
-      {Key? key, this.searchQuery = ""})
+  MangaGridView(this.extension, {Key? key, this.searchQuery = ""})
       : super(key: key);
 
   final Extension extension;
-  PagingController<int, Manga> pagingController;
+
   String searchQuery;
 
   @override
@@ -19,9 +18,11 @@ class MangaGridView extends StatefulWidget {
 }
 
 class _MangaGridViewState extends State<MangaGridView> {
+  final PagingController<int, Manga> _pagingController =
+      PagingController(firstPageKey: 1);
   @override
   void initState() {
-    widget.pagingController.addPageRequestListener((pageKey) {
+    _pagingController.addPageRequestListener((pageKey) {
       fetchPage(pageKey);
     });
     super.initState();
@@ -30,18 +31,20 @@ class _MangaGridViewState extends State<MangaGridView> {
   Future<void> fetchPage(int pageKey) async {
     Logger logger = Logger();
     try {
+      print(pageKey);
+      print(widget.searchQuery);
       final newItems = await widget.extension
           .getMangaList(pageKey, searchQuery: widget.searchQuery);
       final isLastPage = newItems.length < 1;
 
       if (isLastPage) {
-        widget.pagingController.appendLastPage(newItems);
+        _pagingController.appendLastPage(newItems);
       } else {
         final nextPageKey = pageKey + 1;
-        widget.pagingController.appendPage(newItems, nextPageKey.toInt());
+        _pagingController.appendPage(newItems, nextPageKey.toInt());
       }
     } catch (error) {
-      widget.pagingController.error = error;
+      _pagingController.error = error;
 
       logger.e(error);
     }
@@ -52,7 +55,7 @@ class _MangaGridViewState extends State<MangaGridView> {
     return widget.searchQuery.isEmpty
         ? RefreshIndicator(
             onRefresh: () {
-              return Future.sync(() => widget.pagingController.refresh());
+              return Future.sync(() => _pagingController.refresh());
             },
             child: MangaGrid(),
           )
@@ -62,7 +65,7 @@ class _MangaGridViewState extends State<MangaGridView> {
   PagedGridView<int, Manga> MangaGrid() {
     return PagedGridView<int, Manga>(
       shrinkWrap: true,
-      pagingController: widget.pagingController,
+      pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<Manga>(
         itemBuilder: (context, item, index) => ComfortableTile(item),
       ),

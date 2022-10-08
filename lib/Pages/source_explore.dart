@@ -14,17 +14,6 @@ class SourceExplore extends StatefulWidget {
 }
 
 class _SourceExploreState extends State<SourceExplore> {
-  final PagingController<int, Manga> _pagingController =
-      PagingController(firstPageKey: 1);
-
-  @override
-  void didUpdateWidget(SourceExplore oldWidget) {
-    if (oldWidget.extension != widget.extension) {
-      _pagingController.refresh();
-    }
-    super.didUpdateWidget(oldWidget);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +32,7 @@ class _SourceExploreState extends State<SourceExplore> {
           widget.extension.name,
         ),
       ),
-      body: MangaGridView(widget.extension, _pagingController),
+      body: MangaGridView(widget.extension),
     );
   }
 }
@@ -52,8 +41,6 @@ class CustomSearchClass extends SearchDelegate {
   var results = [];
 
   CustomSearchClass(this.extension);
-  final PagingController<int, Manga> _pagingController =
-      PagingController(firstPageKey: 1);
 
   Extension extension;
 
@@ -86,7 +73,6 @@ class CustomSearchClass extends SearchDelegate {
     return query.isNotEmpty
         ? MangaGridView(
             extension,
-            _pagingController,
             searchQuery: query,
           )
         : Container();

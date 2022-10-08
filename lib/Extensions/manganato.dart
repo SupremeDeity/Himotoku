@@ -63,17 +63,6 @@ class Manganato extends Extension {
       // var mangaBox = await Hive.openBox<Manga>('mangaBox');
       var isarInstance = Isar.getInstance('mangaInstance');
 
-      Manga updatedManga = Manga(
-        extensionSource: name,
-        mangaName: manga.mangaName,
-        mangaCover: manga.mangaCover,
-        mangaLink: manga.mangaLink,
-      );
-
-      updatedManga.setAuthorName = q1[1].text.trim();
-      updatedManga.setStatus = q1[2].text.trim();
-      updatedManga.setSynopsis = q3!.text.trim();
-
       try {
         final allManga = isarInstance?.mangas;
         // check if manga already exists
@@ -99,13 +88,18 @@ class Manganato extends Extension {
 
           chapterList.add(nChap);
         }
-        updatedManga.setChapters = chapterList;
+
+        // Note: Manganato does not have "Artist/Studio"
+        Manga updatedManga = manga.copyWith(
+          chapters: chapterList,
+          authorName: q1[1].text.trim(),
+          status: q1[2].text.trim(),
+          synopsis: q3!.text.trim(),
+          id: _manga.isNotEmpty ? _manga[0].id : null,
+          inLibrary: _manga.isNotEmpty ? _manga[0].inLibrary : null,
+        );
 
         await isarInstance?.writeTxn(() async {
-          if (_manga.isNotEmpty) {
-            updatedManga.id = _manga[0].id;
-            updatedManga.setInLibrary = _manga[0].inLibrary;
-          }
           await allManga.put(updatedManga);
         });
         return updatedManga;

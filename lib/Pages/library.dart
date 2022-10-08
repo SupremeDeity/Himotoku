@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:isar/isar.dart';
@@ -31,8 +32,8 @@ class _LibraryState extends State<Library> {
 
   @override
   void initState() {
-    getLibrary();
-    Stream<void> instanceChanged = isarInstance!.mangas.watchLazy();
+    Stream<void> instanceChanged =
+        isarInstance!.mangas.watchLazy(fireImmediately: true);
     instanceChanged.listen((event) {
       getLibrary();
     });
@@ -43,6 +44,27 @@ class _LibraryState extends State<Library> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                return ListView(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Sort & Filter",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  ],
+                );
+              },
+            );
+          },
+          child: Icon(Icons.filter_list_rounded)),
       appBar: AppBar(
         backgroundColor: context.theme.appBarTheme.backgroundColor,
         title: const Text("Library"),

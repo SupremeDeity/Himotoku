@@ -12,37 +12,37 @@ class Manga {
     required this.mangaLink,
   });
 
-  /// Required id by IsarDB
-  Id? id;
+  /// Author of manga
+  String authorName = "-";
+
+  /// Read chapters
+  List<Chapter> chapters = [];
 
   /// Source of Manga
   @Index()
   final String extensionSource;
 
+  /// Required id by IsarDB
+  Id? id;
+
   @Index()
   bool inLibrary = false;
 
   /// Image link to cover image.
-  final String mangaCover;
+  String mangaCover;
+
+  /// Link to main page of manga.
+  String mangaLink;
 
   /// Title of manga.
   @Index(composite: [CompositeIndex('extensionSource')])
-  final String mangaName;
-
-  /// Link to main page of manga.
-  final String mangaLink;
-
-  /// Author of manga
-  String authorName = "Unknown";
+  String mangaName;
 
   /// Studio of manga
-  String mangaStudio = "Unknown";
+  String mangaStudio = "-";
 
   /// Status of manga
-  String status = "Unknown";
-
-  /// Read chapters
-  List<Chapter> chapters = [];
+  String status = "-";
 
   String synopsis = "";
 
@@ -75,13 +75,40 @@ class Manga {
   set setInLibrary(bool updatedInLibrary) {
     inLibrary = updatedInLibrary;
   }
+
+  @Ignore()
+  Manga copyWith({
+    Id? id,
+    String? extensionSource,
+    bool? inLibrary,
+    String? mangaCover,
+    String? mangaName,
+    String? mangaLink,
+    String? authorName,
+    String? mangaStudio,
+    String? status,
+    List<Chapter>? chapters,
+    String? synopsis,
+  }) {
+    return Manga(
+      extensionSource: extensionSource ?? this.extensionSource,
+      mangaCover: mangaCover ?? this.mangaCover,
+      mangaName: mangaName ?? this.mangaName,
+      mangaLink: mangaLink ?? this.mangaLink,
+    )
+      ..id = id ?? this.id
+      ..inLibrary = inLibrary ?? this.inLibrary
+      ..authorName = authorName ?? this.authorName
+      ..mangaStudio = mangaStudio ?? this.mangaStudio
+      ..status = status ?? this.status
+      ..chapters = chapters ?? this.chapters
+      ..synopsis = synopsis ?? this.synopsis;
+  }
 }
 
 @Embedded()
 class Chapter {
-  String? name;
-
-  String? link;
-
   bool isRead = false;
+  String? link;
+  String? name;
 }

@@ -11,9 +11,7 @@ class Themes {
       colorScheme: ColorScheme.fromSeed(
         seedColor: strawberryPrimary,
         brightness: Brightness.dark,
-      ).copyWith(
-        surface: strawberryPrimary,
-      ),
+      ).copyWith(surface: strawberryPrimary),
     );
   }
 

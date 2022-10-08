@@ -65,26 +65,6 @@ class Asura extends Extension {
 
       var isarInstance = Isar.getInstance('mangaInstance');
 
-      Manga updatedManga = Manga(
-        extensionSource: name,
-        mangaName: manga.mangaName,
-        mangaCover: manga.mangaCover,
-        mangaLink: manga.mangaLink,
-      );
-
-      if (q1[1].previousElementSibling?.text.trim() == "Author") {
-        updatedManga.setAuthorName = q1[1].text.trim();
-      }
-      if (q1[1].previousElementSibling?.text.trim() == "Artist") {
-        updatedManga.setMangaStudio = q1[2].text.trim();
-      }
-
-      updatedManga.setSynopsis = q4?.text.trim() ?? "";
-
-      updatedManga.setStatus = q2[0].text.trim();
-
-      // Get chapter list
-
       try {
         final allManga = isarInstance?.mangas;
         // check if manga already exists
@@ -109,13 +89,22 @@ class Asura extends Extension {
             ..isRead = isRead;
           chapterList.add(nChap);
         }
-        updatedManga.setChapters = chapterList;
+        Manga updatedManga = manga.copyWith(
+          authorName: q1[1].previousElementSibling?.text.trim() == "Author"
+              ? q1[1].text.trim()
+              : null,
+          mangaStudio: q1[1].previousElementSibling?.text.trim() == "Artist"
+              ? q1[2].text.trim()
+              : null,
+          synopsis: q4?.text.trim() ?? "",
+          status: q2[0].text.trim(),
+          chapters: chapterList,
+          id: _manga.isNotEmpty ? _manga[0].id : null,
+          inLibrary: _manga.isNotEmpty ? _manga[0].inLibrary : null,
+        );
+        print(updatedManga.mangaStudio);
 
         await isarInstance?.writeTxn(() async {
-          if (_manga.isNotEmpty) {
-            updatedManga.id = _manga[0].id;
-            updatedManga.setInLibrary = _manga[0].inLibrary;
-          }
           await allManga.put(updatedManga);
         });
         return updatedManga;
