@@ -104,7 +104,6 @@ class _ChapterListViewState extends State<ChapterListView> {
       errorWidget: (context, url, error) {
         return Text("Error: $error");
       },
-      fit: BoxFit.fitWidth,
       progressIndicatorBuilder: (context, url, progress) {
         return Padding(
           padding: const EdgeInsets.symmetric(

@@ -4,9 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yomu/Extensions/ExtensionHelper.dart';
-import 'package:yomu/Extensions/asura.dart';
-import 'package:yomu/Extensions/extension.dart';
-import 'package:yomu/Extensions/manganato.dart';
 import 'package:yomu/Pages/source_explore.dart';
 import 'package:yomu/Widgets/BottomNavBar.dart';
 
@@ -26,12 +23,15 @@ class _ExploreState extends State<Explore> {
         automaticallyImplyLeading: false,
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.only(left: 12.0, top: 12.0),
             child: Text(
-              '${ExtensionsMap.length} Sources available',
-              style: const TextStyle(fontSize: 12),
+              '${ExtensionsMap.length} source(s)',
+              style: TextStyle(
+                  color: context.theme.colorScheme.primary,
+                  fontWeight: FontWeight.w500),
             ),
           ),
           ListView(
@@ -40,7 +40,6 @@ class _ExploreState extends State<Explore> {
                 ExtensionsMap.length,
                 (index) => Column(
                   children: [
-                    const Divider(),
                     ListTile(
                         contentPadding: const EdgeInsets.all(5),
                         onTap: () {
@@ -56,6 +55,7 @@ class _ExploreState extends State<Explore> {
                           width: 32,
                           height: 32,
                         )),
+                    const Divider(),
                   ],
                 ),
               )),
