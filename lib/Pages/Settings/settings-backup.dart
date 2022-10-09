@@ -1,7 +1,5 @@
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -9,11 +7,8 @@ import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Data/SettingDefaults.dart';
-import 'package:yomu/Data/Theme.dart';
+import 'package:yomu/Data/Setting.dart';
 
 class ImportExportSettings extends StatefulWidget {
   const ImportExportSettings({Key? key}) : super(key: key);
@@ -23,55 +18,36 @@ class ImportExportSettings extends StatefulWidget {
 }
 
 class _ImportExportSettingsState extends State<ImportExportSettings> {
-  String exportLocation = "";
-  StreamingSharedPreferences? preferences;
+  String backupExportLocation = "";
+  var isarInstance = Isar.getInstance('isarInstance')!;
 
   @override
   void initState() {
-    getSharedPrefs();
+    // TODO: set exportLocation
+    updateSettings();
     super.initState();
   }
 
-  getSharedPrefs() async {
-    StreamingSharedPreferences.instance.then((value) {
-      setState(() {
-        preferences = value;
-        exportLocation = jsonDecode(value
-                .getString("settings-backup",
-                    defaultValue: jsonEncode(BackupSettingsMap))
-                .getValue())['export_location']
-            .toString();
-      });
+  updateSettings() async {
+    var settings = await isarInstance.settings.get(0);
+    setState(() {
+      backupExportLocation = settings!.backupExportLocation;
     });
   }
 
   void export(BuildContext context) async {
     try {
       if (await Permission.manageExternalStorage.request().isGranted) {
-        var isarInstance = Isar.getInstance("mangaInstance");
+        var isarInstance = Isar.getInstance("isarInstance");
         var jsonContent = await isarInstance!.mangas
             .filter()
             .inLibraryEqualTo(true)
             .exportJson();
         var content = jsonEncode(jsonContent);
 
-        String? backupDirectory = await preferences
-            ?.getString("settings-backup",
-                defaultValue: jsonEncode(BackupSettingsMap))
-            .getValue();
-
         DateTime now = DateTime.now();
         String backupLocation =
-            jsonDecode(backupDirectory!)['export_location'] +
-                "/YomuBackup" +
-                "-" +
-                now.day.toString() +
-                "-" +
-                now.month.toString() +
-                "-" +
-                now.year.toString() +
-                "-" +
-                now.millisecond.toString();
+            "$backupExportLocation/YomuBackup-${now.day}-${now.month}-${now.year}-${now.millisecond}";
 
         File file = await File(backupLocation).create(recursive: true);
 
@@ -91,7 +67,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
   void import(BuildContext context) async {
     try {
       if (await Permission.manageExternalStorage.request().isGranted) {
-        var isarInstance = Isar.getInstance("mangaInstance");
+        var isarInstance = Isar.getInstance("isarInstance");
 
         var backupFileLocation = await FilePicker.platform.pickFiles();
 
@@ -126,12 +102,14 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory != null) {
       if (selectedDirectory != "/") {
-        BackupSettingsMap.update(
-            "export_location", (value) => selectedDirectory.toString());
-        await preferences?.setString(
-            "settings-backup", jsonEncode(BackupSettingsMap));
+        await isarInstance.writeTxn(() async {
+          var settings = await isarInstance.settings.get(0);
+          await isarInstance.settings.put(
+              settings!.copyWith(newBackupExportLocation: selectedDirectory));
+        });
+
         setState(() {
-          exportLocation = selectedDirectory.toString();
+          backupExportLocation = selectedDirectory.toString();
         });
       }
     }
@@ -146,14 +124,14 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           title: const Text('Export locally'),
           content: SingleChildScrollView(
             child: ListBody(
-                children: exportLocation.isNotEmpty
-                    ? [Text('Exporting to:'), Text(exportLocation)]
+                children: backupExportLocation.isNotEmpty
+                    ? [Text('Exporting to:'), Text(backupExportLocation)]
                     : [Text("Please set \"Export Location\" prior to this.")]),
           ),
           actions: <Widget>[
             TextButton(
               child: const Text('Export'),
-              onPressed: exportLocation.isNotEmpty
+              onPressed: backupExportLocation.isNotEmpty
                   ? () {
                       export(context);
                       Navigator.of(context).pop();
@@ -168,78 +146,70 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
 
   @override
   Widget build(BuildContext context) {
-    return preferences != null
-        ? PreferenceBuilder(
-            preference: preferences!.getString("settings-backup",
-                defaultValue: jsonEncode(BackupSettingsMap)),
-            builder: (ctx, value) => Scaffold(
-              appBar: AppBar(title: const Text("Backup")),
-              body: ListView(children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 12.0, top: 12.0),
-                  child: Text(
-                    "Export",
-                    style: TextStyle(
-                        color: context.theme.colorScheme.primary,
-                        fontWeight: FontWeight.w500),
-                  ),
-                ),
-                ListTile(
-                  title: Text("Export Location"),
-                  leading: Icon(Icons.folder_outlined),
-                  subtitle: Text(
-                    jsonDecode(value)['export_location'].toString(),
-                  ),
-                  onTap: () {
-                    pickDirectoryLocation();
-                  },
-                ),
-                ListTile(
-                  title: Text("Local Export"),
-                  leading: Icon(Icons.phone_android_outlined),
-                  subtitle: Text(
-                    "Export to local storage.",
-                  ),
-                  trailing: Icon(Icons.arrow_forward),
-                  onTap: () {
-                    _showMyDialog();
-                  },
-                ),
-                // TODO: ADD CLOUD EXPORT SUPPORT
-                // ListTile(
-                //   title: Text("Cloud Export"),
-                //   leading: Icon(Icons.cloud_upload_outlined),
-                //   subtitle: Text(
-                //     "Export to Google Drive.",
-                //   ),
-                //   trailing: Icon(Icons.arrow_forward),
-                //   onTap: () {},
-                // ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 12.0, top: 12.0),
-                  child: Text(
-                    "Import",
-                    style: TextStyle(
-                        color: context.theme.colorScheme.primary,
-                        fontWeight: FontWeight.w500),
-                  ),
-                ),
-                ListTile(
-                  title: Text("Local Import"),
-                  leading: Icon(Icons.import_export_outlined),
-                  subtitle: Text(
-                    "Import backup from local storage.",
-                  ),
-                  trailing: Icon(Icons.arrow_forward),
-                  onTap: () {
-                    import(context);
-                  },
-                ),
-              ]),
-            ),
-          )
-        : const Center(
-            child: CircularProgressIndicator(),
-          );
+    return Scaffold(
+      appBar: AppBar(title: const Text("Backup")),
+      body: ListView(children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 12.0, top: 12.0),
+          child: Text(
+            "Export",
+            style: TextStyle(
+                color: context.theme.colorScheme.primary,
+                fontWeight: FontWeight.w500),
+          ),
+        ),
+        ListTile(
+          title: Text("Export Location"),
+          leading: Icon(Icons.folder_outlined),
+          subtitle: Text(
+            backupExportLocation,
+          ),
+          onTap: () {
+            pickDirectoryLocation();
+          },
+        ),
+        ListTile(
+          title: Text("Local Export"),
+          leading: Icon(Icons.phone_android_outlined),
+          subtitle: Text(
+            "Export to local storage.",
+          ),
+          trailing: Icon(Icons.arrow_forward),
+          onTap: () {
+            _showMyDialog();
+          },
+        ),
+        // TODO: ADD CLOUD EXPORT SUPPORT
+        // ListTile(
+        //   title: Text("Cloud Export"),
+        //   leading: Icon(Icons.cloud_upload_outlined),
+        //   subtitle: Text(
+        //     "Export to Google Drive.",
+        //   ),
+        //   trailing: Icon(Icons.arrow_forward),
+        //   onTap: () {},
+        // ),
+        Padding(
+          padding: const EdgeInsets.only(left: 12.0, top: 12.0),
+          child: Text(
+            "Import",
+            style: TextStyle(
+                color: context.theme.colorScheme.primary,
+                fontWeight: FontWeight.w500),
+          ),
+        ),
+        ListTile(
+          title: Text("Local Import"),
+          leading: Icon(Icons.import_export_outlined),
+          subtitle: Text(
+            "Import backup from local storage.",
+          ),
+          trailing: Icon(Icons.arrow_forward),
+          onTap: () {
+            import(context);
+          },
+        ),
+      ]),
+    );
   }
 }

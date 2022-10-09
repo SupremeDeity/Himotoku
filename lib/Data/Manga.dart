@@ -1,5 +1,4 @@
 import 'package:isar/isar.dart';
-import 'package:yomu/Extensions/extension.dart';
 
 part 'Manga.g.dart';
 

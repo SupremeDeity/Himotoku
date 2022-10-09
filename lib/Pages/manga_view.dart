@@ -23,7 +23,7 @@ class _MangaViewState extends State<MangaView> {
   int causeUpdate = 0;
 
   bool isInLibrary = false;
-  var isarInstance = Isar.getInstance('mangaInstance');
+  var isarInstance = Isar.getInstance('isarInstance');
   Manga? manga;
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =

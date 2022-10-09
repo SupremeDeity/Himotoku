@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
+import 'package:isar/isar.dart';
+import 'package:logger/logger.dart';
+import 'package:yomu/Data/Setting.dart';
 import 'package:yomu/Data/Theme.dart';
 
 class SettingsTheme extends StatefulWidget {
@@ -12,52 +13,60 @@ class SettingsTheme extends StatefulWidget {
 }
 
 class _SettingsThemeState extends State<SettingsTheme> {
-  StreamingSharedPreferences? preferences;
+  var isarInstance = Isar.getInstance('isarInstance')!;
+  var cancelSubscription;
+  String? theme;
 
   @override
   void initState() {
-    getSharedPrefs();
-
+    try {
+      Stream<void> settingsChanged =
+          isarInstance.settings.watchObjectLazy(0, fireImmediately: true);
+      cancelSubscription = settingsChanged.listen((event) {
+        updateSettings();
+      });
+    } catch (e) {
+      Logger logger = Logger();
+      logger.e(e);
+    }
     super.initState();
   }
 
-  getSharedPrefs() async {
-    StreamingSharedPreferences.instance.then((value) {
-      setState(() {
-        preferences = value;
-      });
+  updateSettings() async {
+    var settings = await isarInstance.settings.get(0);
+    setState(() {
+      theme = settings!.theme;
     });
   }
 
   @override
+  void dispose() {
+    cancelSubscription.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return preferences != null
-        ? PreferenceBuilder(
-            preference: preferences!.getString("theme",
-                defaultValue: context.theme.brightness == Brightness.dark
-                    ? "Default Dark"
-                    : "Default Light"),
-            builder: (context, theme) => Scaffold(
-              appBar: AppBar(title: const Text("Theme")),
-              body: ListView(
-                children: List.generate(themeMap.length, (index) {
-                  return ListTile(
-                    title: Text(themeMap.keys.elementAt(index)),
-                    leading: Radio(
-                        value: themeMap.keys.elementAt(index),
-                        groupValue: theme,
-                        onChanged: (value) async {
-                          await preferences!.setString('theme', value!);
-                          Get.changeTheme(themeMap[value]!);
-                        }),
-                  );
+    return Scaffold(
+      appBar: AppBar(title: const Text("Theme")),
+      body: ListView(
+        children: List.generate(themeMap.length, (index) {
+          return ListTile(
+            title: Text(themeMap.keys.elementAt(index)),
+            leading: Radio(
+                value: themeMap.keys.elementAt(index),
+                groupValue: theme,
+                onChanged: (value) async {
+                  await isarInstance.writeTxn(() async {
+                    var settings = await isarInstance.settings.get(0);
+                    await isarInstance.settings
+                        .put(settings!.copyWith(newTheme: value));
+                  });
+                  Get.changeTheme(themeMap[value]!);
                 }),
-              ),
-            ),
-          )
-        : Center(
-            child: CircularProgressIndicator(
-            color: context.theme.colorScheme.secondary,
-          ));
+          );
+        }),
+      ),
+    );
   }
 }

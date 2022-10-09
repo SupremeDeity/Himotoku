@@ -61,7 +61,7 @@ class Manganato extends Extension {
       var q3 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
       // var mangaBox = await Hive.openBox<Manga>('mangaBox');
-      var isarInstance = Isar.getInstance('mangaInstance');
+      var isarInstance = Isar.getInstance('isarInstance');
 
       try {
         final allManga = isarInstance?.mangas;

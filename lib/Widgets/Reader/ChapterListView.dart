@@ -6,9 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
-import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Data/SettingDefaults.dart';
+import 'package:yomu/Data/Setting.dart';
 import 'package:yomu/Extensions/ExtensionHelper.dart';
 
 class ChapterListView extends StatefulWidget {
@@ -24,9 +23,9 @@ class ChapterListView extends StatefulWidget {
 class _ChapterListViewState extends State<ChapterListView> {
   bool isFocused = false;
   bool isRead = false;
-  var isarInstance = Isar.getInstance('mangaInstance');
+  var isarInstance = Isar.getInstance('isarInstance')!;
   List<String> pages = [];
-  Map<String, dynamic> prefs = {};
+  bool fullscreen = false;
 
   final ScrollController _scrollController = ScrollController();
 
@@ -38,8 +37,7 @@ class _ChapterListViewState extends State<ChapterListView> {
 
   @override
   void initState() {
-    getSharedPrefs();
-
+    updateSettings();
     // Check if page is already read.
     setState(() {
       isRead = widget.manga.chapters[widget.chapterIndex].isRead;
@@ -60,6 +58,16 @@ class _ChapterListViewState extends State<ChapterListView> {
     super.initState();
   }
 
+  updateSettings() async {
+    var settings = await isarInstance.settings.get(0);
+    setState(() {
+      fullscreen = settings!.fullscreen;
+    });
+    if (fullscreen) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    }
+  }
+
   getPages() async {
     try {
       final newItems = await ExtensionsMap[widget.manga.extensionSource]!
@@ -78,29 +86,14 @@ class _ChapterListViewState extends State<ChapterListView> {
     setState(() {
       isRead = true;
     });
-    await isarInstance!.writeTxn(() {
+    await isarInstance.writeTxn(() {
       widget.manga.chapters[widget.chapterIndex].isRead = true;
-      return isarInstance!.mangas.put(widget.manga);
+      return isarInstance.mangas.put(widget.manga);
     });
   }
 
   setCurrentScroll(double value) {
     _scrollController.jumpTo(value);
-  }
-
-  getSharedPrefs() async {
-    await StreamingSharedPreferences.instance.then((value) {
-      setState(() {
-        prefs = jsonDecode(value
-            .getString("settings-reader",
-                defaultValue: jsonEncode(ReaderSettingsMap))
-            .getValue());
-      });
-
-      if (prefs['fullscreen'].toString() == "true") {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-      }
-    });
   }
 
   CachedNetworkImage ChapterPage(int index) {
@@ -197,55 +190,51 @@ class _ChapterListViewState extends State<ChapterListView> {
 
   @override
   Widget build(BuildContext context) {
-    return prefs.isNotEmpty
-        ? Scaffold(
-            extendBodyBehindAppBar: true,
-            body: pages.isNotEmpty
-                ? Stack(
-                    children: [
-                      GestureDetector(
-                          onTap: () {
-                            if ((prefs['fullscreen'].toString() == "true")) {
-                              if (!isFocused) {
-                                SystemChrome.setEnabledSystemUIMode(
-                                    SystemUiMode.edgeToEdge);
-                              } else {
-                                SystemChrome.setEnabledSystemUIMode(
-                                    SystemUiMode.immersive);
-                              }
-                            }
-                            setState(() {
-                              isFocused = !isFocused;
-                            });
-                          },
-                          child: ListView(
-                            // cacheExtent: 200,
-                            controller: _scrollController,
-                            children: List.generate(
-                                pages.length, (index) => ChapterPage(index)),
-                          )),
-                      isFocused
-                          ? Align(
-                              alignment: AlignmentDirectional.bottomEnd,
-                              child: SafeArea(
-                                bottom: true,
-                                left: false,
-                                right: false,
-                                top: false,
-                                child: FooterView(context),
-                              ),
-                            )
-                          : Container(),
-                      isFocused ? HeaderView(context) : Container()
-                    ],
-                  )
-                : Center(
-                    child: CircularProgressIndicator(
-                    color: context.theme.colorScheme.secondary,
-                  )),
-          )
-        : const Center(
-            child: CircularProgressIndicator(),
-          );
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      body: pages.isNotEmpty
+          ? Stack(
+              children: [
+                GestureDetector(
+                    onTap: () {
+                      if (fullscreen) {
+                        if (!isFocused) {
+                          SystemChrome.setEnabledSystemUIMode(
+                              SystemUiMode.edgeToEdge);
+                        } else {
+                          SystemChrome.setEnabledSystemUIMode(
+                              SystemUiMode.immersive);
+                        }
+                      }
+                      setState(() {
+                        isFocused = !isFocused;
+                      });
+                    },
+                    child: ListView(
+                      // cacheExtent: 200,
+                      controller: _scrollController,
+                      children: List.generate(
+                          pages.length, (index) => ChapterPage(index)),
+                    )),
+                isFocused
+                    ? Align(
+                        alignment: AlignmentDirectional.bottomEnd,
+                        child: SafeArea(
+                          bottom: true,
+                          left: false,
+                          right: false,
+                          top: false,
+                          child: FooterView(context),
+                        ),
+                      )
+                    : Container(),
+                isFocused ? HeaderView(context) : Container()
+              ],
+            )
+          : Center(
+              child: CircularProgressIndicator(
+              color: context.theme.colorScheme.secondary,
+            )),
+    );
   }
 }

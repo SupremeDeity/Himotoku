@@ -1,14 +1,9 @@
-import 'dart:math';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Data/Theme.dart';
 import 'package:yomu/Widgets/BottomNavBar.dart';
 import 'package:yomu/Widgets/Library/ComfortableTile.dart';
-import 'package:yomu/Widgets/SourceExplore/MangaGridView.dart';
 
 class Library extends StatefulWidget {
   const Library({Key? key}) : super(key: key);
@@ -19,7 +14,8 @@ class Library extends StatefulWidget {
 
 class _LibraryState extends State<Library> {
   List<Manga> mangaInLibrary = [];
-  var isarInstance = Isar.getInstance('mangaInstance');
+  var cancelSubscription;
+  var isarInstance = Isar.getInstance('isarInstance');
 
   getLibrary() async {
     var library =
@@ -34,11 +30,17 @@ class _LibraryState extends State<Library> {
   void initState() {
     Stream<void> instanceChanged =
         isarInstance!.mangas.watchLazy(fireImmediately: true);
-    instanceChanged.listen((event) {
+    cancelSubscription = instanceChanged.listen((event) {
       getLibrary();
     });
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    cancelSubscription.cancel();
+    super.dispose();
   }
 
   @override
@@ -124,7 +126,7 @@ class _LibraryState extends State<Library> {
 }
 
 class CustomSearchClass extends SearchDelegate {
-  var isarInstance = Isar.getInstance('mangaInstance');
+  var isarInstance = Isar.getInstance('isarInstance');
   var results = [];
 
   @override

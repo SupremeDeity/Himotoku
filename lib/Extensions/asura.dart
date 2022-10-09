@@ -7,7 +7,7 @@ import 'package:html/parser.dart' show parse;
 
 class Asura extends Extension {
   final _baseChapterListQuery = "#chapterlist .eph-num a";
-  final _baseUrl = "asurascans.com";
+  final _baseUrl = "asura.gg";
   final _chapterPageListQuery = "p > img";
   final _defaultSort = "/manga";
   final _mangaAuthorQuery = ".fmed span";
@@ -63,7 +63,7 @@ class Asura extends Extension {
       // Query4: Gets synopsis
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
-      var isarInstance = Isar.getInstance('mangaInstance');
+      var isarInstance = Isar.getInstance('isarInstance');
 
       try {
         final allManga = isarInstance?.mangas;
@@ -93,7 +93,7 @@ class Asura extends Extension {
           authorName: q1[1].previousElementSibling?.text.trim() == "Author"
               ? q1[1].text.trim()
               : null,
-          mangaStudio: q1[1].previousElementSibling?.text.trim() == "Artist"
+          mangaStudio: q1[2].previousElementSibling?.text.trim() == "Artist"
               ? q1[2].text.trim()
               : null,
           synopsis: q4?.text.trim() ?? "",
@@ -102,7 +102,6 @@ class Asura extends Extension {
           id: _manga.isNotEmpty ? _manga[0].id : null,
           inLibrary: _manga.isNotEmpty ? _manga[0].inLibrary : null,
         );
-        print(updatedManga.mangaStudio);
 
         await isarInstance?.writeTxn(() async {
           await allManga.put(updatedManga);
@@ -163,7 +162,7 @@ class Asura extends Extension {
 
   @override
   String get iconUrl =>
-      "https://www.asurascans.com/wp-content/uploads/2021/03/Group_1.png";
+      "https://asura.gg/wp-content/uploads/2021/03/Group_1.png";
 
   @override
   String get name => "Asura Scans";

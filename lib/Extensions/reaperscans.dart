@@ -65,7 +65,7 @@ class ReaperScans extends Extension {
       // Query4: Gets synopsis
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
-      var isarInstance = Isar.getInstance('mangaInstance');
+      var isarInstance = Isar.getInstance('isarInstance');
 
       Manga updatedManga = Manga(
         extensionSource: name,
