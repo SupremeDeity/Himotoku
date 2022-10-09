@@ -45,6 +45,7 @@ class _YomuMainState extends State<YomuMain> {
     var currentSettings = await isarInstance.settings.get(0);
 
     if (currentSettings == null) {
+      print("first time init");
       await isarInstance.writeTxn(() async {
         await isarInstance.settings
             .put(Setting().copyWith(newTheme: defaultTheme));
@@ -53,8 +54,8 @@ class _YomuMainState extends State<YomuMain> {
 
     logger.i("Is DarkMode default: $isDarkMode");
 
-    logger.i("Using theme: ${currentSettings!.theme}");
-    Get.changeTheme(themeMap[currentSettings.theme]!);
+    logger.i("Using theme: ${currentSettings?.theme}");
+    Get.changeTheme(themeMap[currentSettings?.theme ?? defaultTheme]!);
     logger.i("Initialized app, removing splash screen.");
     FlutterNativeSplash.remove();
   }
