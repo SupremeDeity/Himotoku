@@ -22,13 +22,30 @@ const SettingSchema = CollectionSchema(
       name: r'backupExportLocation',
       type: IsarType.string,
     ),
-    r'fullscreen': PropertySchema(
+    r'filterOptions': PropertySchema(
       id: 1,
+      name: r'filterOptions',
+      type: IsarType.object,
+      target: r'FilterOptions',
+    ),
+    r'fullscreen': PropertySchema(
+      id: 2,
       name: r'fullscreen',
       type: IsarType.bool,
     ),
+    r'sortSettings': PropertySchema(
+      id: 3,
+      name: r'sortSettings',
+      type: IsarType.byte,
+      enumMap: _SettingsortSettingsEnumValueMap,
+    ),
+    r'splitTallImages': PropertySchema(
+      id: 4,
+      name: r'splitTallImages',
+      type: IsarType.bool,
+    ),
     r'theme': PropertySchema(
-      id: 2,
+      id: 5,
       name: r'theme',
       type: IsarType.string,
     )
@@ -40,11 +57,11 @@ const SettingSchema = CollectionSchema(
   idName: r'id',
   indexes: {},
   links: {},
-  embeddedSchemas: {},
+  embeddedSchemas: {r'FilterOptions': FilterOptionsSchema},
   getId: _settingGetId,
   getLinks: _settingGetLinks,
   attach: _settingAttach,
-  version: '3.0.0',
+  version: '3.0.2',
 );
 
 int _settingEstimateSize(
@@ -54,6 +71,9 @@ int _settingEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.backupExportLocation.length * 3;
+  bytesCount += 3 +
+      FilterOptionsSchema.estimateSize(
+          object.filterOptions, allOffsets[FilterOptions]!, allOffsets);
   bytesCount += 3 + object.theme.length * 3;
   return bytesCount;
 }
@@ -65,8 +85,16 @@ void _settingSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.backupExportLocation);
-  writer.writeBool(offsets[1], object.fullscreen);
-  writer.writeString(offsets[2], object.theme);
+  writer.writeObject<FilterOptions>(
+    offsets[1],
+    allOffsets,
+    FilterOptionsSchema.serialize,
+    object.filterOptions,
+  );
+  writer.writeBool(offsets[2], object.fullscreen);
+  writer.writeByte(offsets[3], object.sortSettings.index);
+  writer.writeBool(offsets[4], object.splitTallImages);
+  writer.writeString(offsets[5], object.theme);
 }
 
 Setting _settingDeserialize(
@@ -77,9 +105,19 @@ Setting _settingDeserialize(
 ) {
   final object = Setting();
   object.backupExportLocation = reader.readString(offsets[0]);
-  object.fullscreen = reader.readBool(offsets[1]);
+  object.filterOptions = reader.readObjectOrNull<FilterOptions>(
+        offsets[1],
+        FilterOptionsSchema.deserialize,
+        allOffsets,
+      ) ??
+      FilterOptions();
+  object.fullscreen = reader.readBool(offsets[2]);
   object.id = id;
-  object.theme = reader.readString(offsets[2]);
+  object.sortSettings =
+      _SettingsortSettingsValueEnumMap[reader.readByteOrNull(offsets[3])] ??
+          LibrarySort.az;
+  object.splitTallImages = reader.readBool(offsets[4]);
+  object.theme = reader.readString(offsets[5]);
   return object;
 }
 
@@ -93,13 +131,38 @@ P _settingDeserializeProp<P>(
     case 0:
       return (reader.readString(offset)) as P;
     case 1:
-      return (reader.readBool(offset)) as P;
+      return (reader.readObjectOrNull<FilterOptions>(
+            offset,
+            FilterOptionsSchema.deserialize,
+            allOffsets,
+          ) ??
+          FilterOptions()) as P;
     case 2:
+      return (reader.readBool(offset)) as P;
+    case 3:
+      return (_SettingsortSettingsValueEnumMap[reader.readByteOrNull(offset)] ??
+          LibrarySort.az) as P;
+    case 4:
+      return (reader.readBool(offset)) as P;
+    case 5:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _SettingsortSettingsEnumValueMap = {
+  'az': 0,
+  'za': 1,
+  'status': 2,
+  'statusDesc': 3,
+};
+const _SettingsortSettingsValueEnumMap = {
+  0: LibrarySort.az,
+  1: LibrarySort.za,
+  2: LibrarySort.status,
+  3: LibrarySort.statusDesc,
+};
 
 Id _settingGetId(Setting object) {
   return object.id ?? Isar.autoIncrement;
@@ -404,6 +467,69 @@ extension SettingQueryFilter
     });
   }
 
+  QueryBuilder<Setting, Setting, QAfterFilterCondition> sortSettingsEqualTo(
+      LibrarySort value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sortSettings',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QAfterFilterCondition> sortSettingsGreaterThan(
+    LibrarySort value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'sortSettings',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QAfterFilterCondition> sortSettingsLessThan(
+    LibrarySort value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'sortSettings',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QAfterFilterCondition> sortSettingsBetween(
+    LibrarySort lower,
+    LibrarySort upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'sortSettings',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QAfterFilterCondition> splitTallImagesEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'splitTallImages',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<Setting, Setting, QAfterFilterCondition> themeEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -536,7 +662,14 @@ extension SettingQueryFilter
 }
 
 extension SettingQueryObject
-    on QueryBuilder<Setting, Setting, QFilterCondition> {}
+    on QueryBuilder<Setting, Setting, QFilterCondition> {
+  QueryBuilder<Setting, Setting, QAfterFilterCondition> filterOptions(
+      FilterQuery<FilterOptions> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'filterOptions');
+    });
+  }
+}
 
 extension SettingQueryLinks
     on QueryBuilder<Setting, Setting, QFilterCondition> {}
@@ -564,6 +697,30 @@ extension SettingQuerySortBy on QueryBuilder<Setting, Setting, QSortBy> {
   QueryBuilder<Setting, Setting, QAfterSortBy> sortByFullscreenDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'fullscreen', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QAfterSortBy> sortBySortSettings() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sortSettings', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QAfterSortBy> sortBySortSettingsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sortSettings', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QAfterSortBy> sortBySplitTallImages() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'splitTallImages', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QAfterSortBy> sortBySplitTallImagesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'splitTallImages', Sort.desc);
     });
   }
 
@@ -619,6 +776,30 @@ extension SettingQuerySortThenBy
     });
   }
 
+  QueryBuilder<Setting, Setting, QAfterSortBy> thenBySortSettings() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sortSettings', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QAfterSortBy> thenBySortSettingsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sortSettings', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QAfterSortBy> thenBySplitTallImages() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'splitTallImages', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QAfterSortBy> thenBySplitTallImagesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'splitTallImages', Sort.desc);
+    });
+  }
+
   QueryBuilder<Setting, Setting, QAfterSortBy> thenByTheme() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'theme', Sort.asc);
@@ -648,6 +829,18 @@ extension SettingQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Setting, Setting, QDistinct> distinctBySortSettings() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'sortSettings');
+    });
+  }
+
+  QueryBuilder<Setting, Setting, QDistinct> distinctBySplitTallImages() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'splitTallImages');
+    });
+  }
+
   QueryBuilder<Setting, Setting, QDistinct> distinctByTheme(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -671,9 +864,28 @@ extension SettingQueryProperty
     });
   }
 
+  QueryBuilder<Setting, FilterOptions, QQueryOperations>
+      filterOptionsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'filterOptions');
+    });
+  }
+
   QueryBuilder<Setting, bool, QQueryOperations> fullscreenProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'fullscreen');
+    });
+  }
+
+  QueryBuilder<Setting, LibrarySort, QQueryOperations> sortSettingsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'sortSettings');
+    });
+  }
+
+  QueryBuilder<Setting, bool, QQueryOperations> splitTallImagesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'splitTallImages');
     });
   }
 
@@ -683,3 +895,85 @@ extension SettingQueryProperty
     });
   }
 }
+
+// **************************************************************************
+// IsarEmbeddedGenerator
+// **************************************************************************
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters
+
+const FilterOptionsSchema = Schema(
+  name: r'FilterOptions',
+  id: 540173973252556702,
+  properties: {
+    r'started': PropertySchema(
+      id: 0,
+      name: r'started',
+      type: IsarType.bool,
+    )
+  },
+  estimateSize: _filterOptionsEstimateSize,
+  serialize: _filterOptionsSerialize,
+  deserialize: _filterOptionsDeserialize,
+  deserializeProp: _filterOptionsDeserializeProp,
+);
+
+int _filterOptionsEstimateSize(
+  FilterOptions object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  return bytesCount;
+}
+
+void _filterOptionsSerialize(
+  FilterOptions object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeBool(offsets[0], object.started);
+}
+
+FilterOptions _filterOptionsDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = FilterOptions();
+  object.started = reader.readBool(offsets[0]);
+  return object;
+}
+
+P _filterOptionsDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readBool(offset)) as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+extension FilterOptionsQueryFilter
+    on QueryBuilder<FilterOptions, FilterOptions, QFilterCondition> {
+  QueryBuilder<FilterOptions, FilterOptions, QAfterFilterCondition>
+      startedEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'started',
+        value: value,
+      ));
+    });
+  }
+}
+
+extension FilterOptionsQueryObject
+    on QueryBuilder<FilterOptions, FilterOptions, QFilterCondition> {}

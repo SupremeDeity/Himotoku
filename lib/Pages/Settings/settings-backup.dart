@@ -23,7 +23,6 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
 
   @override
   void initState() {
-    // TODO: set exportLocation
     updateSettings();
     super.initState();
   }
@@ -53,7 +52,6 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
 
         await file.writeAsBytes(gzip.encode(utf8.encode(content)));
         var snackbar = SnackBar(content: Text("Saved to $backupLocation"));
-        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
       }
     } catch (e) {

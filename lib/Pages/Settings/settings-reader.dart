@@ -16,6 +16,7 @@ class ReaderSettings extends StatefulWidget {
 class _ReaderSettingsState extends State<ReaderSettings> {
   var isarInstance = Isar.getInstance('isarInstance')!;
   bool? fullscreen;
+  bool? splitTallImages;
   var cancelSubscription;
 
   @override
@@ -36,7 +37,8 @@ class _ReaderSettingsState extends State<ReaderSettings> {
   updateSettings() async {
     var settings = await isarInstance.settings.get(0);
     setState(() {
-      fullscreen = settings!.fullscreen;
+      splitTallImages = settings!.splitTallImages;
+      fullscreen = settings.fullscreen;
     });
   }
 
@@ -66,7 +68,7 @@ class _ReaderSettingsState extends State<ReaderSettings> {
         ),
         ListTile(
             title: Text("Fullscreen"),
-            subtitle: Text("Go fullscreen mode while reading"),
+            subtitle: Text("Go fullscreen mode while reading."),
             trailing: Switch(
                 value: fullscreen ?? false,
                 onChanged: (value) async {
@@ -75,7 +77,34 @@ class _ReaderSettingsState extends State<ReaderSettings> {
                     await isarInstance.settings
                         .put(settings!.copyWith(newFullscreen: value));
                   });
-                }))
+                })),
+        // Padding(
+        //   padding: const EdgeInsets.only(left: 12.0, top: 12.0, bottom: 12.0),
+        //   child: Row(
+        //     children: [
+        //       Text(
+        //         "Quality & Performance",
+        //         style: TextStyle(
+        //             color: context.theme.colorScheme.primary,
+        //             fontWeight: FontWeight.w500),
+        //       ),
+        //     ],
+        //   ),
+        // ),
+        // ListTile(
+        //     title: Text("Split tall images"),
+        //     isThreeLine: true,
+        //     subtitle: Text(
+        //         "Splits tall images into smaller parts.\nImproves quality but impacts loading time."),
+        //     trailing: Switch(
+        //         value: splitTallImages ?? false,
+        //         onChanged: (value) async {
+        //           await isarInstance.writeTxn(() async {
+        //             var settings = await isarInstance.settings.get(0);
+        //             await isarInstance.settings
+        //                 .put(settings!.copyWith(newSplitTallImages: value));
+        //           });
+        //         }))
       ]),
     );
   }

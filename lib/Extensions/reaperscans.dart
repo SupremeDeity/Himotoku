@@ -16,6 +16,7 @@ class ReaperScans extends Extension {
       "a[href*=\"comic\"].transition.relative"; // base query to get manga list
 
   final _mangaSynopsisQuery = ".prose";
+  final _mangaStatusQuery = ".whitespace-nowrap.text-neutral-200";
 
   @override
   String get baseUrl => _baseUrl;
@@ -61,6 +62,7 @@ class ReaperScans extends Extension {
       var q3 = parsedHtml.querySelectorAll(_baseChapterListQuery);
       // Query4: Gets synopsis
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
+      var q5 = parsedHtml.querySelectorAll(_mangaStatusQuery);
 
       var isarInstance = Isar.getInstance('isarInstance');
 
@@ -75,7 +77,6 @@ class ReaperScans extends Extension {
             .findAll();
 
         for (int x = 0; x < q3.length; x++) {
-          print(q2[x].text);
           var chapterName = q2[x].text;
           var chapterLink = q3[x].attributes['href']!;
 
@@ -93,11 +94,11 @@ class ReaperScans extends Extension {
         }
 
         Manga updatedManga = manga.copyWith(
-          synopsis: q4?.text.trim() ?? "",
-          chapters: chapterList,
-          id: _manga.isNotEmpty ? _manga[0].id : null,
-          inLibrary: _manga.isNotEmpty ? _manga[0].inLibrary : null,
-        );
+            synopsis: q4?.text.trim() ?? "",
+            chapters: chapterList,
+            id: _manga.isNotEmpty ? _manga[0].id : null,
+            inLibrary: _manga.isNotEmpty ? _manga[0].inLibrary : null,
+            status: q5[1].text.trim());
 
         await isarInstance?.writeTxn(() async {
           await allManga.put(updatedManga);

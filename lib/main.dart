@@ -9,13 +9,7 @@ import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Setting.dart';
 import 'package:yomu/Data/Theme.dart';
 import 'package:yomu/Pages/library.dart';
-
-// TODO: 3) Add Sort to Library
-// TODO: 4) Add Sort to SourceExplore
-// TODO: 5) Add Default sort setting of library to Settings
-// TODO: 6) Fix ReaperScans
-// TODO: 7) Add verbose logging while in release
-// TODO: 8) Add "About"
+import 'package:yomu/test.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +17,7 @@ void main() async {
   await Isar.open(
     [MangaSchema, SettingSchema],
     name: "isarInstance",
+    compactOnLaunch: const CompactCondition(minRatio: 2.0),
   );
   runApp(const YomuMain());
 }
@@ -45,7 +40,6 @@ class _YomuMainState extends State<YomuMain> {
     var currentSettings = await isarInstance.settings.get(0);
 
     if (currentSettings == null) {
-      print("first time init");
       await isarInstance.writeTxn(() async {
         await isarInstance.settings
             .put(Setting().copyWith(newTheme: defaultTheme));

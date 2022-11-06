@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -9,6 +11,8 @@ import 'package:logger/logger.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Setting.dart';
 import 'package:yomu/Extensions/ExtensionHelper.dart';
+import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as imglib;
 
 class ChapterListView extends StatefulWidget {
   ChapterListView(this.manga, this.chapterIndex, {Key? key}) : super(key: key);
@@ -21,11 +25,14 @@ class ChapterListView extends StatefulWidget {
 }
 
 class _ChapterListViewState extends State<ChapterListView> {
+  int currentlyLoaded = 0;
+  bool fullscreen = false;
+  bool splitTallImages = false;
   bool isFocused = false;
   bool isRead = false;
   var isarInstance = Isar.getInstance('isarInstance')!;
-  List<String> pages = [];
-  bool fullscreen = false;
+  List<String> pageLinks = [];
+  List<dynamic> pages = [];
 
   final ScrollController _scrollController = ScrollController();
 
@@ -58,10 +65,49 @@ class _ChapterListViewState extends State<ChapterListView> {
     super.initState();
   }
 
+  split_load(int index) {
+    print("started");
+
+    if (!splitTallImages) {
+      if (mounted) {
+        setState(() {
+          pages[currentlyLoaded] = CachedNetworkImage(
+            httpHeaders: {"Referer": widget.manga.mangaLink},
+            imageUrl: pageLinks[index],
+            filterQuality: FilterQuality.medium,
+            errorWidget: (context, url, error) {
+              return Text("Error: $error");
+            },
+          );
+          currentlyLoaded++;
+        });
+        if (currentlyLoaded < pageLinks.length) {
+          split_load(currentlyLoaded);
+        }
+      }
+
+      return;
+    }
+
+    // Split & Load pages
+    compute(splitImage, pageLinks[index]).then(
+      (value) {
+        if (mounted) {
+          setState(() {
+            pages.addAll(value);
+            currentlyLoaded++;
+          });
+        }
+        // return value;
+      },
+    );
+  }
+
   updateSettings() async {
     var settings = await isarInstance.settings.get(0);
     setState(() {
       fullscreen = settings!.fullscreen;
+      splitTallImages = settings.splitTallImages;
     });
     if (fullscreen) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
@@ -73,8 +119,20 @@ class _ChapterListViewState extends State<ChapterListView> {
       final newItems = await ExtensionsMap[widget.manga.extensionSource]!
           .getChapterPageList(widget.manga.chapters[widget.chapterIndex].link!);
       setState(() {
-        pages = newItems;
+        pageLinks = newItems;
+        // TODO: WOWOW
       });
+
+      setState(() {
+        pages.add(List.generate(
+          pageLinks.length,
+          (_) {
+            return CircularProgressIndicator();
+          },
+        ));
+      });
+
+      split_load(currentlyLoaded);
     } catch (e) {
       var logger = Logger();
 
@@ -99,8 +157,7 @@ class _ChapterListViewState extends State<ChapterListView> {
   CachedNetworkImage ChapterPage(int index) {
     return CachedNetworkImage(
       httpHeaders: {"Referer": widget.manga.mangaLink},
-      fit: BoxFit.fitWidth,
-      imageUrl: pages[index],
+      imageUrl: pageLinks[index],
       filterQuality: FilterQuality.medium,
       errorWidget: (context, url, error) {
         return Text("Error: $error");
@@ -168,7 +225,7 @@ class _ChapterListViewState extends State<ChapterListView> {
               Icons.skip_previous_rounded,
             )),
         ElevatedButton.icon(
-            label: const Text("Next"),
+            label: Text("Next"),
             // color: context.theme.colorScheme
             //     .onSecondaryContainer,
             onPressed: widget.chapterIndex > 0
@@ -192,7 +249,7 @@ class _ChapterListViewState extends State<ChapterListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      body: pages.isNotEmpty
+      body: pageLinks.isNotEmpty
           ? Stack(
               children: [
                 GestureDetector(
@@ -210,12 +267,32 @@ class _ChapterListViewState extends State<ChapterListView> {
                         isFocused = !isFocused;
                       });
                     },
-                    child: ListView(
-                      // cacheExtent: 200,
-                      controller: _scrollController,
-                      children: List.generate(
-                          pages.length, (index) => ChapterPage(index)),
-                    )),
+                    child: pages.isNotEmpty
+                        ? ListView.builder(
+                            itemBuilder: (context, index) {
+                              print("index: $index");
+                              if (index < pages.length) {
+                                return pages[index];
+                              } else {
+                                return Container();
+                              }
+                              // else {
+                              //   return currentlyLoaded < pageLinks.length
+                              //       ? const Center(
+                              //           child: Padding(
+                              //             padding: EdgeInsets.symmetric(
+                              //                 vertical: 300),
+                              //             child: CircularProgressIndicator(),
+                              //           ),
+                              //         )
+                              //       : Container();
+                              // }
+                            },
+                            itemCount: pages.length + 1,
+                          )
+                        : const Center(
+                            child: CircularProgressIndicator(),
+                          )),
                 isFocused
                     ? Align(
                         alignment: AlignmentDirectional.bottomEnd,
@@ -228,7 +305,7 @@ class _ChapterListViewState extends State<ChapterListView> {
                         ),
                       )
                     : Container(),
-                isFocused ? HeaderView(context) : Container()
+                isFocused ? HeaderView(context) : Container(),
               ],
             )
           : Center(
@@ -237,4 +314,41 @@ class _ChapterListViewState extends State<ChapterListView> {
             )),
     );
   }
+}
+
+Future<List> splitImage(String url) async {
+  print("started split");
+  Uri uri = Uri.parse(url);
+
+  http.Response response =
+      await http.get(Uri.parse(url), headers: {"Referer": uri.authority});
+  Uint8List imagebytes = response.bodyBytes;
+
+  List<Image> outputImageList = <Image>[];
+  imglib.Image? image = imglib.decodeJpg(imagebytes);
+
+  // The max height before a image gets split
+  int maxHeight = 6000;
+
+  List<imglib.Image> pieceList = <imglib.Image>[];
+
+  int y = 0;
+
+  while (y < image!.height) {
+    int h = min(image.height - y, maxHeight);
+    pieceList.add(
+      imglib.copyCrop(image, 0, y, image.width, h),
+    );
+    y += h;
+  }
+
+  for (imglib.Image img in pieceList) {
+    outputImageList.add(Image.memory(
+      Uint8List.fromList(imglib.encodeJpg(img)),
+      fit: BoxFit.fitWidth,
+    ));
+  }
+  print("completed split");
+
+  return outputImageList;
 }

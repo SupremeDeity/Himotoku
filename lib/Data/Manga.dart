@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 import 'package:isar/isar.dart';
 
 part 'Manga.g.dart';

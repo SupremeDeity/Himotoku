@@ -12,6 +12,7 @@ class ComfortableTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         Get.to(() => MangaView(manga), transition: Transition.noTransition);
       },

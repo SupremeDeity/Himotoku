@@ -16,7 +16,10 @@ class Themes {
   }
 
   static ThemeData get defaultDark {
-    return ThemeData(useMaterial3: true, brightness: Brightness.dark);
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+    );
   }
 
   static ThemeData get defaultLight {

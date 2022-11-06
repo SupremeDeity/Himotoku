@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:isar/isar.dart';
@@ -47,9 +46,11 @@ class _MangaViewState extends State<MangaView> {
 
   initGetManga() async {
     var mangas = await isarInstance?.mangas
-        .where()
-        .mangaNameExtensionSourceEqualTo(widget.mangaInstance.mangaName,
-            widget.mangaInstance.extensionSource)
+        .filter()
+        .mangaNameEqualTo(
+          widget.mangaInstance.mangaName,
+        )
+        .extensionSourceEqualTo(widget.mangaInstance.extensionSource)
         .findAll();
     Manga m;
     if (mangas != null && mangas.isNotEmpty) {

@@ -31,8 +31,6 @@ class _MangaGridViewState extends State<MangaGridView> {
   Future<void> fetchPage(int pageKey) async {
     Logger logger = Logger();
     try {
-      print(pageKey);
-      print(widget.searchQuery);
       final newItems = await widget.extension
           .getMangaList(pageKey, searchQuery: widget.searchQuery);
       final isLastPage = newItems.length < 1;

@@ -10,7 +10,7 @@ class Settings extends StatelessWidget {
 
   final Map<String, dynamic> settingsMap = const {
     "Appearance": [Icons.palette, SettingsTheme()],
-    "Reader": [Icons.book, ReaderSettings()],
+    "Reader": [Icons.menu_book_rounded, ReaderSettings()],
     "Backup": [Icons.backup_outlined, ImportExportSettings()],
   };
 
