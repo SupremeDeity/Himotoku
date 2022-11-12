@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:yomu/Widgets/SourceExplore/MangaGridView.dart';
 

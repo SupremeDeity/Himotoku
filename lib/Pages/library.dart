@@ -1,9 +1,13 @@
-import 'package:cached_network_image/cached_network_image.dart';
+// ignore_for_file: non_constant_identifier_names
+
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:isar/isar.dart';
+import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Setting.dart';
+import 'package:yomu/Pages/explore.dart';
 import 'package:yomu/Widgets/BottomNavBar.dart';
 import 'package:yomu/Widgets/Library/ComfortableTile.dart';
 
@@ -15,25 +19,25 @@ class Library extends StatefulWidget {
 }
 
 class _LibraryState extends State<Library> {
-  FilterOptions? filterOptions;
-
-  var cancelSubscription;
-  var isarInstance = Isar.getInstance('isarInstance');
+  StreamSubscription<void>? cancelSubscription;
+  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
   List<Manga> mangaInLibrary = [];
-  // port to settings
   LibrarySort sortSettings = LibrarySort.az;
+  FilterOptions? filterOptions;
 
   @override
   void dispose() {
-    cancelSubscription.cancel();
+    cancelSubscription!.cancel();
     super.dispose();
   }
 
   updateSettings() async {
     var settings = await isarInstance?.settings.get(0);
     setState(() {
-      sortSettings = settings!.sortSettings;
-      filterOptions = settings.filterOptions;
+      sortSettings =
+          settings != null ? settings.sortSettings : DEFAULT_LIBRARY_SORT;
+      filterOptions =
+          settings != null ? settings.filterOptions : FilterOptions();
     });
     getLibrary();
   }
@@ -50,7 +54,6 @@ class _LibraryState extends State<Library> {
   }
 
   getLibrary() async {
-    print(filterOptions?.started);
     var inLibrary = isarInstance!.mangas
         .filter()
         .inLibraryEqualTo(true)
@@ -179,7 +182,7 @@ class _LibraryState extends State<Library> {
                       settings.filterOptions.copyWith(newStarted: value)));
             });
           },
-          title: Text("Started"),
+          title: const Text("Started"),
         )
       ],
     );
@@ -201,7 +204,7 @@ class _LibraryState extends State<Library> {
                         primary: false,
                         toolbarHeight: 0,
                         automaticallyImplyLeading: false,
-                        bottom: TabBar(
+                        bottom: const TabBar(
                           tabs: [
                             Tab(
                               text: "Sort",
@@ -222,9 +225,9 @@ class _LibraryState extends State<Library> {
               },
             );
           },
-          child: Icon(Icons.filter_list_rounded)),
+          child: const Icon(Icons.filter_list_rounded)),
       appBar: AppBar(
-        backgroundColor: context.theme.appBarTheme.backgroundColor,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         title: const Text("Library"),
         actions: [
           IconButton(
@@ -251,31 +254,28 @@ class _LibraryState extends State<Library> {
           : Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text("(ﾉಥ益ಥ）ﾉ ┻━┻",
+                children: [
+                  const Text("(ﾉಥ益ಥ）ﾉ ┻━┻",
                       style:
                           TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
-                  Text("You have nothing in your library."),
+                  const Text("You have nothing in your library."),
                   Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text.rich(
-                      TextSpan(children: [
-                        TextSpan(
-                            text: "Tip: ",
-                            style: TextStyle(fontWeight: FontWeight.w800)),
-                        TextSpan(
-                          text: "Navigate to ",
-                        ),
-                        TextSpan(
-                          text: "Explore",
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        TextSpan(
-                          text: " to add manga to library",
-                        )
-                      ]),
-                    ),
-                  ),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("Navigate to "),
+                          TextButton(
+                              onPressed: () => Navigator.of(context)
+                                  .pushReplacement(PageRouteBuilder(
+                                      pageBuilder: (_, __, ___) =>
+                                          const Explore(),
+                                      transitionDuration:
+                                          const Duration(milliseconds: 0))),
+                              child: const Text("Explore")),
+                          const Text("to add to your library.")
+                        ],
+                      )),
                 ],
               ),
             ),
@@ -284,7 +284,7 @@ class _LibraryState extends State<Library> {
 }
 
 class CustomSearchClass extends SearchDelegate {
-  var isarInstance = Isar.getInstance('isarInstance');
+  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
   var results = [];
   FilterOptions filterCondition;
 

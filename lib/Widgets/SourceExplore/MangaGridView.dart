@@ -1,3 +1,5 @@
+// ignore_for_file: file_names, non_constant_identifier_names
+
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:logger/logger.dart';
@@ -6,12 +8,12 @@ import 'package:yomu/Extensions/extension.dart';
 import 'package:yomu/Widgets/Library/ComfortableTile.dart';
 
 class MangaGridView extends StatefulWidget {
-  MangaGridView(this.extension, {Key? key, this.searchQuery = ""})
+  const MangaGridView(this.extension, {Key? key, this.searchQuery = ""})
       : super(key: key);
 
   final Extension extension;
 
-  String searchQuery;
+  final String searchQuery;
 
   @override
   State<MangaGridView> createState() => _MangaGridViewState();

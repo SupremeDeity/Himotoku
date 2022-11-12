@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
+import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:http/http.dart' as http;
@@ -64,27 +65,19 @@ class ReaperScans extends Extension {
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
       var q5 = parsedHtml.querySelectorAll(_mangaStatusQuery);
 
-      var isarInstance = Isar.getInstance('isarInstance');
+      var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
 
       // Get chapter list
 
       try {
-        final allManga = isarInstance?.mangas;
-        // check if manga already exists
-        final _manga = await allManga!
-            .where()
-            .mangaNameExtensionSourceEqualTo(manga.mangaName, name)
-            .findAll();
+        final allManga = isarInstance!.mangas;
 
         for (int x = 0; x < q3.length; x++) {
           var chapterName = q2[x].text;
           var chapterLink = q3[x].attributes['href']!;
 
-          var isRead = _manga.isNotEmpty
-              ? (x < _manga[0].chapters.length
-                  ? _manga[0].chapters[x].isRead
-                  : false)
-              : false;
+          var isRead =
+              x < manga.chapters.length ? manga.chapters[x].isRead : false;
 
           final nChap = Chapter()
             ..name = chapterName.trim()
@@ -96,11 +89,11 @@ class ReaperScans extends Extension {
         Manga updatedManga = manga.copyWith(
             synopsis: q4?.text.trim() ?? "",
             chapters: chapterList,
-            id: _manga.isNotEmpty ? _manga[0].id : null,
-            inLibrary: _manga.isNotEmpty ? _manga[0].inLibrary : null,
+            id: manga.id,
+            inLibrary: manga.inLibrary,
             status: q5[1].text.trim());
 
-        await isarInstance?.writeTxn(() async {
+        await isarInstance.writeTxn(() async {
           await allManga.put(updatedManga);
         });
 
@@ -122,12 +115,8 @@ class ReaperScans extends Extension {
   @override
   getMangaList(int pageKey, {String searchQuery = ""}) async {
     try {
-      var url;
-      // if (searchQuery.isEmpty) {
-      //   url = Uri.https(_baseUrl, "", {'page': "$pageKey"});
-      // } else {
-      //   url = Uri.https(_baseUrl, "/page?$pageKey", {'s': searchQuery});
-      // }
+      Uri url;
+
       url = Uri.https(_baseUrl, baseSourceExplore, {'page': "$pageKey"});
       var response = await http.get(url);
       var parsedHtml = parse(response.body);

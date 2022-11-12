@@ -1,5 +1,6 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:yomu/Pages/explore.dart';
 import 'package:yomu/Pages/library.dart';
 import 'package:yomu/Pages/settings.dart';
@@ -12,7 +13,7 @@ class BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Routes
-    const routes = [
+    var routes = const [
       Library(),
       Explore(),
       Settings(),
@@ -26,7 +27,13 @@ class BottomNavBar extends StatelessWidget {
       ],
       currentIndex: index,
       onTap: (itemIndex) {
-        Get.to(routes[itemIndex], transition: Transition.noTransition);
+        if (itemIndex != index) {
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+                pageBuilder: (_, __, ___) => routes[itemIndex],
+                transitionDuration: const Duration(milliseconds: 0)),
+          );
+        }
       },
     );
   }

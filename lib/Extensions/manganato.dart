@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
+import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:http/http.dart' as http;
@@ -60,26 +61,17 @@ class Manganato extends Extension {
       var q2 = parsedHtml.querySelectorAll(_baseChapterListQuery);
       var q3 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
-      // var mangaBox = await Hive.openBox<Manga>('mangaBox');
-      var isarInstance = Isar.getInstance('isarInstance');
+      var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
 
       try {
-        final allManga = isarInstance?.mangas;
-        // check if manga already exists
-        final _manga = await allManga!
-            .where()
-            .mangaNameExtensionSourceEqualTo(manga.mangaName, name)
-            .findAll();
+        final allManga = isarInstance!.mangas;
 
         // Get chapter list
         for (int x = 0; x < q2.length; x++) {
           var chapterName = q2[x].text.trim();
           var chapterLink = q2[x].attributes['href']!;
-          var isRead = _manga.isNotEmpty
-              ? (x < _manga[0].chapters.length
-                  ? _manga[0].chapters[x].isRead
-                  : false)
-              : false;
+          var isRead =
+              x < manga.chapters.length ? manga.chapters[x].isRead : false;
 
           final nChap = Chapter()
             ..name = chapterName
@@ -95,11 +87,11 @@ class Manganato extends Extension {
           authorName: q1[1].text.trim(),
           status: q1[2].text.trim(),
           synopsis: q3!.text.trim(),
-          id: _manga.isNotEmpty ? _manga[0].id : null,
-          inLibrary: _manga.isNotEmpty ? _manga[0].inLibrary : null,
+          id: manga.id,
+          inLibrary: manga.inLibrary,
         );
 
-        await isarInstance?.writeTxn(() async {
+        await isarInstance.writeTxn(() async {
           await allManga.put(updatedManga);
         });
         return updatedManga;
@@ -118,7 +110,7 @@ class Manganato extends Extension {
   @override
   getMangaList(int pageKey, {String searchQuery = ""}) async {
     try {
-      var url;
+      Uri url;
       if (searchQuery.isEmpty) {
         url = Uri.https(
             _baseUrl, "/advanced_search", {'s': sort, 'page': '$pageKey'});

@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
+import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/extension.dart';
 import 'package:http/http.dart' as http;
@@ -63,25 +64,16 @@ class Asura extends Extension {
       // Query4: Gets synopsis
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
-      var isarInstance = Isar.getInstance('isarInstance');
+      var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
 
       try {
-        final allManga = isarInstance?.mangas;
-        // check if manga already exists
-        final _manga = await allManga!
-            .where()
-            .mangaNameExtensionSourceEqualTo(manga.mangaName, name)
-            .findAll();
-
+        final allManga = isarInstance!.mangas;
         for (int x = 0; x < q3.length; x++) {
           var chapterName = q3[x].children[0].text.trim();
           var chapterLink = q3[x].attributes['href']!;
 
-          var isRead = _manga.isNotEmpty
-              ? (x < _manga[0].chapters.length
-                  ? _manga[0].chapters[x].isRead
-                  : false)
-              : false;
+          var isRead =
+              x < manga.chapters.length ? manga.chapters[x].isRead : false;
 
           final nChap = Chapter()
             ..name = chapterName
@@ -99,11 +91,11 @@ class Asura extends Extension {
           synopsis: q4?.text.trim() ?? "",
           status: q2[0].text.trim(),
           chapters: chapterList,
-          id: _manga.isNotEmpty ? _manga[0].id : null,
-          inLibrary: _manga.isNotEmpty ? _manga[0].inLibrary : null,
+          id: manga.id,
+          inLibrary: manga.inLibrary,
         );
 
-        await isarInstance?.writeTxn(() async {
+        await isarInstance.writeTxn(() async {
           await allManga.put(updatedManga);
         });
         return updatedManga;
@@ -123,7 +115,7 @@ class Asura extends Extension {
   @override
   getMangaList(int pageKey, {String searchQuery = ""}) async {
     try {
-      var url;
+      Uri url;
       if (searchQuery.isEmpty) {
         url = Uri.https(_baseUrl, _defaultSort, {'page': "$pageKey"});
       } else {

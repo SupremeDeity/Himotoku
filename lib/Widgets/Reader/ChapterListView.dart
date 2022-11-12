@@ -1,37 +1,66 @@
-import 'dart:convert';
+// ignore_for_file: prefer_const_constructors, non_constant_identifier_names, file_names
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
+import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Setting.dart';
 import 'package:yomu/Extensions/ExtensionHelper.dart';
 
 class ChapterListView extends StatefulWidget {
-  ChapterListView(this.manga, this.chapterIndex, {Key? key}) : super(key: key);
+  const ChapterListView(this.manga, this.chapterIndex, {Key? key})
+      : super(key: key);
 
-  int chapterIndex;
-  Manga manga;
+  final int chapterIndex;
+  final Manga manga;
 
   @override
   State<ChapterListView> createState() => _ChapterListViewState();
 }
 
 class _ChapterListViewState extends State<ChapterListView> {
+  bool fullscreen = false;
   bool isFocused = false;
   bool isRead = false;
-  var isarInstance = Isar.getInstance('isarInstance')!;
-  List<String> pages = [];
-  bool fullscreen = false;
+  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME)!;
+  List<String> pageLinks = [];
+  Stream<List<Widget>>? pageGenStream;
+  var logger = Logger();
 
   final ScrollController _scrollController = ScrollController();
+
+  // Loads images sequentially (one-by-one)
+  Stream<List<Widget>> generatePages() async* {
+    int len = pageLinks.length;
+    List<Widget> loaded = List.generate(
+        len,
+        (index) => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 200.0),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ));
+
+    for (int x = 0; x < len; x++) {
+      await for (var _
+          in precacheImage(CachedNetworkImageProvider(pageLinks[x]), context)
+              .asStream()) {
+        logger.i("image ${x + 1}/$len loaded");
+        loaded[x] = CachedNetworkImage(
+          imageUrl: pageLinks[x],
+        );
+        yield loaded;
+      }
+    }
+  }
 
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -44,7 +73,7 @@ class _ChapterListViewState extends State<ChapterListView> {
     });
 
     // Get all page links chapter.
-    getPages();
+    getPageLinks();
 
     _scrollController.addListener(() {
       if (!isRead) {
@@ -54,7 +83,7 @@ class _ChapterListViewState extends State<ChapterListView> {
         }
       }
     });
-
+    pageGenStream = generatePages();
     super.initState();
   }
 
@@ -68,16 +97,14 @@ class _ChapterListViewState extends State<ChapterListView> {
     }
   }
 
-  getPages() async {
+  getPageLinks() async {
     try {
       final newItems = await ExtensionsMap[widget.manga.extensionSource]!
           .getChapterPageList(widget.manga.chapters[widget.chapterIndex].link!);
       setState(() {
-        pages = newItems;
+        pageLinks = newItems;
       });
     } catch (e) {
-      var logger = Logger();
-
       logger.e(e);
     }
   }
@@ -96,11 +123,15 @@ class _ChapterListViewState extends State<ChapterListView> {
     _scrollController.jumpTo(value);
   }
 
+  // Get Length of pages
+  // Start with first image -> Wait till loaded, return image on load
+  // Start with second image and so on...
+
   CachedNetworkImage ChapterPage(int index) {
     return CachedNetworkImage(
       httpHeaders: {"Referer": widget.manga.mangaLink},
       fit: BoxFit.fitWidth,
-      imageUrl: pages[index],
+      imageUrl: pageLinks[index],
       filterQuality: FilterQuality.medium,
       errorWidget: (context, url, error) {
         return Text("Error: $error");
@@ -113,7 +144,7 @@ class _ChapterListViewState extends State<ChapterListView> {
           child: Center(
             child: CircularProgressIndicator(
               value: progress.progress,
-              color: context.theme.colorScheme.secondary,
+              color: Theme.of(context).colorScheme.secondary,
             ),
           ),
         );
@@ -123,18 +154,22 @@ class _ChapterListViewState extends State<ChapterListView> {
 
   Container HeaderView(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(15.0),
       // Note: SafeArea not used to avoid giving a empty invisible gap at the top
       height: MediaQuery.of(context).viewPadding.top + 60,
       width: double.infinity,
-      color: context.theme.colorScheme.primary,
+      color: Theme.of(context).colorScheme.primary,
       child: SafeArea(
         bottom: false,
         left: false,
         right: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              icon: Icon(Icons.arrow_back),
+            ),
             Text(
               widget.manga.chapters[widget.chapterIndex].name ?? "Unknown",
               style: const TextStyle(
@@ -149,41 +184,46 @@ class _ChapterListViewState extends State<ChapterListView> {
 
   Container FooterView(BuildContext context) {
     return Container(
-      color: context.theme.colorScheme.primary.withAlpha(220),
+      color: Theme.of(context).colorScheme.primary.withAlpha(220),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
         ElevatedButton.icon(
-            label: Text("Prev"),
+            label: Text("Prev",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onBackground,
+                )),
             onPressed: widget.chapterIndex < widget.manga.chapters.length - 1
                 ? () {
-                    Get.off(
-                      () => ChapterListView(
-                          widget.manga, widget.chapterIndex + 1),
-                      transition: Transition.noTransition,
-                      preventDuplicates: false,
+                    Navigator.of(context).pushReplacement(
+                      PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => ChapterListView(
+                              widget.manga, widget.chapterIndex + 1),
+                          transitionDuration: const Duration(milliseconds: 0)),
                     );
                   }
                 : null,
-            icon: const Icon(
-              size: 30,
-              Icons.skip_previous_rounded,
-            )),
+            icon: Icon(
+                size: 30,
+                Icons.skip_previous_rounded,
+                color: Theme.of(context).colorScheme.onBackground)),
         ElevatedButton.icon(
-            label: const Text("Next"),
-            // color: context.theme.colorScheme
-            //     .onSecondaryContainer,
+            label: Text("Next",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onBackground,
+                )),
             onPressed: widget.chapterIndex > 0
                 ? () {
-                    Get.off(
-                        () => ChapterListView(
-                            widget.manga, widget.chapterIndex - 1),
-                        transition: Transition.noTransition,
-                        preventDuplicates: false);
+                    Navigator.of(context).pushReplacement(
+                      PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => ChapterListView(
+                              widget.manga, widget.chapterIndex - 1),
+                          transitionDuration: const Duration(milliseconds: 0)),
+                    );
                   }
                 : null,
-            icon: const Icon(
-              size: 30,
-              Icons.skip_next_rounded,
-            )),
+            icon: Icon(
+                size: 30,
+                Icons.skip_next_rounded,
+                color: Theme.of(context).colorScheme.onBackground)),
       ]),
     );
   }
@@ -192,30 +232,63 @@ class _ChapterListViewState extends State<ChapterListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      body: pages.isNotEmpty
+      body: pageLinks.isNotEmpty && pageGenStream != null
           ? Stack(
               children: [
                 GestureDetector(
-                    onTap: () {
-                      if (fullscreen) {
-                        if (!isFocused) {
-                          SystemChrome.setEnabledSystemUIMode(
-                              SystemUiMode.edgeToEdge);
-                        } else {
-                          SystemChrome.setEnabledSystemUIMode(
-                              SystemUiMode.immersive);
-                        }
+                  onTap: () {
+                    if (fullscreen) {
+                      if (!isFocused) {
+                        SystemChrome.setEnabledSystemUIMode(
+                            SystemUiMode.edgeToEdge);
+                      } else {
+                        SystemChrome.setEnabledSystemUIMode(
+                            SystemUiMode.immersive);
                       }
-                      setState(() {
-                        isFocused = !isFocused;
-                      });
+                    }
+                    setState(() {
+                      isFocused = !isFocused;
+                    });
+                  },
+                  child: StreamBuilder<List<Widget>>(
+                    stream: pageGenStream,
+                    initialData: List.generate(
+                      pageLinks.length,
+                      (index) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 200.0),
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    ),
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.none:
+                        case ConnectionState.waiting:
+                          return Center(child: CircularProgressIndicator());
+                        case ConnectionState.active:
+                          if (snapshot.hasData) {
+                            return ListView(
+                              children: [...snapshot.data!],
+                            );
+                          }
+                          break;
+                        case ConnectionState.done:
+                          if (snapshot.hasData) {
+                            return ListView(
+                              controller:
+                                  _scrollController, // only add controller if all pages are loaded
+                              children: [...snapshot.data!],
+                            );
+                          }
+                          break;
+                      }
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
                     },
-                    child: ListView(
-                      // cacheExtent: 200,
-                      controller: _scrollController,
-                      children: List.generate(
-                          pages.length, (index) => ChapterPage(index)),
-                    )),
+                  ),
+                ),
                 isFocused
                     ? Align(
                         alignment: AlignmentDirectional.bottomEnd,
@@ -233,7 +306,7 @@ class _ChapterListViewState extends State<ChapterListView> {
             )
           : Center(
               child: CircularProgressIndicator(
-              color: context.theme.colorScheme.secondary,
+              color: Theme.of(context).colorScheme.secondary,
             )),
     );
   }

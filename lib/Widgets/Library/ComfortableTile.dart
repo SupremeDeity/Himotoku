@@ -1,6 +1,7 @@
+// ignore_for_file: file_names
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Pages/manga_view.dart';
 
@@ -14,7 +15,9 @@ class ComfortableTile extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        Get.to(() => MangaView(manga), transition: Transition.noTransition);
+        Navigator.of(context).push(PageRouteBuilder(
+          pageBuilder: (_, __, ___) => MangaView(manga),
+        ));
       },
       child: Stack(
         children: [

@@ -1,7 +1,11 @@
+// ignore_for_file: file_names
+
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
+import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Setting.dart';
 import 'package:yomu/Data/Theme.dart';
 
@@ -13,8 +17,8 @@ class SettingsTheme extends StatefulWidget {
 }
 
 class _SettingsThemeState extends State<SettingsTheme> {
-  var isarInstance = Isar.getInstance('isarInstance')!;
-  var cancelSubscription;
+  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME)!;
+  StreamSubscription<void>? cancelSubscription;
   String? theme;
 
   @override
@@ -41,7 +45,7 @@ class _SettingsThemeState extends State<SettingsTheme> {
 
   @override
   void dispose() {
-    cancelSubscription.cancel();
+    cancelSubscription!.cancel();
     super.dispose();
   }
 
@@ -62,7 +66,6 @@ class _SettingsThemeState extends State<SettingsTheme> {
                     await isarInstance.settings
                         .put(settings!.copyWith(newTheme: value));
                   });
-                  Get.changeTheme(themeMap[value]!);
                 }),
           );
         }),

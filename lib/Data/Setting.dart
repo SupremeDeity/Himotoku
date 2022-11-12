@@ -1,3 +1,5 @@
+// ignore_for_file: file_names, invalid_annotation_target
+
 import 'package:isar/isar.dart';
 import 'package:yomu/Data/Theme.dart';
 

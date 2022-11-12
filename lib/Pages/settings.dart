@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:yomu/Pages/Settings/settings-about.dart';
 import 'package:yomu/Pages/Settings/settings-backup.dart';
 import 'package:yomu/Pages/Settings/settings-reader.dart';
 import 'package:yomu/Pages/Settings/settings-theme.dart';
 import 'package:yomu/Widgets/BottomNavBar.dart';
 
-class Settings extends StatelessWidget {
+class Settings extends StatefulWidget {
   const Settings({Key? key}) : super(key: key);
 
-  final Map<String, dynamic> settingsMap = const {
+  @override
+  _SettingsState createState() => _SettingsState();
+}
+
+class _SettingsState extends State<Settings> {
+  Map<String, dynamic> settingsMap = const {
     "Appearance": [Icons.palette, SettingsTheme()],
     "Reader": [Icons.menu_book_rounded, ReaderSettings()],
     "Backup": [Icons.backup_outlined, ImportExportSettings()],
+    "About": [Icons.info_outline_rounded, SettingsAbout()],
   };
 
   @override
@@ -27,12 +33,20 @@ class Settings extends StatelessWidget {
         settingsMap.length,
         (index) => ListTile(
           onTap: () {
-            Get.to(settingsMap.values.elementAt(index)[1],
-                transition: Transition.noTransition);
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                  pageBuilder: (_, __, ___) =>
+                      settingsMap.values.elementAt(index)[1]),
+            );
           },
           contentPadding: const EdgeInsets.all(12),
-          title: Text(settingsMap.keys.elementAt(index)),
-          leading: Icon(settingsMap.values.elementAt(index)[0]),
+          title: Text(
+            settingsMap.keys.elementAt(index),
+          ),
+          leading: Icon(
+            settingsMap.values.elementAt(index)[0],
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ),
       )),
     );

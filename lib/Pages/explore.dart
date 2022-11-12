@@ -1,8 +1,6 @@
-import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:yomu/Extensions/ExtensionHelper.dart';
 import 'package:yomu/Pages/source_explore.dart';
 import 'package:yomu/Widgets/BottomNavBar.dart';
@@ -30,7 +28,7 @@ class _ExploreState extends State<Explore> {
             child: Text(
               '${ExtensionsMap.length} source(s)',
               style: TextStyle(
-                  color: context.theme.colorScheme.primary,
+                  color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.w500),
             ),
           ),
@@ -43,10 +41,15 @@ class _ExploreState extends State<Explore> {
                     ListTile(
                         contentPadding: const EdgeInsets.all(5),
                         onTap: () {
-                          Get.to(
-                              () => SourceExplore(
-                                  ExtensionsMap.values.elementAt(index)),
-                              transition: Transition.noTransition);
+                          Navigator.of(context).push(
+                            PageRouteBuilder(
+                              transitionDuration:
+                                  const Duration(milliseconds: 0),
+                              pageBuilder: (_, __, ___) => SourceExplore(
+                                ExtensionsMap.values.elementAt(index),
+                              ),
+                            ),
+                          );
                         },
                         title: Text(ExtensionsMap.keys.elementAt(index)),
                         leading: CachedNetworkImage(

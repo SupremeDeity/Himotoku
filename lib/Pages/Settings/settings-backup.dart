@@ -1,12 +1,14 @@
+// ignore_for_file: file_names
+
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Setting.dart';
 
@@ -19,7 +21,7 @@ class ImportExportSettings extends StatefulWidget {
 
 class _ImportExportSettingsState extends State<ImportExportSettings> {
   String backupExportLocation = "";
-  var isarInstance = Isar.getInstance('isarInstance')!;
+  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME)!;
 
   @override
   void initState() {
@@ -37,7 +39,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
   void export(BuildContext context) async {
     try {
       if (await Permission.manageExternalStorage.request().isGranted) {
-        var isarInstance = Isar.getInstance("isarInstance");
+        var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
         var jsonContent = await isarInstance!.mangas
             .filter()
             .inLibraryEqualTo(true)
@@ -65,7 +67,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
   void import(BuildContext context) async {
     try {
       if (await Permission.manageExternalStorage.request().isGranted) {
-        var isarInstance = Isar.getInstance("isarInstance");
+        var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
 
         var backupFileLocation = await FilePicker.platform.pickFiles();
 
@@ -83,7 +85,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           await isarInstance!
               .writeTxn(() => isarInstance.mangas.importJson(content));
 
-          var snackbar = SnackBar(content: Text("Imported backup."));
+          var snackbar = const SnackBar(content: Text("Imported backup."));
           // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(snackbar);
         }
@@ -123,18 +125,21 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           content: SingleChildScrollView(
             child: ListBody(
                 children: backupExportLocation.isNotEmpty
-                    ? [Text('Exporting to:'), Text(backupExportLocation)]
-                    : [Text("Please set \"Export Location\" prior to this.")]),
+                    ? [const Text('Exporting to:'), Text(backupExportLocation)]
+                    : [
+                        const Text(
+                            "Please set \"Export Location\" prior to this.")
+                      ]),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Export'),
               onPressed: backupExportLocation.isNotEmpty
                   ? () {
                       export(context);
                       Navigator.of(context).pop();
                     }
                   : null,
+              child: const Text('Export'),
             ),
           ],
         );
@@ -152,13 +157,13 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           child: Text(
             "Export",
             style: TextStyle(
-                color: context.theme.colorScheme.primary,
+                color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.w500),
           ),
         ),
         ListTile(
-          title: Text("Export Location"),
-          leading: Icon(Icons.folder_outlined),
+          title: const Text("Export Location"),
+          leading: const Icon(Icons.folder_outlined),
           subtitle: Text(
             backupExportLocation,
           ),
@@ -167,12 +172,12 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           },
         ),
         ListTile(
-          title: Text("Local Export"),
-          leading: Icon(Icons.phone_android_outlined),
-          subtitle: Text(
+          title: const Text("Local Export"),
+          leading: const Icon(Icons.phone_android_outlined),
+          subtitle: const Text(
             "Export to local storage.",
           ),
-          trailing: Icon(Icons.arrow_forward),
+          trailing: const Icon(Icons.arrow_forward),
           onTap: () {
             _showMyDialog();
           },
@@ -192,17 +197,17 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           child: Text(
             "Import",
             style: TextStyle(
-                color: context.theme.colorScheme.primary,
+                color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.w500),
           ),
         ),
         ListTile(
-          title: Text("Local Import"),
-          leading: Icon(Icons.import_export_outlined),
-          subtitle: Text(
+          title: const Text("Local Import"),
+          leading: const Icon(Icons.import_export_outlined),
+          subtitle: const Text(
             "Import backup from local storage.",
           ),
-          trailing: Icon(Icons.arrow_forward),
+          trailing: const Icon(Icons.arrow_forward),
           onTap: () {
             import(context);
           },

@@ -1,9 +1,11 @@
-import 'dart:convert';
+// ignore_for_file: file_names
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
+import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Setting.dart';
 
 class ReaderSettings extends StatefulWidget {
@@ -14,10 +16,10 @@ class ReaderSettings extends StatefulWidget {
 }
 
 class _ReaderSettingsState extends State<ReaderSettings> {
-  var isarInstance = Isar.getInstance('isarInstance')!;
+  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME)!;
   bool? fullscreen;
   bool? splitTallImages;
-  var cancelSubscription;
+  StreamSubscription<void>? cancelSubscription;
 
   @override
   void initState() {
@@ -44,7 +46,7 @@ class _ReaderSettingsState extends State<ReaderSettings> {
 
   @override
   void dispose() {
-    cancelSubscription.cancel();
+    cancelSubscription!.cancel();
     super.dispose();
   }
 
@@ -60,15 +62,15 @@ class _ReaderSettingsState extends State<ReaderSettings> {
               Text(
                 "View",
                 style: TextStyle(
-                    color: context.theme.colorScheme.primary,
+                    color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w500),
               ),
             ],
           ),
         ),
         ListTile(
-            title: Text("Fullscreen"),
-            subtitle: Text("Go fullscreen mode while reading."),
+            title: const Text("Fullscreen"),
+            subtitle: const Text("Go fullscreen mode while reading."),
             trailing: Switch(
                 value: fullscreen ?? false,
                 onChanged: (value) async {

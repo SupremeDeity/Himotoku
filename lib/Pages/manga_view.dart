@@ -1,8 +1,10 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Extensions/ExtensionHelper.dart';
 import 'package:yomu/Widgets/Reader/ChapterListView.dart';
@@ -22,7 +24,7 @@ class _MangaViewState extends State<MangaView> {
   int causeUpdate = 0;
 
   bool isInLibrary = false;
-  var isarInstance = Isar.getInstance('isarInstance');
+  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
   Manga? manga;
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
@@ -79,22 +81,26 @@ class _MangaViewState extends State<MangaView> {
   ListTile ChapterListItem(int index, BuildContext context) {
     return ListTile(
         onTap: () {
-          Get.to(() => ChapterListView(manga!, index - 1),
-              transition: Transition.noTransition);
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              transitionDuration: const Duration(milliseconds: 0),
+              pageBuilder: (_, __, ___) => ChapterListView(manga!, index - 1),
+            ),
+          );
         },
         title: Text(
           manga!.chapters[index - 1].name!,
           style: TextStyle(
             color: manga!.chapters[index - 1].isRead
                 ? Theme.of(context).disabledColor
-                : Theme.of(context).colorScheme.onSurface,
+                : Theme.of(context).colorScheme.primary,
           ),
         ));
   }
 
   Container MangaDetailsHeader(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       // color: Colors.black45,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,10 +128,11 @@ class _MangaViewState extends State<MangaView> {
                       Text(
                         widget.mangaInstance.mangaName,
                         maxLines: 3,
-                        style: const TextStyle(
+                        style: TextStyle(
                           overflow: TextOverflow.ellipsis,
                           fontWeight: FontWeight.w500,
                           fontSize: 20,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       Padding(
@@ -139,6 +146,7 @@ class _MangaViewState extends State<MangaView> {
                                   overflow: TextOverflow.ellipsis,
                                   fontWeight: FontWeight.w400,
                                   fontSize: 15,
+                                  // color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
                             ),
@@ -151,6 +159,7 @@ class _MangaViewState extends State<MangaView> {
                           overflow: TextOverflow.ellipsis,
                           fontWeight: FontWeight.w400,
                           fontSize: 15,
+                          // color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     ],
@@ -159,7 +168,7 @@ class _MangaViewState extends State<MangaView> {
               ),
             ],
           ),
-          // const Divider(),
+          const Padding(padding: EdgeInsets.all(8)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -173,12 +182,12 @@ class _MangaViewState extends State<MangaView> {
                             ? Icons.library_add
                             : Icons.library_add_outlined,
                         color: isInLibrary
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.onBackground),
+                            ? Theme.of(context).colorScheme.inversePrimary
+                            : Theme.of(context).colorScheme.primary),
                   ),
                   Text(
                     isInLibrary ? "In Library" : "Add to library",
-                    style: TextStyle(fontSize: 10),
+                    style: const TextStyle(fontSize: 10),
                   )
                 ],
               ),
@@ -250,7 +259,7 @@ class _MangaViewState extends State<MangaView> {
               )
             : Center(
                 child: CircularProgressIndicator(
-                  color: context.theme.colorScheme.secondary,
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
               ),
       ),

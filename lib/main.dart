@@ -1,24 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:get/get.dart';
 import 'package:isar/isar.dart';
-import 'package:logger/logger.dart';
+import 'package:yomu/Data/Constants.dart';
 
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Setting.dart';
 import 'package:yomu/Data/Theme.dart';
 import 'package:yomu/Pages/library.dart';
-import 'package:yomu/test.dart';
+// import 'package:yomu/test.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await Isar.open(
-    [MangaSchema, SettingSchema],
-    name: "isarInstance",
-    compactOnLaunch: const CompactCondition(minRatio: 2.0),
-  );
+
   runApp(const YomuMain());
 }
 
@@ -30,27 +25,45 @@ class YomuMain extends StatefulWidget {
 }
 
 class _YomuMainState extends State<YomuMain> {
+  ThemeData? currentTheme;
+  Isar? isarInstance;
+
+  getTheme() async {
+    var settings = await isarInstance!.settings.get(0);
+    setState(() {
+      currentTheme = themeMap[settings!.theme];
+    });
+  }
+
   initPrefs() async {
-    var isarInstance = Isar.getInstance('isarInstance')!;
-    Logger logger = Logger();
+    Isar.openSync(
+      [MangaSchema, SettingSchema],
+      name: ISAR_INSTANCE_NAME,
+      compactOnLaunch: const CompactCondition(minRatio: 2.0),
+    );
+
+    setState(() {
+      isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
+    });
 
     var brightness = SchedulerBinding.instance.window.platformBrightness;
     bool isDarkMode = brightness == Brightness.dark;
     var defaultTheme = isDarkMode ? "Default Dark" : "Default Light";
-    var currentSettings = await isarInstance.settings.get(0);
+    var currentSettings = await isarInstance!.settings.get(0);
 
     if (currentSettings == null) {
-      await isarInstance.writeTxn(() async {
-        await isarInstance.settings
-            .put(Setting().copyWith(newTheme: defaultTheme));
+      isarInstance!.writeTxnSync(() {
+        isarInstance!.settings
+            .putSync(Setting().copyWith(newTheme: defaultTheme));
       });
     }
-
-    logger.i("Is DarkMode default: $isDarkMode");
-
-    logger.i("Using theme: ${currentSettings?.theme}");
-    Get.changeTheme(themeMap[currentSettings?.theme ?? defaultTheme]!);
-    logger.i("Initialized app, removing splash screen.");
+    Stream<void> instanceChanged =
+        isarInstance!.settings.watchLazy(fireImmediately: true);
+    instanceChanged.listen(
+      (event) async {
+        getTheme();
+      },
+    );
     FlutterNativeSplash.remove();
   }
 
@@ -63,9 +76,10 @@ class _YomuMainState extends State<YomuMain> {
 
   @override
   Widget build(BuildContext context) {
-    return const GetMaterialApp(
-      home: Library(),
+    return MaterialApp(
+      home: const Library(),
       themeMode: ThemeMode.system,
+      theme: currentTheme,
     );
   }
 }
