@@ -245,10 +245,15 @@ class _LibraryState extends State<Library> {
       body: mangaInLibrary.isNotEmpty
           ? GridView.builder(
               itemCount: mangaInLibrary.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                childAspectRatio: 2 / 3,
+                crossAxisCount: 2,
+              ),
               itemBuilder: (context, index) {
-                return ComfortableTile(mangaInLibrary[index]);
+                return Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: ComfortableTile(mangaInLibrary[index]),
+                );
               },
             )
           : Center(

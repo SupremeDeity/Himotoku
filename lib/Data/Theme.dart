@@ -1,4 +1,4 @@
-// ignore_for_file: file_names, non_constant_identifier_names
+// ignore_for_file: , non_constant_identifier_names
 
 import 'package:flutter/material.dart';
 
@@ -6,9 +6,8 @@ import 'package:flutter/material.dart';
 class Themes {
   static Color crimsonBackground = const Color.fromARGB(1, 14, 59, 67);
   static Color crimsonPrimary = const Color.fromRGBO(251, 99, 118, 1);
-  static Color periwinklePrimary = const Color.fromARGB(255, 128, 128, 255);
-
   static Color defaultPrimaryVariant = const Color.fromARGB(255, 0, 50, 240);
+  static Color periwinklePrimary = const Color.fromARGB(255, 128, 128, 255);
 
   static ThemeData get crimsonDarkTheme {
     return ThemeData(

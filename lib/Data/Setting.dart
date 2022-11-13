@@ -1,4 +1,4 @@
-// ignore_for_file: file_names, invalid_annotation_target
+// ignore_for_file: , invalid_annotation_target
 
 import 'package:isar/isar.dart';
 import 'package:yomu/Data/Theme.dart';
@@ -31,9 +31,10 @@ class Setting {
   // Backup Settings
   String backupExportLocation = "";
 
-  // Library Settings
+  /// Library filter options
   FilterOptions filterOptions = FilterOptions();
 
+  /// Library sort options
   @enumerated
   LibrarySort sortSettings = LibrarySort.az;
 

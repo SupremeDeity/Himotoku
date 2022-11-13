@@ -1,4 +1,4 @@
-// ignore_for_file: file_names
+// ignore_for_file:
 
 import 'package:flutter/material.dart' hide showLicensePage;
 // import 'package:flutter/material.dart';

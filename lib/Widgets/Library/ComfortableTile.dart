@@ -1,52 +1,76 @@
-// ignore_for_file: file_names
+// ignore_for_file:
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Pages/manga_view.dart';
 
-class ComfortableTile extends StatelessWidget {
+class ComfortableTile extends StatefulWidget {
   const ComfortableTile(this.manga, {Key? key}) : super(key: key);
 
   final Manga manga;
 
+  @override
+  _ComfortableTileState createState() => _ComfortableTileState();
+}
+
+class _ComfortableTileState extends State<ComfortableTile> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
         Navigator.of(context).push(PageRouteBuilder(
-          pageBuilder: (_, __, ___) => MangaView(manga),
+          pageBuilder: (_, __, ___) => MangaView(widget.manga),
         ));
       },
-      child: Stack(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: Image(
-              image: CachedNetworkImageProvider(manga.mangaCover),
-              fit: BoxFit.cover,
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomLeft,
-            child: Container(
-              padding: const EdgeInsets.all(5),
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.black54,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Stack(
+          children: [
+            SizedBox.expand(
+              child: Image.network(
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.medium,
+                widget.manga.mangaCover,
+                cacheWidth: 512,
               ),
-              child: Text(
-                manga.mangaName,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                transformAlignment: Alignment.bottomCenter,
+                padding: const EdgeInsets.all(4),
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        stops: [
+                      0.2,
+                      0.4,
+                      0.6,
+                      0.8,
+                      1.0
+                    ],
+                        colors: [
+                      Colors.black,
+                      Colors.black87,
+                      Colors.black54,
+                      Colors.black38,
+                      Colors.transparent
+                    ])),
+                child: Text(
+                  widget.manga.mangaName,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

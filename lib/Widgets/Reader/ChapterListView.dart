@@ -1,10 +1,11 @@
-// ignore_for_file: prefer_const_constructors, non_constant_identifier_names, file_names
+// ignore_for_file: prefer_const_constructors, non_constant_identifier_names,
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Setting.dart';
@@ -46,7 +47,7 @@ class _ChapterListViewState extends State<ChapterListView> {
 
     for (int x = 0; x < len; x++) {
       await for (var _
-          in precacheImage(CachedNetworkImageProvider(pageLinks[x]), context)
+          in precacheImage(Image.network(pageLinks[x]).image, context)
               .asStream()) {
         logger.i("image ${x + 1}/$len loaded");
         loaded[x] = CachedNetworkImage(
@@ -99,8 +100,11 @@ class _ChapterListViewState extends State<ChapterListView> {
 
   getPageLinks() async {
     try {
-      final newItems = await ExtensionsMap[widget.manga.extensionSource]!
+      List<String> newItems = await ExtensionsMap[widget.manga.extensionSource]!
           .getChapterPageList(widget.manga.chapters[widget.chapterIndex].link!);
+      if (newItems.isEmpty) {
+        Navigator.of(context).pop("No pages found.");
+      }
       setState(() {
         pageLinks = newItems;
       });
@@ -168,7 +172,10 @@ class _ChapterListViewState extends State<ChapterListView> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              icon: Icon(Icons.arrow_back),
+              icon: Icon(
+                Icons.arrow_back,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
             Text(
               widget.manga.chapters[widget.chapterIndex].name ?? "Unknown",
@@ -176,6 +183,23 @@ class _ChapterListViewState extends State<ChapterListView> {
                 fontSize: 20,
               ),
             ),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.open_in_browser,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  onPressed: () {
+                    launchUrl(
+                        Uri.parse(
+                            widget.manga.chapters[widget.chapterIndex].link!),
+                        mode: LaunchMode.externalApplication);
+                  },
+                ),
+              ),
+            )
           ],
         ),
       ),
@@ -267,12 +291,6 @@ class _ChapterListViewState extends State<ChapterListView> {
                         case ConnectionState.waiting:
                           return Center(child: CircularProgressIndicator());
                         case ConnectionState.active:
-                          if (snapshot.hasData) {
-                            return ListView(
-                              children: [...snapshot.data!],
-                            );
-                          }
-                          break;
                         case ConnectionState.done:
                           if (snapshot.hasData) {
                             return ListView(

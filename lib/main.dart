@@ -14,7 +14,9 @@ void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  runApp(const YomuMain());
+  runApp(
+    const YomuMain(),
+  );
 }
 
 class YomuMain extends StatefulWidget {
@@ -27,6 +29,13 @@ class YomuMain extends StatefulWidget {
 class _YomuMainState extends State<YomuMain> {
   ThemeData? currentTheme;
   Isar? isarInstance;
+
+  @override
+  void initState() {
+    initPrefs();
+
+    super.initState();
+  }
 
   getTheme() async {
     var settings = await isarInstance!.settings.get(0);
@@ -65,13 +74,6 @@ class _YomuMainState extends State<YomuMain> {
       },
     );
     FlutterNativeSplash.remove();
-  }
-
-  @override
-  void initState() {
-    initPrefs();
-
-    super.initState();
   }
 
   @override

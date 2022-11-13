@@ -1,4 +1,4 @@
-// ignore_for_file: invalid_annotation_target, file_names
+// ignore_for_file: invalid_annotation_target,
 
 import 'package:isar/isar.dart';
 

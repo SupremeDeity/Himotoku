@@ -78,24 +78,51 @@ class _MangaViewState extends State<MangaView> {
     });
   }
 
-  ListTile ChapterListItem(int index, BuildContext context) {
-    return ListTile(
-        onTap: () {
-          Navigator.of(context).push(
-            PageRouteBuilder(
-              transitionDuration: const Duration(milliseconds: 0),
-              pageBuilder: (_, __, ___) => ChapterListView(manga!, index - 1),
-            ),
-          );
-        },
-        title: Text(
-          manga!.chapters[index - 1].name!,
-          style: TextStyle(
-            color: manga!.chapters[index - 1].isRead
-                ? Theme.of(context).disabledColor
-                : Theme.of(context).colorScheme.primary,
-          ),
-        ));
+  Column ChapterListItem(int index, BuildContext context) {
+    return Column(
+      children: [
+        Divider(
+          indent: 15,
+          endIndent: 15,
+        ),
+        ListTile(
+            visualDensity: VisualDensity.compact,
+            onTap: () {
+              Navigator.of(context)
+                  .push(
+                PageRouteBuilder(
+                  transitionDuration: const Duration(milliseconds: 0),
+                  pageBuilder: (_, __, ___) =>
+                      ChapterListView(manga!, index - 1),
+                ),
+              )
+                  .then((value) {
+                if (value != null) {
+                  ScaffoldMessenger.of(context)
+                    ..removeCurrentSnackBar()
+                    ..showSnackBar(SnackBar(
+                      duration: Duration(milliseconds: 2300),
+                      content: Text(
+                        value,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 17),
+                      ),
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                    ));
+                }
+              });
+            },
+            title: Text(
+              manga!.chapters[index - 1].name!,
+              style: TextStyle(
+                color: manga!.chapters[index - 1].isRead
+                    ? Theme.of(context).disabledColor
+                    : Theme.of(context).colorScheme.primary,
+              ),
+            )),
+      ],
+    );
   }
 
   Container MangaDetailsHeader(BuildContext context) {
@@ -142,6 +169,7 @@ class _MangaViewState extends State<MangaView> {
                             Expanded(
                               child: Text(
                                 "${manga!.authorName}\n${manga!.mangaStudio}",
+                                maxLines: 4,
                                 style: const TextStyle(
                                   overflow: TextOverflow.ellipsis,
                                   fontWeight: FontWeight.w400,
@@ -155,6 +183,16 @@ class _MangaViewState extends State<MangaView> {
                       ),
                       Text(
                         manga!.status,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          overflow: TextOverflow.ellipsis,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 15,
+                          // color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      Text(
+                        manga!.extensionSource,
                         style: const TextStyle(
                           overflow: TextOverflow.ellipsis,
                           fontWeight: FontWeight.w400,
@@ -168,7 +206,6 @@ class _MangaViewState extends State<MangaView> {
               ),
             ],
           ),
-          const Padding(padding: EdgeInsets.all(8)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -196,9 +233,8 @@ class _MangaViewState extends State<MangaView> {
                   IconButton(
                       iconSize: 22,
                       onPressed: () {
-                        launchUrl(
-                          Uri.parse(manga!.mangaLink),
-                        );
+                        launchUrl(Uri.parse(manga!.mangaLink),
+                            mode: LaunchMode.externalApplication);
                       },
                       icon: const Icon(Icons.open_in_browser)),
                   const Text(
@@ -211,7 +247,9 @@ class _MangaViewState extends State<MangaView> {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(manga!.synopsis),
+            child: Text(
+              manga!.synopsis,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -231,22 +269,23 @@ class _MangaViewState extends State<MangaView> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      key: _refreshIndicatorKey,
-      onRefresh: () async {
-        Manga m = await ExtensionsMap[widget.mangaInstance.extensionSource]!
-            .getMangaDetails(widget.mangaInstance);
+    return Scaffold(
+      appBar: AppBar(),
+      body: manga != null
+          ? RefreshIndicator(
+              key: _refreshIndicatorKey,
+              onRefresh: () async {
+                Manga m =
+                    await ExtensionsMap[widget.mangaInstance.extensionSource]!
+                        .getMangaDetails(widget.mangaInstance);
 
-        setState(() {
-          manga = m;
-          isInLibrary = m.inLibrary;
-        });
-      },
-      triggerMode: RefreshIndicatorTriggerMode.anywhere,
-      child: Scaffold(
-        appBar: AppBar(),
-        body: manga != null
-            ? ListView.builder(
+                setState(() {
+                  manga = m;
+                  isInLibrary = m.inLibrary;
+                });
+              },
+              triggerMode: RefreshIndicatorTriggerMode.onEdge,
+              child: ListView.builder(
                 shrinkWrap: true,
                 itemCount: manga!.chapters.length + 1,
                 itemBuilder: (context, index) {
@@ -256,13 +295,13 @@ class _MangaViewState extends State<MangaView> {
                     return ChapterListItem(index, context);
                   }
                 },
-              )
-            : Center(
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
               ),
-      ),
+            )
+          : Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
     );
   }
 }

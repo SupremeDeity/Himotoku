@@ -1,5 +1,3 @@
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yomu/Extensions/ExtensionHelper.dart';
 import 'package:yomu/Pages/source_explore.dart';
@@ -52,9 +50,8 @@ class _ExploreState extends State<Explore> {
                           );
                         },
                         title: Text(ExtensionsMap.keys.elementAt(index)),
-                        leading: CachedNetworkImage(
-                          imageUrl:
-                              ExtensionsMap.values.elementAt(index).iconUrl,
+                        leading: Image.network(
+                          ExtensionsMap.values.elementAt(index).iconUrl,
                           width: 32,
                           height: 32,
                         )),

@@ -1,4 +1,4 @@
-// ignore_for_file: file_names
+// ignore_for_file:
 
 import 'dart:convert';
 import 'dart:io';

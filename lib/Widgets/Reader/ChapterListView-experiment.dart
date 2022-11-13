@@ -1,4 +1,4 @@
-// ignore_for_file: file_names
+// ignore_for_file: 
 // import 'dart:convert';
 // import 'dart:math';
 
@@ -71,7 +71,7 @@
 //     if (!splitTallImages) {
 //       if (mounted) {
 //         setState(() {
-//           pages[currentlyLoaded] = CachedNetworkImage(
+//           pages[currentlyLoaded] = Image(
 //             httpHeaders: {"Referer": widget.manga.mangaLink},
 //             imageUrl: pageLinks[index],
 //             filterQuality: FilterQuality.medium,
@@ -154,8 +154,8 @@
 //     _scrollController.jumpTo(value);
 //   }
 
-//   CachedNetworkImage ChapterPage(int index) {
-//     return CachedNetworkImage(
+//   Image ChapterPage(int index) {
+//     return Image(
 //       httpHeaders: {"Referer": widget.manga.mangaLink},
 //       imageUrl: pageLinks[index],
 //       filterQuality: FilterQuality.medium,

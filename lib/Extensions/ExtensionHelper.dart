@@ -1,6 +1,6 @@
 // temp solution
 
-// ignore_for_file: file_names, non_constant_identifier_names
+// ignore_for_file: , non_constant_identifier_names
 
 import 'package:yomu/Extensions/asura.dart';
 import 'package:yomu/Extensions/extension.dart';

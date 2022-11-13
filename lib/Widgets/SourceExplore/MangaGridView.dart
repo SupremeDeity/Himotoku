@@ -1,4 +1,4 @@
-// ignore_for_file: file_names, non_constant_identifier_names
+// ignore_for_file: , non_constant_identifier_names
 
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -67,10 +67,13 @@ class _MangaGridViewState extends State<MangaGridView> {
       shrinkWrap: true,
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<Manga>(
-        itemBuilder: (context, item, index) => ComfortableTile(item),
+        itemBuilder: (context, item, index) => Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: ComfortableTile(item),
+        ),
       ),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, crossAxisSpacing: 4, mainAxisSpacing: 4),
+          crossAxisCount: 2, childAspectRatio: 2 / 3),
     );
   }
 }

@@ -1,15 +1,19 @@
-// ignore_for_file: file_names
+// ignore_for_file:
 
 import 'package:flutter/material.dart';
 import 'package:yomu/Pages/explore.dart';
 import 'package:yomu/Pages/library.dart';
 import 'package:yomu/Pages/settings.dart';
 
-class BottomNavBar extends StatelessWidget {
+class BottomNavBar extends StatefulWidget {
   const BottomNavBar(this.index, {Key? key}) : super(key: key);
-
   final int index;
 
+  @override
+  _BottomNavBarState createState() => _BottomNavBarState();
+}
+
+class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
     // Routes
@@ -25,9 +29,9 @@ class BottomNavBar extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings")
       ],
-      currentIndex: index,
+      currentIndex: widget.index,
       onTap: (itemIndex) {
-        if (itemIndex != index) {
+        if (itemIndex != widget.index) {
           Navigator.of(context).pushReplacement(
             PageRouteBuilder(
                 pageBuilder: (_, __, ___) => routes[itemIndex],
