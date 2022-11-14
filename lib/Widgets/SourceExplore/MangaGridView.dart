@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:logger/logger.dart';
 import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Extensions/extension.dart';
+import 'package:yomu/Sources/Source.dart';
 import 'package:yomu/Widgets/Library/ComfortableTile.dart';
 
 class MangaGridView extends StatefulWidget {
-  const MangaGridView(this.extension, {Key? key, this.searchQuery = ""})
+  const MangaGridView(this.source, {Key? key, this.searchQuery = ""})
       : super(key: key);
 
-  final Extension extension;
+  final Source source;
 
   final String searchQuery;
 
@@ -33,7 +33,7 @@ class _MangaGridViewState extends State<MangaGridView> {
   Future<void> fetchPage(int pageKey) async {
     Logger logger = Logger();
     try {
-      final newItems = await widget.extension
+      final newItems = await widget.source
           .getMangaList(pageKey, searchQuery: widget.searchQuery);
       final isLastPage = newItems.length < 1;
 

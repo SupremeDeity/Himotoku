@@ -1,7 +1,7 @@
-// Parent class for all "Extensions"
+// Parent class for all "Sources"
 import 'package:yomu/Data/Manga.dart';
 
-abstract class Extension {
+abstract class Source {
   /// Bypass cloudflare with baseurl referer header
   final baseUrl = "";
   final name = "";

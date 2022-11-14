@@ -1,5 +1,6 @@
 // ignore_for_file:
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Pages/manga_view.dart';
@@ -28,11 +29,11 @@ class _ComfortableTileState extends State<ComfortableTile> {
         child: Stack(
           children: [
             SizedBox.expand(
-              child: Image.network(
+              child: CachedNetworkImage(
                 fit: BoxFit.cover,
                 filterQuality: FilterQuality.medium,
-                widget.manga.mangaCover,
-                cacheWidth: 512,
+                imageUrl: widget.manga.mangaCover,
+                memCacheWidth: 512,
               ),
             ),
             Align(

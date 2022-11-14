@@ -7,7 +7,7 @@ part 'Manga.g.dart';
 @Collection()
 class Manga {
   Manga({
-    required this.extensionSource,
+    required this.source,
     required this.mangaName,
     required this.mangaCover,
     required this.mangaLink,
@@ -21,7 +21,7 @@ class Manga {
 
   /// Source of Manga
   @Index()
-  final String extensionSource;
+  final String source;
 
   /// Required id by IsarDB
   Id? id;
@@ -36,7 +36,7 @@ class Manga {
   String mangaLink;
 
   /// Title of manga.
-  @Index(composite: [CompositeIndex('extensionSource')])
+  @Index(composite: [CompositeIndex('source')])
   String mangaName;
 
   /// Studio of manga
@@ -80,7 +80,7 @@ class Manga {
   @Ignore()
   Manga copyWith({
     Id? id,
-    String? extensionSource,
+    String? source,
     bool? inLibrary,
     String? mangaCover,
     String? mangaName,
@@ -92,7 +92,7 @@ class Manga {
     String? synopsis,
   }) {
     return Manga(
-      extensionSource: extensionSource ?? this.extensionSource,
+      source: source ?? this.source,
       mangaCover: mangaCover ?? this.mangaCover,
       mangaName: mangaName ?? this.mangaName,
       mangaLink: mangaLink ?? this.mangaLink,

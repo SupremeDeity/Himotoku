@@ -9,7 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Data/Setting.dart';
-import 'package:yomu/Extensions/ExtensionHelper.dart';
+import 'package:yomu/Sources/SourceHelper.dart';
 
 class ChapterListView extends StatefulWidget {
   const ChapterListView(this.manga, this.chapterIndex, {Key? key})
@@ -46,13 +46,24 @@ class _ChapterListViewState extends State<ChapterListView> {
             ));
 
     for (int x = 0; x < len; x++) {
-      await for (var _
-          in precacheImage(Image.network(pageLinks[x]).image, context)
-              .asStream()) {
+      await for (var _ in precacheImage(
+              CachedNetworkImageProvider(pageLinks[x], cacheKey: pageLinks[x]),
+              context)
+          .asStream()) {
         logger.i("image ${x + 1}/$len loaded");
         loaded[x] = CachedNetworkImage(
-          imageUrl: pageLinks[x],
-        );
+            imageUrl: pageLinks[x],
+            cacheKey: pageLinks[x],
+            progressIndicatorBuilder: (context, url, progress) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 200.0),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    value: progress.progress,
+                  ),
+                ),
+              );
+            });
         yield loaded;
       }
     }
@@ -100,9 +111,9 @@ class _ChapterListViewState extends State<ChapterListView> {
 
   getPageLinks() async {
     try {
-      List<String> newItems = await ExtensionsMap[widget.manga.extensionSource]!
+      List<String>? newItems = await SourcesMap[widget.manga.source]!
           .getChapterPageList(widget.manga.chapters[widget.chapterIndex].link!);
-      if (newItems.isEmpty) {
+      if (newItems!.isEmpty) {
         Navigator.of(context).pop("No pages found.");
       }
       setState(() {
@@ -110,6 +121,7 @@ class _ChapterListViewState extends State<ChapterListView> {
       });
     } catch (e) {
       logger.e(e);
+      Navigator.of(context).pop("An error occured while fetching pages.");
     }
   }
 
@@ -292,11 +304,13 @@ class _ChapterListViewState extends State<ChapterListView> {
                           return Center(child: CircularProgressIndicator());
                         case ConnectionState.active:
                         case ConnectionState.done:
-                          if (snapshot.hasData) {
-                            return ListView(
+                          if (snapshot.hasData && !snapshot.hasError) {
+                            return ListView.builder(
+                              itemCount: snapshot.data!.length,
                               controller:
                                   _scrollController, // only add controller if all pages are loaded
-                              children: [...snapshot.data!],
+                              itemBuilder: (context, index) =>
+                                  snapshot.data![index],
                             );
                           }
                           break;

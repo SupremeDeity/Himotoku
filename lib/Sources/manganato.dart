@@ -1,12 +1,14 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
 import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Extensions/extension.dart';
+import 'package:yomu/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 
-class Manganato extends Extension {
+class Manganato extends Source {
   final sort = "all";
 
   final _baseChapterListQuery = ".chapter-name";
@@ -86,7 +88,7 @@ class Manganato extends Extension {
           chapters: chapterList,
           authorName: q1[1].text.trim(),
           status: q1[2].text.trim(),
-          synopsis: q3!.text.trim(),
+          synopsis: q3!.text.replaceFirst(r"Description :", "").trim(),
           id: manga.id,
           inLibrary: manga.inLibrary,
         );
@@ -135,7 +137,7 @@ class Manganato extends Extension {
         var mangaCover = q1[x].children[0].attributes['src'];
 
         Manga m = Manga(
-            extensionSource: name,
+            source: name,
             mangaName: title!,
             mangaCover: mangaCover!,
             mangaLink: mangaLink!);

@@ -10,7 +10,7 @@
 // import 'package:logger/logger.dart';
 // import 'package:yomu/Data/Manga.dart';
 // import 'package:yomu/Data/Setting.dart';
-// import 'package:yomu/Extensions/ExtensionHelper.dart';
+// import 'package:yomu/Sources/SourceHelper.dart';
 // import 'package:http/http.dart' as http;
 // import 'package:image/image.dart' as imglib;
 
@@ -116,7 +116,7 @@
 
 //   getPages() async {
 //     try {
-//       final newItems = await ExtensionsMap[widget.manga.extensionSource]!
+//       final newItems = await SourcesMap[widget.manga.sourceSource]!
 //           .getChapterPageList(widget.manga.chapters[widget.chapterIndex].link!);
 //       setState(() {
 //         pageLinks = newItems;

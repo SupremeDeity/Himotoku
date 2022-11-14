@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:yomu/Extensions/extension.dart';
+import 'package:yomu/Sources/Source.dart';
 import 'package:yomu/Widgets/SourceExplore/MangaGridView.dart';
 
 class SourceExplore extends StatefulWidget {
-  const SourceExplore(this.extension, {Key? key}) : super(key: key);
+  const SourceExplore(this.source, {Key? key}) : super(key: key);
 
-  final Extension extension;
+  final Source source;
 
   @override
   _SourceExploreState createState() => _SourceExploreState();
@@ -21,16 +21,16 @@ class _SourceExploreState extends State<SourceExplore> {
               onPressed: () {
                 showSearch(
                   context: context,
-                  delegate: CustomSearchClass(widget.extension),
+                  delegate: CustomSearchClass(widget.source),
                 );
               },
               icon: const Icon(Icons.search))
         ],
         title: Text(
-          widget.extension.name,
+          widget.source.name,
         ),
       ),
-      body: MangaGridView(widget.extension),
+      body: MangaGridView(widget.source),
     );
   }
 }
@@ -38,9 +38,9 @@ class _SourceExploreState extends State<SourceExplore> {
 class CustomSearchClass extends SearchDelegate {
   var results = [];
 
-  CustomSearchClass(this.extension);
+  CustomSearchClass(this.source);
 
-  Extension extension;
+  Source source;
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -70,7 +70,7 @@ class CustomSearchClass extends SearchDelegate {
   Widget buildResults(BuildContext context) {
     return query.isNotEmpty
         ? MangaGridView(
-            extension,
+            source,
             searchQuery: query,
           )
         : Container();

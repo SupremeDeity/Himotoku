@@ -2,22 +2,19 @@ import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
 import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Extensions/extension.dart';
+import 'package:yomu/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 
-class ReaperScans extends Extension {
-  final baseSourceExplore = "/comics";
-  final _chapterNameQuery = "p.truncate";
-  final _baseChapterListQuery = "a[href*=\"chapter-\"].transition.block";
-  final _baseUrl = "reaperscans.com";
-  final _chapterPageListQuery = "img.display-block";
-  // final _mangaAuthorQuery = ".summary-content"; -> Disabled
-  final _mangaListQuery =
-      "a[href*=\"comic\"].transition.relative"; // base query to get manga list
-
-  final _mangaSynopsisQuery = ".prose";
-  final _mangaStatusQuery = ".whitespace-nowrap.text-neutral-200";
+class Asura extends Source {
+  final _baseChapterListQuery = "#chapterlist .eph-num a";
+  final _baseUrl = "asura.gg";
+  final _chapterPageListQuery = "#readerarea img:not(.asurascans)";
+  final _defaultSort = "/manga";
+  final _mangaAuthorQuery = ".fmed span";
+  final _mangaListQuery = ".listupd .bs a"; // base query to get manga list
+  final _mangaStatusQuery = ".imptdt i";
+  final _mangaSynopsisQuery = "div[itemprop=\"description\"]";
 
   @override
   String get baseUrl => _baseUrl;
@@ -35,7 +32,7 @@ class ReaperScans extends Extension {
       // Query1: gets author, artist
       var q1 = parsedHtml.querySelectorAll(_chapterPageListQuery);
 
-      for (int x = 1; x < q1.length; x++) {
+      for (int x = 0; x < q1.length; x++) {
         pageList.add(q1[x].attributes['src']!);
       }
 
@@ -58,45 +55,49 @@ class ReaperScans extends Extension {
 
       List<Chapter> chapterList = [];
 
-      var q2 = parsedHtml.querySelectorAll(_chapterNameQuery);
+      // Query1: gets author, artist
+      var q1 = parsedHtml.querySelectorAll(_mangaAuthorQuery);
+      // Query2: gets status
+      var q2 = parsedHtml.querySelectorAll(_mangaStatusQuery);
       // Query3: Gets chapter list
       var q3 = parsedHtml.querySelectorAll(_baseChapterListQuery);
       // Query4: Gets synopsis
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
-      var q5 = parsedHtml.querySelectorAll(_mangaStatusQuery);
 
       var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
 
-      // Get chapter list
-
       try {
         final allManga = isarInstance!.mangas;
-
         for (int x = 0; x < q3.length; x++) {
-          var chapterName = q2[x].text;
+          var chapterName = q3[x].children[0].text.trim();
           var chapterLink = q3[x].attributes['href']!;
 
           var isRead =
               x < manga.chapters.length ? manga.chapters[x].isRead : false;
 
           final nChap = Chapter()
-            ..name = chapterName.trim()
-            ..link = chapterLink.trim()
+            ..name = chapterName
+            ..link = chapterLink
             ..isRead = isRead;
           chapterList.add(nChap);
         }
-
         Manga updatedManga = manga.copyWith(
-            synopsis: q4?.text.trim() ?? "",
-            chapters: chapterList,
-            id: manga.id,
-            inLibrary: manga.inLibrary,
-            status: q5[1].text.trim());
+          authorName: q1[1].previousElementSibling?.text.trim() == "Author"
+              ? q1[1].text.trim()
+              : null,
+          mangaStudio: q1[2].previousElementSibling?.text.trim() == "Artist"
+              ? q1[2].text.trim()
+              : null,
+          synopsis: q4?.text.trim() ?? "",
+          status: q2[0].text.trim(),
+          chapters: chapterList,
+          id: manga.id,
+          inLibrary: manga.inLibrary,
+        );
 
         await isarInstance.writeTxn(() async {
           await allManga.put(updatedManga);
         });
-
         return updatedManga;
       } catch (e) {
         var logger = Logger();
@@ -111,31 +112,34 @@ class ReaperScans extends Extension {
     }
   }
 
-  // TODO: IMPLEMENT SORT AND FILTER
   @override
   getMangaList(int pageKey, {String searchQuery = ""}) async {
     try {
       Uri url;
-
-      url = Uri.https(_baseUrl, baseSourceExplore, {'page': "$pageKey"});
+      if (searchQuery.isEmpty) {
+        url = Uri.https(_baseUrl, _defaultSort, {'page': "$pageKey"});
+      } else {
+        url = Uri.https(_baseUrl, "/page/$pageKey", {'s': searchQuery});
+      }
       var response = await http.get(url);
       var parsedHtml = parse(response.body);
       List<Manga> mangaList = [];
 
       // Query1: gets title and link
       var q1 = parsedHtml.querySelectorAll(_mangaListQuery);
+      // Query2: gets cover art
+      var q2 = parsedHtml.querySelectorAll("$_mangaListQuery img");
 
       for (int x = 0; x < q1.length; x++) {
-        var title = q1[x].nextElementSibling!.text;
+        var title = q1[x].attributes['title'];
         var mangaLink = q1[x].attributes['href'];
-        var mangaCover = q1[x].children[0].attributes['src'];
+        var mangaCover = q2[x].attributes['src'];
 
         Manga m = Manga(
-          extensionSource: name.trim(),
-          mangaName: title.trim(),
-          mangaCover: mangaCover!.trim(),
-          mangaLink: mangaLink!.trim(),
-        );
+            source: name,
+            mangaName: title!,
+            mangaCover: mangaCover!,
+            mangaLink: mangaLink!);
 
         mangaList.add(m);
       }
@@ -149,8 +153,9 @@ class ReaperScans extends Extension {
   }
 
   @override
-  String get iconUrl => "https://reaperscans.com/images/logo-reaper-2.png";
+  String get iconUrl =>
+      "https://asura.gg/wp-content/uploads/2021/03/Group_1.png";
 
   @override
-  String get name => "Reaper Scans";
+  String get name => "Asura Scans";
 }

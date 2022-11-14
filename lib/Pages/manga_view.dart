@@ -6,7 +6,7 @@ import 'package:isar/isar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Extensions/ExtensionHelper.dart';
+import 'package:yomu/Sources/SourceHelper.dart';
 import 'package:yomu/Widgets/Reader/ChapterListView.dart';
 
 class MangaView extends StatefulWidget {
@@ -52,13 +52,13 @@ class _MangaViewState extends State<MangaView> {
         .mangaNameEqualTo(
           widget.mangaInstance.mangaName,
         )
-        .extensionSourceEqualTo(widget.mangaInstance.extensionSource)
+        .sourceEqualTo(widget.mangaInstance.source)
         .findAll();
     Manga m;
     if (mangas != null && mangas.isNotEmpty) {
       m = mangas.first;
     } else {
-      m = await ExtensionsMap[widget.mangaInstance.extensionSource]!
+      m = await SourcesMap[widget.mangaInstance.source]!
           .getMangaDetails(widget.mangaInstance);
     }
 
@@ -106,7 +106,7 @@ class _MangaViewState extends State<MangaView> {
                         value,
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 17),
+                            fontSize: 15),
                       ),
                       backgroundColor: Theme.of(context).colorScheme.surface,
                     ));
@@ -192,7 +192,7 @@ class _MangaViewState extends State<MangaView> {
                         ),
                       ),
                       Text(
-                        manga!.extensionSource,
+                        manga!.source,
                         style: const TextStyle(
                           overflow: TextOverflow.ellipsis,
                           fontWeight: FontWeight.w400,
@@ -276,8 +276,7 @@ class _MangaViewState extends State<MangaView> {
               key: _refreshIndicatorKey,
               onRefresh: () async {
                 Manga m =
-                    await ExtensionsMap[widget.mangaInstance.extensionSource]!
-                        .getMangaDetails(widget.mangaInstance);
+                    await SourcesMap[manga!.source]!.getMangaDetails(manga!);
 
                 setState(() {
                   manga = m;

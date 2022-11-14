@@ -1,5 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:yomu/Extensions/ExtensionHelper.dart';
+import 'package:yomu/Sources/SourceHelper.dart';
 import 'package:yomu/Pages/source_explore.dart';
 import 'package:yomu/Widgets/BottomNavBar.dart';
 
@@ -24,7 +25,7 @@ class _ExploreState extends State<Explore> {
           Padding(
             padding: const EdgeInsets.only(left: 12.0, top: 12.0),
             child: Text(
-              '${ExtensionsMap.length} source(s)',
+              '${SourcesMap.length} source(s)',
               style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.w500),
@@ -33,7 +34,7 @@ class _ExploreState extends State<Explore> {
           ListView(
               shrinkWrap: true,
               children: List.generate(
-                ExtensionsMap.length,
+                SourcesMap.length,
                 (index) => Column(
                   children: [
                     ListTile(
@@ -44,16 +45,17 @@ class _ExploreState extends State<Explore> {
                               transitionDuration:
                                   const Duration(milliseconds: 0),
                               pageBuilder: (_, __, ___) => SourceExplore(
-                                ExtensionsMap.values.elementAt(index),
+                                SourcesMap.values.elementAt(index),
                               ),
                             ),
                           );
                         },
-                        title: Text(ExtensionsMap.keys.elementAt(index)),
-                        leading: Image.network(
-                          ExtensionsMap.values.elementAt(index).iconUrl,
-                          width: 32,
+                        title: Text(SourcesMap.keys.elementAt(index)),
+                        leading: CachedNetworkImage(
+                          imageUrl: SourcesMap.values.elementAt(index).iconUrl,
+                          fit: BoxFit.fitWidth,
                           height: 32,
+                          width: 32,
                         )),
                     const Divider(),
                   ],
