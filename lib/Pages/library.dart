@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:isar/isar.dart';
 import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
@@ -27,6 +28,8 @@ class _LibraryState extends State<Library> {
 
   @override
   void dispose() {
+    print("dispose called");
+    // print(CacheManager(""));
     cancelSubscription!.cancel();
     super.dispose();
   }
@@ -252,7 +255,10 @@ class _LibraryState extends State<Library> {
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.all(4.0),
-                  child: ComfortableTile(mangaInLibrary[index]),
+                  child: ComfortableTile(
+                    mangaInLibrary[index],
+                    cacheImage: true,
+                  ),
                 );
               },
             )

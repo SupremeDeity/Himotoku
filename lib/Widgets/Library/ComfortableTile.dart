@@ -2,13 +2,19 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:yomu/Data/Constants.dart';
 import 'package:yomu/Data/Manga.dart';
 import 'package:yomu/Pages/manga_view.dart';
 
 class ComfortableTile extends StatefulWidget {
-  const ComfortableTile(this.manga, {Key? key}) : super(key: key);
+  const ComfortableTile(this.manga, {Key? key, this.cacheImage = false})
+      : super(key: key);
 
   final Manga manga;
+
+  /// Whether to cache cover image.
+  final bool cacheImage;
 
   @override
   _ComfortableTileState createState() => _ComfortableTileState();
@@ -34,6 +40,12 @@ class _ComfortableTileState extends State<ComfortableTile> {
                 filterQuality: FilterQuality.medium,
                 imageUrl: widget.manga.mangaCover,
                 memCacheWidth: 512,
+                cacheManager: CacheManager(Config(
+                    // TODO(SupremeDeity): Do something about this
+                    widget.cacheImage ? MTILE_CACHE_KEY : "tempMangaTileWidget",
+                    stalePeriod: widget.cacheImage
+                        ? Duration(days: 30)
+                        : Duration(seconds: 0))),
               ),
             ),
             Align(

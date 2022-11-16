@@ -3,6 +3,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -38,6 +39,7 @@ class _ChapterListViewState extends State<ChapterListView> {
     int len = pageLinks.length;
     List<Widget> loaded = List.generate(
         len,
+        growable: false,
         (index) => const Padding(
               padding: EdgeInsets.symmetric(vertical: 200.0),
               child: Center(
@@ -47,23 +49,16 @@ class _ChapterListViewState extends State<ChapterListView> {
 
     for (int x = 0; x < len; x++) {
       await for (var _ in precacheImage(
-              CachedNetworkImageProvider(pageLinks[x], cacheKey: pageLinks[x]),
+              CachedNetworkImageProvider(pageLinks[x],
+                  cacheManager: CacheManager(Config("chapterCache",
+                      stalePeriod: Duration(minutes: 1)))),
               context)
           .asStream()) {
         logger.i("image ${x + 1}/$len loaded");
         loaded[x] = CachedNetworkImage(
-            imageUrl: pageLinks[x],
-            cacheKey: pageLinks[x],
-            progressIndicatorBuilder: (context, url, progress) {
-              return Padding(
-                padding: EdgeInsets.symmetric(vertical: 200.0),
-                child: Center(
-                  child: CircularProgressIndicator(
-                    value: progress.progress,
-                  ),
-                ),
-              );
-            });
+          imageUrl: pageLinks[x],
+          cacheKey: pageLinks[x],
+        );
         yield loaded;
       }
     }

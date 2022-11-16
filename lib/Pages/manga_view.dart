@@ -2,6 +2,7 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:isar/isar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yomu/Data/Constants.dart';
@@ -47,24 +48,20 @@ class _MangaViewState extends State<MangaView> {
   }
 
   initGetManga() async {
-    var mangas = await isarInstance?.mangas
+    var libmanga = await isarInstance?.mangas
         .filter()
-        .mangaNameEqualTo(
-          widget.mangaInstance.mangaName,
-        )
-        .sourceEqualTo(widget.mangaInstance.source)
-        .findAll();
-    Manga m;
-    if (mangas != null && mangas.isNotEmpty) {
-      m = mangas.first;
-    } else {
-      m = await SourcesMap[widget.mangaInstance.source]!
-          .getMangaDetails(widget.mangaInstance);
+        .mangaLinkEqualTo(widget.mangaInstance.mangaLink)
+        .findFirst();
+    if (libmanga == null) {
+      {
+        libmanga = await SourcesMap[widget.mangaInstance.source]!
+            .getMangaDetails(widget.mangaInstance);
+      }
     }
 
     setState(() {
-      manga = m;
-      isInLibrary = m.inLibrary;
+      manga = libmanga;
+      isInLibrary = libmanga?.inLibrary ?? false;
     });
   }
 
@@ -139,9 +136,12 @@ class _MangaViewState extends State<MangaView> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: CachedNetworkImage(
-                      filterQuality: FilterQuality.medium,
-                      alignment: Alignment.centerLeft,
-                      imageUrl: manga!.mangaCover),
+                    filterQuality: FilterQuality.medium,
+                    alignment: Alignment.centerLeft,
+                    imageUrl: manga!.mangaCover,
+                    memCacheWidth: 256,
+                    cacheManager: CacheManager(Config(MTILE_CACHE_KEY)),
+                  ),
                 ),
               ),
               Expanded(
@@ -154,11 +154,11 @@ class _MangaViewState extends State<MangaView> {
                     children: [
                       Text(
                         widget.mangaInstance.mangaName,
-                        maxLines: 3,
+                        maxLines: 2,
                         style: TextStyle(
                           overflow: TextOverflow.ellipsis,
                           fontWeight: FontWeight.w500,
-                          fontSize: 20,
+                          fontSize: 18,
                           color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
@@ -169,7 +169,7 @@ class _MangaViewState extends State<MangaView> {
                             Expanded(
                               child: Text(
                                 "${manga!.authorName}\n${manga!.mangaStudio}",
-                                maxLines: 4,
+                                maxLines: 2,
                                 style: const TextStyle(
                                   overflow: TextOverflow.ellipsis,
                                   fontWeight: FontWeight.w400,
