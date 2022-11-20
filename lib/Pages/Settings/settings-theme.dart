@@ -2,12 +2,13 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
-import 'package:yomu/Data/Constants.dart';
-import 'package:yomu/Data/Setting.dart';
-import 'package:yomu/Data/Theme.dart';
+import 'package:himotoku/Data/Constants.dart';
+import 'package:himotoku/Data/Setting.dart';
+import 'package:himotoku/Data/Theme.dart';
 
 class SettingsTheme extends StatefulWidget {
   const SettingsTheme({Key? key}) : super(key: key);
@@ -30,8 +31,10 @@ class _SettingsThemeState extends State<SettingsTheme> {
         updateSettings();
       });
     } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
+      if (kDebugMode) {
+        Logger logger = Logger();
+        logger.e(e);
+      }
     }
     super.initState();
   }
@@ -58,6 +61,7 @@ class _SettingsThemeState extends State<SettingsTheme> {
           return ListTile(
             title: Text(themeMap.keys.elementAt(index)),
             leading: Radio(
+                activeColor: Theme.of(context).colorScheme.surfaceTint,
                 value: themeMap.keys.elementAt(index),
                 groupValue: theme,
                 onChanged: (value) async {

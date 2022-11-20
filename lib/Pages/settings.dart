@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:yomu/Pages/Settings/settings-about.dart';
-import 'package:yomu/Pages/Settings/settings-backup.dart';
-import 'package:yomu/Pages/Settings/settings-reader.dart';
-import 'package:yomu/Pages/Settings/settings-theme.dart';
-import 'package:yomu/Widgets/BottomNavBar.dart';
+import 'package:himotoku/Pages/Settings/settings-about.dart';
+import 'package:himotoku/Pages/Settings/settings-backup.dart';
+import 'package:himotoku/Pages/Settings/settings-reader.dart';
+import 'package:himotoku/Pages/Settings/settings-theme.dart';
+import 'package:himotoku/Widgets/BottomNavBar.dart';
 
 class Settings extends StatefulWidget {
   const Settings({Key? key}) : super(key: key);

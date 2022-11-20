@@ -2,11 +2,12 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
-import 'package:yomu/Data/Constants.dart';
-import 'package:yomu/Data/Setting.dart';
+import 'package:himotoku/Data/Constants.dart';
+import 'package:himotoku/Data/Setting.dart';
 
 class ReaderSettings extends StatefulWidget {
   const ReaderSettings({Key? key}) : super(key: key);
@@ -30,8 +31,10 @@ class _ReaderSettingsState extends State<ReaderSettings> {
         updateSettings();
       });
     } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
+      if (kDebugMode) {
+        Logger logger = Logger();
+        logger.e(e);
+      }
     }
     super.initState();
   }

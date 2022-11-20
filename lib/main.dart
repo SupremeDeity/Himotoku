@@ -1,32 +1,36 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+// import 'package:himotoku/FileOutput.dart';
 import 'package:isar/isar.dart';
-import 'package:yomu/Data/Constants.dart';
+import 'package:himotoku/Data/Constants.dart';
 
-import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Data/Setting.dart';
-import 'package:yomu/Data/Theme.dart';
-import 'package:yomu/Pages/library.dart';
-// import 'package:yomu/test.dart';
+import 'package:himotoku/Data/Manga.dart';
+import 'package:himotoku/Data/Setting.dart';
+import 'package:himotoku/Data/Theme.dart';
+import 'package:himotoku/Pages/library.dart';
+
+// import 'package:himotoku/test.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   runApp(
-    const YomuMain(),
+    const himotokuMain(),
   );
 }
 
-class YomuMain extends StatefulWidget {
-  const YomuMain({super.key});
+class himotokuMain extends StatefulWidget {
+  const himotokuMain({super.key});
 
   @override
-  State<YomuMain> createState() => _YomuMainState();
+  State<himotokuMain> createState() => _himotokuMainState();
 }
 
-class _YomuMainState extends State<YomuMain> {
+class _himotokuMainState extends State<himotokuMain> {
   ThemeData? currentTheme;
   Isar? isarInstance;
 

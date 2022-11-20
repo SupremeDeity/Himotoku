@@ -4,13 +4,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:yomu/Data/Constants.dart';
-import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Data/Setting.dart';
+import 'package:himotoku/Data/Constants.dart';
+import 'package:himotoku/Data/Manga.dart';
+import 'package:himotoku/Data/Setting.dart';
 
 class ImportExportSettings extends StatefulWidget {
   const ImportExportSettings({Key? key}) : super(key: key);
@@ -48,7 +49,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
 
         DateTime now = DateTime.now();
         String backupLocation =
-            "$backupExportLocation/YomuBackup-${now.day}-${now.month}-${now.year}-${now.millisecond}";
+            "$backupExportLocation/himotokuBackup-${now.day}-${now.month}-${now.year}-${now.millisecond}";
 
         File file = await File(backupLocation).create(recursive: true);
 
@@ -57,8 +58,10 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
       }
     } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
+      if (kDebugMode) {
+        Logger logger = Logger();
+        logger.e(e);
+      }
       var snackbar = const SnackBar(content: Text("Failed to save backup."));
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }
@@ -91,8 +94,10 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
         }
       }
     } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
+      if (kDebugMode) {
+        Logger logger = Logger();
+        logger.e(e);
+      }
       // var snackbar = const SnackBar(content: Text("Failed to save backup."));
       // ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }

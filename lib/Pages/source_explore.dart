@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:yomu/Sources/Source.dart';
-import 'package:yomu/Widgets/SourceExplore/MangaGridView.dart';
+import 'package:himotoku/Sources/Source.dart';
+import 'package:himotoku/Widgets/SourceExplore/MangaGridView.dart';
 
 class SourceExplore extends StatefulWidget {
   const SourceExplore(this.source, {Key? key}) : super(key: key);

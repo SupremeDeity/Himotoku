@@ -1,11 +1,12 @@
 // ignore_for_file: , non_constant_identifier_names
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:logger/logger.dart';
-import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Sources/Source.dart';
-import 'package:yomu/Widgets/Library/ComfortableTile.dart';
+import 'package:himotoku/Data/Manga.dart';
+import 'package:himotoku/Sources/Source.dart';
+import 'package:himotoku/Widgets/Library/ComfortableTile.dart';
 
 class MangaGridView extends StatefulWidget {
   const MangaGridView(this.source, {Key? key, this.searchQuery = ""})
@@ -31,7 +32,6 @@ class _MangaGridViewState extends State<MangaGridView> {
   }
 
   Future<void> fetchPage(int pageKey) async {
-    Logger logger = Logger();
     try {
       final newItems = await widget.source
           .getMangaList(pageKey, searchQuery: widget.searchQuery);
@@ -45,8 +45,10 @@ class _MangaGridViewState extends State<MangaGridView> {
       }
     } catch (error) {
       _pagingController.error = error;
-
-      logger.e(error);
+      if (kDebugMode) {
+        Logger logger = Logger();
+        logger.e(error);
+      }
     }
   }
 
