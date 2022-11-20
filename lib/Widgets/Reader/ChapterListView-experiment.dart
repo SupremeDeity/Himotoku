@@ -8,9 +8,9 @@
 // import 'package:flutter/services.dart';
 // import 'package:isar/isar.dart';
 // import 'package:logger/logger.dart';
-// import 'package:yomu/Data/Manga.dart';
-// import 'package:yomu/Data/Setting.dart';
-// import 'package:yomu/Sources/SourceHelper.dart';
+// import 'package:himotoku/Data/Manga.dart';
+// import 'package:himotoku/Data/Setting.dart';
+// import 'package:himotoku/Sources/SourceHelper.dart';
 // import 'package:http/http.dart' as http;
 // import 'package:image/image.dart' as imglib;
 

@@ -1,5 +1,5 @@
 // Parent class for all "Sources"
-import 'package:yomu/Data/Manga.dart';
+import 'package:himotoku/Data/Manga.dart';
 
 abstract class Source {
   /// Bypass cloudflare with baseurl referer header

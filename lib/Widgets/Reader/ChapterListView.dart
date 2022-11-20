@@ -1,16 +1,17 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names,
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:yomu/Data/Constants.dart';
-import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Data/Setting.dart';
-import 'package:yomu/Sources/SourceHelper.dart';
+import 'package:himotoku/Data/Constants.dart';
+import 'package:himotoku/Data/Manga.dart';
+import 'package:himotoku/Data/Setting.dart';
+import 'package:himotoku/Sources/SourceHelper.dart';
 
 class ChapterListView extends StatefulWidget {
   const ChapterListView(this.manga, this.chapterIndex, {Key? key})
@@ -30,7 +31,6 @@ class _ChapterListViewState extends State<ChapterListView> {
   var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME)!;
   List<String> pageLinks = [];
   Stream<List<Widget>>? pageGenStream;
-  var logger = Logger();
 
   final ScrollController _scrollController = ScrollController();
 
@@ -49,12 +49,22 @@ class _ChapterListViewState extends State<ChapterListView> {
 
     for (int x = 0; x < len; x++) {
       await for (var _ in precacheImage(
-              CachedNetworkImageProvider(pageLinks[x],
-                  cacheManager: CacheManager(Config("chapterCache",
-                      stalePeriod: Duration(minutes: 1)))),
+              CachedNetworkImageProvider(
+                pageLinks[x],
+                cacheManager: CacheManager(
+                  Config(
+                    "chapterCache",
+                    stalePeriod: Duration(minutes: 1),
+                  ),
+                ),
+              ),
               context)
           .asStream()) {
-        logger.i("image ${x + 1}/$len loaded");
+        if (kDebugMode) {
+          var logger = Logger();
+
+          logger.i("image ${x + 1}/$len loaded");
+        }
         loaded[x] = CachedNetworkImage(
           imageUrl: pageLinks[x],
           cacheKey: pageLinks[x],
@@ -115,7 +125,10 @@ class _ChapterListViewState extends State<ChapterListView> {
         pageLinks = newItems;
       });
     } catch (e) {
-      logger.e(e);
+      if (kDebugMode) {
+        Logger logger = Logger();
+        logger.e(e);
+      }
       Navigator.of(context).pop("An error occured while fetching pages.");
     }
   }

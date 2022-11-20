@@ -1,10 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:yomu/Data/Constants.dart';
-import 'package:yomu/Sources/SourceHelper.dart';
-import 'package:yomu/Pages/source_explore.dart';
-import 'package:yomu/Widgets/BottomNavBar.dart';
+import 'package:himotoku/Sources/SourceHelper.dart';
+import 'package:himotoku/Pages/source_explore.dart';
+import 'package:himotoku/Widgets/BottomNavBar.dart';
 
 class Explore extends StatefulWidget {
   const Explore({Key? key}) : super(key: key);

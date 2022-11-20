@@ -8,6 +8,7 @@ class Themes {
   static Color crimsonPrimary = const Color.fromRGBO(251, 99, 118, 1);
   static Color defaultPrimaryVariant = const Color.fromARGB(255, 0, 50, 240);
   static Color periwinklePrimary = const Color.fromARGB(255, 128, 128, 255);
+  static Color warmPrimary = const Color.fromARGB(255, 0, 67, 70);
 
   static ThemeData get crimsonDarkTheme {
     return ThemeData(
@@ -41,7 +42,6 @@ class Themes {
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
         seedColor: crimsonPrimary,
-        brightness: Brightness.light,
       ).copyWith(
         surface: crimsonPrimary,
       ),
@@ -53,7 +53,6 @@ class Themes {
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
         seedColor: periwinklePrimary,
-        brightness: Brightness.light,
       ).copyWith(
         surface: periwinklePrimary,
       ),
@@ -76,25 +75,21 @@ class Themes {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color.fromARGB(255, 0, 67, 70),
+        seedColor: warmPrimary,
         brightness: Brightness.dark,
       ).copyWith(
-        surface: const Color.fromARGB(255, 0, 67, 70),
+        surface: warmPrimary,
       ),
     );
   }
 
-  static ThemeData get WarmLight {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color.fromARGB(255, 0, 67, 70),
-        brightness: Brightness.light,
-      ).copyWith(
-        surface: const Color.fromARGB(255, 0, 67, 70),
-      ),
-    );
-  }
+  // static ThemeData get WarmLight {
+  //   return ThemeData(
+  //       useMaterial3: true,
+  //       colorScheme: ColorScheme.fromSeed(
+  //         seedColor: warmPrimary,
+  //       ).copyWith(surface: warmPrimary));
+  // }
 }
 
 Map<String, ThemeData> themeMap = {
@@ -105,5 +100,5 @@ Map<String, ThemeData> themeMap = {
   "Periwinkle Light": Themes.PeriwinkleLight,
   "Periwinkle Dark": Themes.PeriwinkleDark,
   "Warm Black": Themes.WarmBlack,
-  "Warm Light": Themes.WarmLight
+  // "Warm Light": Themes.WarmLight
 };

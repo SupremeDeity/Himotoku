@@ -1,7 +1,7 @@
 // ignore_for_file: , invalid_annotation_target
 
 import 'package:isar/isar.dart';
-import 'package:yomu/Data/Theme.dart';
+import 'package:himotoku/Data/Theme.dart';
 
 part 'Setting.g.dart';
 

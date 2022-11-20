@@ -3,14 +3,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:himotoku/Sources/Source.dart';
+import 'package:himotoku/Sources/SourceHelper.dart';
 import 'package:isar/isar.dart';
-import 'package:yomu/Data/Constants.dart';
-import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Data/Setting.dart';
-import 'package:yomu/Pages/explore.dart';
-import 'package:yomu/Widgets/BottomNavBar.dart';
-import 'package:yomu/Widgets/Library/ComfortableTile.dart';
+import 'package:himotoku/Data/Constants.dart';
+import 'package:himotoku/Data/Manga.dart';
+import 'package:himotoku/Data/Setting.dart';
+import 'package:himotoku/Pages/explore.dart';
+import 'package:himotoku/Widgets/BottomNavBar.dart';
+import 'package:himotoku/Widgets/Library/ComfortableTile.dart';
 
 class Library extends StatefulWidget {
   const Library({Key? key}) : super(key: key);
@@ -28,8 +29,6 @@ class _LibraryState extends State<Library> {
 
   @override
   void dispose() {
-    print("dispose called");
-    // print(CacheManager(""));
     cancelSubscription!.cancel();
     super.dispose();
   }
@@ -144,26 +143,6 @@ class _LibraryState extends State<Library> {
           },
           title: const Text("Status"),
         ),
-        // ListTile(
-        //   leading: sortSettings == LibrarySort.added
-        //       ? const Icon(Icons.arrow_upward)
-        //       : (sortSettings == LibrarySort.addedDesc
-        //           ? const Icon(Icons.arrow_downward)
-        //           : null),
-        //   onTap: () {
-        //     if (sortSettings == LibrarySort.added) {
-        //       sortSettings = LibrarySort.addedDesc;
-        //     } else {
-        //       sortSettings = LibrarySort.added;
-        //     }
-
-        //     // Cause update in modal.
-        //     setModalState(() {});
-        //     // Update library.
-        //     getLibrary();
-        //   },
-        //   title: const Text("Added"),
-        // )
       ],
     );
   }
@@ -246,21 +225,29 @@ class _LibraryState extends State<Library> {
       ),
       bottomNavigationBar: const BottomNavBar(0),
       body: mangaInLibrary.isNotEmpty
-          ? GridView.builder(
-              itemCount: mangaInLibrary.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                childAspectRatio: 2 / 3,
-                crossAxisCount: 2,
-              ),
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: ComfortableTile(
-                    mangaInLibrary[index],
-                    cacheImage: true,
-                  ),
-                );
+          ? RefreshIndicator(
+              onRefresh: () async {
+                mangaInLibrary.asMap().forEach((index, manga) async {
+                  await SourcesMap[manga.source]!.getMangaDetails(manga);
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                });
               },
+              child: GridView.builder(
+                itemCount: mangaInLibrary.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  childAspectRatio: 2 / 3,
+                  crossAxisCount: 2,
+                ),
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: ComfortableTile(
+                      mangaInLibrary[index],
+                      cacheImage: true,
+                    ),
+                  );
+                },
+              ),
             )
           : Center(
               child: Column(

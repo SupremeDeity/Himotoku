@@ -1,9 +1,9 @@
 // ignore_for_file:
 
 import 'package:flutter/material.dart';
-import 'package:yomu/Pages/explore.dart';
-import 'package:yomu/Pages/library.dart';
-import 'package:yomu/Pages/settings.dart';
+import 'package:himotoku/Pages/explore.dart';
+import 'package:himotoku/Pages/library.dart';
+import 'package:himotoku/Pages/settings.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar(this.index, {Key? key}) : super(key: key);

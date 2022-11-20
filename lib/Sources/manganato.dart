@@ -1,10 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
-import 'package:yomu/Data/Constants.dart';
-import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Sources/Source.dart';
+import 'package:himotoku/Data/Constants.dart';
+import 'package:himotoku/Data/Manga.dart';
+import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 
@@ -40,9 +39,11 @@ class Manganato extends Source {
 
       return pageList;
     } catch (e) {
-      var logger = Logger();
+      if (kDebugMode) {
+        var logger = Logger();
 
-      logger.e(e);
+        logger.e(e);
+      }
     }
   }
 
@@ -98,14 +99,18 @@ class Manganato extends Source {
         });
         return updatedManga;
       } catch (e) {
+        if (kDebugMode) {
+          var logger = Logger();
+
+          logger.e(e);
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
         var logger = Logger();
 
         logger.e(e);
       }
-    } catch (e) {
-      var logger = Logger();
-
-      logger.e(e);
     }
   }
 
@@ -147,9 +152,11 @@ class Manganato extends Source {
 
       return mangaList;
     } catch (e) {
-      var logger = Logger();
+      if (kDebugMode) {
+        var logger = Logger();
 
-      logger.e(e);
+        logger.e(e);
+      }
     }
   }
 

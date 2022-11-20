@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:isar/isar.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:yomu/Data/Constants.dart';
-import 'package:yomu/Data/Manga.dart';
-import 'package:yomu/Sources/SourceHelper.dart';
-import 'package:yomu/Widgets/Reader/ChapterListView.dart';
+import 'package:himotoku/Data/Constants.dart';
+import 'package:himotoku/Data/Manga.dart';
+import 'package:himotoku/Sources/SourceHelper.dart';
+import 'package:himotoku/Widgets/Reader/ChapterListView.dart';
 
 class MangaView extends StatefulWidget {
   const MangaView(this.mangaInstance, {Key? key}) : super(key: key);
