@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:himotoku/Pages/RouteBuilder.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:himotoku/Sources/SourceHelper.dart';
 import 'package:isar/isar.dart';
@@ -265,11 +266,7 @@ class _LibraryState extends State<Library> {
                           const Text("Navigate to "),
                           TextButton(
                               onPressed: () => Navigator.of(context)
-                                  .pushReplacement(PageRouteBuilder(
-                                      pageBuilder: (_, __, ___) =>
-                                          const Explore(),
-                                      transitionDuration:
-                                          const Duration(milliseconds: 0))),
+                                  .pushReplacement(createRoute(Explore())),
                               child: const Text("Explore")),
                           const Text("to add to your library.")
                         ],

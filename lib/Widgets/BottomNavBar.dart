@@ -1,6 +1,7 @@
 // ignore_for_file:
 
 import 'package:flutter/material.dart';
+import 'package:himotoku/Pages/RouteBuilder.dart';
 import 'package:himotoku/Pages/explore.dart';
 import 'package:himotoku/Pages/library.dart';
 import 'package:himotoku/Pages/settings.dart';
@@ -32,11 +33,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       currentIndex: widget.index,
       onTap: (itemIndex) {
         if (itemIndex != widget.index) {
-          Navigator.of(context).pushReplacement(
-            PageRouteBuilder(
-                pageBuilder: (_, __, ___) => routes[itemIndex],
-                transitionDuration: const Duration(milliseconds: 0)),
-          );
+          Navigator.of(context).pushReplacement(createRoute(routes[itemIndex]));
         }
       },
     );

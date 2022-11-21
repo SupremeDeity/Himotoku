@@ -3,6 +3,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:himotoku/Pages/RouteBuilder.dart';
 import 'package:isar/isar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:himotoku/Data/Constants.dart';
@@ -30,6 +31,10 @@ class _MangaViewState extends State<MangaView> {
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
+
+  bool isSynopsisExpanded = false;
+  // Minimum synopsis length before cutoff.
+  var synopsisCutoffMin = 300;
 
   @override
   void initState() {
@@ -61,6 +66,7 @@ class _MangaViewState extends State<MangaView> {
 
     setState(() {
       manga = libmanga;
+      isSynopsisExpanded = manga!.synopsis.length < synopsisCutoffMin;
       isInLibrary = libmanga?.inLibrary ?? false;
     });
   }
@@ -86,13 +92,7 @@ class _MangaViewState extends State<MangaView> {
             visualDensity: VisualDensity.compact,
             onTap: () {
               Navigator.of(context)
-                  .push(
-                PageRouteBuilder(
-                  transitionDuration: const Duration(milliseconds: 0),
-                  pageBuilder: (_, __, ___) =>
-                      ChapterListView(manga!, index - 1),
-                ),
-              )
+                  .push(createRoute(ChapterListView(manga!, index - 1)))
                   .then((value) {
                 if (value != null) {
                   ScaffoldMessenger.of(context)
@@ -100,7 +100,7 @@ class _MangaViewState extends State<MangaView> {
                     ..showSnackBar(SnackBar(
                       duration: Duration(milliseconds: 2300),
                       content: Text(
-                        value,
+                        value.toString(),
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 15),
@@ -206,51 +206,28 @@ class _MangaViewState extends State<MangaView> {
               ),
             ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Column(
-                children: [
-                  IconButton(
-                    iconSize: 22,
-                    onPressed: addToLibrary,
-                    icon: Icon(
-                        isInLibrary
-                            ? Icons.library_add
-                            : Icons.library_add_outlined,
-                        color: isInLibrary
-                            ? Theme.of(context).colorScheme.inversePrimary
-                            : Theme.of(context).colorScheme.primary),
-                  ),
-                  Text(
-                    isInLibrary ? "In Library" : "Add to library",
-                    style: const TextStyle(fontSize: 10),
-                  )
-                ],
-              ),
-              Column(
-                children: [
-                  IconButton(
-                      iconSize: 22,
-                      onPressed: () {
-                        launchUrl(Uri.parse(manga!.mangaLink),
-                            mode: LaunchMode.externalApplication);
-                      },
-                      icon: const Icon(Icons.open_in_browser)),
-                  const Text(
-                    "Open in browser",
-                    style: TextStyle(fontSize: 10),
-                  )
-                ],
-              ),
-            ],
-          ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              manga!.synopsis,
-            ),
-          ),
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                !isSynopsisExpanded
+                    ? manga!.synopsis.substring(0, 200) + "..."
+                    : manga!.synopsis,
+              )),
+          manga!.synopsis.length > synopsisCutoffMin
+              ? Center(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        isSynopsisExpanded = !isSynopsisExpanded;
+                      });
+                    },
+                    icon: Icon(isSynopsisExpanded
+                        ? Icons.arrow_drop_up
+                        : Icons.arrow_drop_down),
+                    label: Text(isSynopsisExpanded ? "Collapse" : "Expand"),
+                  ),
+                )
+              : Container(),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
@@ -270,7 +247,31 @@ class _MangaViewState extends State<MangaView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            iconSize: 22,
+            onPressed: addToLibrary,
+            tooltip: "Add to Library",
+            icon: Icon(
+              isInLibrary
+                  ? Icons.library_add_check
+                  : Icons.library_add_outlined,
+              color: isInLibrary
+                  ? Theme.of(context).colorScheme.secondary
+                  : Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          IconButton(
+              iconSize: 22,
+              tooltip: "Open in browser",
+              onPressed: () {
+                launchUrl(Uri.parse(manga!.mangaLink),
+                    mode: LaunchMode.externalApplication);
+              },
+              icon: const Icon(Icons.open_in_browser)),
+        ],
+      ),
       body: manga != null
           ? RefreshIndicator(
               key: _refreshIndicatorKey,

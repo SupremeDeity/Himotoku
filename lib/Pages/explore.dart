@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:himotoku/Pages/RouteBuilder.dart';
 import 'package:himotoku/Sources/SourceHelper.dart';
 import 'package:himotoku/Pages/source_explore.dart';
 import 'package:himotoku/Widgets/BottomNavBar.dart';
@@ -40,15 +41,11 @@ class _ExploreState extends State<Explore> {
                     ListTile(
                         contentPadding: const EdgeInsets.all(5),
                         onTap: () {
-                          Navigator.of(context).push(
-                            PageRouteBuilder(
-                              transitionDuration:
-                                  const Duration(milliseconds: 0),
-                              pageBuilder: (_, __, ___) => SourceExplore(
-                                SourcesMap.values.elementAt(index),
-                              ),
+                          Navigator.of(context).push(createRoute(
+                            SourceExplore(
+                              SourcesMap.values.elementAt(index),
                             ),
-                          );
+                          ));
                         },
                         title: Text(SourcesMap.keys.elementAt(index)),
                         leading: CachedNetworkImage(

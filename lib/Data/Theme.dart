@@ -13,10 +13,13 @@ class Themes {
   static ThemeData get crimsonDarkTheme {
     return ThemeData(
       useMaterial3: true,
+      scaffoldBackgroundColor: crimsonBackground,
+      bottomNavigationBarTheme:
+          BottomNavigationBarThemeData(backgroundColor: crimsonBackground),
       colorScheme: ColorScheme.fromSeed(
         seedColor: crimsonPrimary,
         brightness: Brightness.dark,
-      ).copyWith(surface: crimsonPrimary),
+      ),
     );
   }
 
@@ -29,67 +32,57 @@ class Themes {
   static ThemeData get defaultLight {
     return ThemeData.light(
       useMaterial3: true,
-    ).copyWith(
-        colorScheme: ThemeData.light().colorScheme.copyWith(
-              inversePrimary: defaultPrimaryVariant,
-              surface: ThemeData.light().primaryColor,
-              onSurface: ThemeData.light().colorScheme.onBackground,
-            ));
+    );
   }
 
   static ThemeData get crimsonLightTheme {
     return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: crimsonPrimary,
-      ).copyWith(
-        surface: crimsonPrimary,
-      ),
-    );
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: crimsonPrimary,
+        ));
   }
 
   static ThemeData get PeriwinkleLight {
     return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: periwinklePrimary,
-      ).copyWith(
-        surface: periwinklePrimary,
-      ),
-    );
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: periwinklePrimary,
+        ));
   }
 
   static ThemeData get PeriwinkleDark {
     return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: periwinklePrimary,
-        brightness: Brightness.dark,
-      ).copyWith(
-        surface: periwinklePrimary,
-      ),
-    );
+        useMaterial3: true,
+        scaffoldBackgroundColor: crimsonBackground,
+        bottomNavigationBarTheme:
+            BottomNavigationBarThemeData(backgroundColor: crimsonBackground),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: periwinklePrimary,
+          brightness: Brightness.dark,
+        ));
   }
 
   static ThemeData get WarmBlack {
     return ThemeData(
       useMaterial3: true,
+      scaffoldBackgroundColor: crimsonBackground,
+      bottomNavigationBarTheme:
+          BottomNavigationBarThemeData(backgroundColor: crimsonBackground),
       colorScheme: ColorScheme.fromSeed(
         seedColor: warmPrimary,
         brightness: Brightness.dark,
-      ).copyWith(
-        surface: warmPrimary,
       ),
     );
   }
 
-  // static ThemeData get WarmLight {
-  //   return ThemeData(
-  //       useMaterial3: true,
-  //       colorScheme: ColorScheme.fromSeed(
-  //         seedColor: warmPrimary,
-  //       ).copyWith(surface: warmPrimary));
-  // }
+  static ThemeData get WarmLight {
+    return ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: warmPrimary,
+        ));
+  }
 }
 
 Map<String, ThemeData> themeMap = {
@@ -100,5 +93,5 @@ Map<String, ThemeData> themeMap = {
   "Periwinkle Light": Themes.PeriwinkleLight,
   "Periwinkle Dark": Themes.PeriwinkleDark,
   "Warm Black": Themes.WarmBlack,
-  // "Warm Light": Themes.WarmLight
+  "Warm Light": Themes.WarmLight
 };

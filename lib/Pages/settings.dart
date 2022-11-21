@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:himotoku/Pages/RouteBuilder.dart';
 import 'package:himotoku/Pages/Settings/settings-about.dart';
 import 'package:himotoku/Pages/Settings/settings-backup.dart';
 import 'package:himotoku/Pages/Settings/settings-reader.dart';
@@ -33,11 +34,8 @@ class _SettingsState extends State<Settings> {
         settingsMap.length,
         (index) => ListTile(
           onTap: () {
-            Navigator.of(context).push(
-              PageRouteBuilder(
-                  pageBuilder: (_, __, ___) =>
-                      settingsMap.values.elementAt(index)[1]),
-            );
+            Navigator.of(context)
+                .push(createRoute(settingsMap.values.elementAt(index)[1]));
           },
           contentPadding: const EdgeInsets.all(12),
           title: Text(

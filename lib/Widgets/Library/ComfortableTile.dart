@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Data/Manga.dart';
+import 'package:himotoku/Pages/RouteBuilder.dart';
 import 'package:himotoku/Pages/manga_view.dart';
 
 class ComfortableTile extends StatefulWidget {
@@ -26,9 +27,7 @@ class _ComfortableTileState extends State<ComfortableTile> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        Navigator.of(context).push(PageRouteBuilder(
-          pageBuilder: (_, __, ___) => MangaView(widget.manga),
-        ));
+        Navigator.of(context).push(createRoute(MangaView(widget.manga)));
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
