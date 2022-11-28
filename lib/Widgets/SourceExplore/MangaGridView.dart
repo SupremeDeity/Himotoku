@@ -1,7 +1,7 @@
 // ignore_for_file: , non_constant_identifier_names
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:himotoku/Data/Constants.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:logger/logger.dart';
 import 'package:himotoku/Data/Manga.dart';
@@ -33,21 +33,28 @@ class _MangaGridViewState extends State<MangaGridView> {
 
   Future<void> fetchPage(int pageKey) async {
     try {
-      final newItems = await widget.source
+      List<Manga>? newItems = await widget.source
           .getMangaList(pageKey, searchQuery: widget.searchQuery);
-      final isLastPage = newItems.length < 1;
+      if (newItems != null) {
+        final isLastPage = newItems.length < 1;
 
-      if (isLastPage) {
-        _pagingController.appendLastPage(newItems);
+        if (isLastPage) {
+          _pagingController.appendLastPage(newItems);
+        } else {
+          final nextPageKey = pageKey + 1;
+          _pagingController.appendPage(newItems, nextPageKey.toInt());
+        }
       } else {
-        final nextPageKey = pageKey + 1;
-        _pagingController.appendPage(newItems, nextPageKey.toInt());
+        _pagingController.nextPageKey = null;
       }
     } catch (error) {
       _pagingController.error = error;
-      if (kDebugMode) {
-        Logger logger = Logger();
-        logger.e(error);
+      Logger logger = Logger();
+      logger.e(error);
+      if (error == APP_ERROR.SOURCE_SEARCH_NOT_SUPPORTED) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text("Search is currently not supported by this source.")));
       }
     }
   }

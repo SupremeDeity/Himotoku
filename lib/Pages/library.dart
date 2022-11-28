@@ -3,7 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:himotoku/Sources/Source.dart';
+import 'package:himotoku/Pages/RouteBuilder.dart';
 import 'package:himotoku/Sources/SourceHelper.dart';
 import 'package:isar/isar.dart';
 import 'package:himotoku/Data/Constants.dart';
@@ -22,26 +22,15 @@ class Library extends StatefulWidget {
 
 class _LibraryState extends State<Library> {
   StreamSubscription<void>? cancelSubscription;
+  FilterOptions? filterOptions;
   var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
   List<Manga> mangaInLibrary = [];
   LibrarySort sortSettings = LibrarySort.az;
-  FilterOptions? filterOptions;
 
   @override
   void dispose() {
     cancelSubscription!.cancel();
     super.dispose();
-  }
-
-  updateSettings() async {
-    var settings = await isarInstance?.settings.get(0);
-    setState(() {
-      sortSettings =
-          settings != null ? settings.sortSettings : DEFAULT_LIBRARY_SORT;
-      filterOptions =
-          settings != null ? settings.filterOptions : FilterOptions();
-    });
-    getLibrary();
   }
 
   @override
@@ -53,6 +42,17 @@ class _LibraryState extends State<Library> {
     });
 
     super.initState();
+  }
+
+  updateSettings() async {
+    var settings = await isarInstance?.settings.get(0);
+    setState(() {
+      sortSettings =
+          settings != null ? settings.sortSettings : DEFAULT_LIBRARY_SORT;
+      filterOptions =
+          settings != null ? settings.filterOptions : FilterOptions();
+    });
+    getLibrary();
   }
 
   getLibrary() async {
@@ -170,60 +170,67 @@ class _LibraryState extends State<Library> {
     );
   }
 
+  AppBar appBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+      title: const Text("Library"),
+      actions: [
+        IconButton(
+          onPressed: () {
+            showSearch(
+                context: context, delegate: CustomSearchClass(filterOptions!));
+          },
+          icon: const Icon(Icons.search),
+        )
+      ],
+      automaticallyImplyLeading: false,
+    );
+  }
+
+  FloatingActionButton filterFloatingButton(BuildContext context) {
+    return FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            builder: (context) {
+              return StatefulBuilder(
+                builder: (context, setModalState) => DefaultTabController(
+                  length: 2,
+                  child: Scaffold(
+                    appBar: AppBar(
+                      primary: false,
+                      toolbarHeight: 0,
+                      automaticallyImplyLeading: false,
+                      bottom: const TabBar(
+                        tabs: [
+                          Tab(
+                            text: "Sort",
+                          ),
+                          Tab(
+                            text: "Filter",
+                          )
+                        ],
+                      ),
+                    ),
+                    body: TabBarView(children: [
+                      SortTab(setModalState),
+                      FilterTab(setModalState),
+                    ]),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+        child: const Icon(Icons.filter_list_rounded));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (context) {
-                return StatefulBuilder(
-                  builder: (context, setModalState) => DefaultTabController(
-                    length: 2,
-                    child: Scaffold(
-                      appBar: AppBar(
-                        primary: false,
-                        toolbarHeight: 0,
-                        automaticallyImplyLeading: false,
-                        bottom: const TabBar(
-                          tabs: [
-                            Tab(
-                              text: "Sort",
-                            ),
-                            Tab(
-                              text: "Filter",
-                            )
-                          ],
-                        ),
-                      ),
-                      body: TabBarView(children: [
-                        SortTab(setModalState),
-                        FilterTab(setModalState),
-                      ]),
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-          child: const Icon(Icons.filter_list_rounded)),
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        title: const Text("Library"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              showSearch(
-                  context: context,
-                  delegate: CustomSearchClass(filterOptions!));
-            },
-            icon: const Icon(Icons.search),
-          )
-        ],
-        automaticallyImplyLeading: false,
-      ),
-      bottomNavigationBar: const BottomNavBar(0),
+      floatingActionButton: filterFloatingButton(context),
+      appBar: appBar(context),
+      bottomNavigationBar: BottomNavBar(0),
       body: mangaInLibrary.isNotEmpty
           ? RefreshIndicator(
               onRefresh: () async {
@@ -265,11 +272,7 @@ class _LibraryState extends State<Library> {
                           const Text("Navigate to "),
                           TextButton(
                               onPressed: () => Navigator.of(context)
-                                  .pushReplacement(PageRouteBuilder(
-                                      pageBuilder: (_, __, ___) =>
-                                          const Explore(),
-                                      transitionDuration:
-                                          const Duration(milliseconds: 0))),
+                                  .pushReplacement(createRoute(Explore())),
                               child: const Text("Explore")),
                           const Text("to add to your library.")
                         ],
@@ -282,11 +285,11 @@ class _LibraryState extends State<Library> {
 }
 
 class CustomSearchClass extends SearchDelegate {
+  CustomSearchClass(this.filterCondition);
+
+  FilterOptions filterCondition;
   var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
   var results = [];
-  FilterOptions filterCondition;
-
-  CustomSearchClass(this.filterCondition);
 
   @override
   List<Widget> buildActions(BuildContext context) {

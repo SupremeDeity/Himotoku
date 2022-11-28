@@ -1,10 +1,10 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names,
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:himotoku/Pages/RouteBuilder.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -60,11 +60,9 @@ class _ChapterListViewState extends State<ChapterListView> {
               ),
               context)
           .asStream()) {
-        if (kDebugMode) {
-          var logger = Logger();
+        var logger = Logger();
 
-          logger.i("image ${x + 1}/$len loaded");
-        }
+        logger.i("image ${x + 1}/$len loaded");
         loaded[x] = CachedNetworkImage(
           imageUrl: pageLinks[x],
           cacheKey: pageLinks[x],
@@ -119,16 +117,14 @@ class _ChapterListViewState extends State<ChapterListView> {
       List<String>? newItems = await SourcesMap[widget.manga.source]!
           .getChapterPageList(widget.manga.chapters[widget.chapterIndex].link!);
       if (newItems!.isEmpty) {
-        Navigator.of(context).pop("No pages found.");
+        Navigator.of(context).pop(APP_ERROR.CHAPTER_NO_PAGES);
       }
       setState(() {
         pageLinks = newItems;
       });
     } catch (e) {
-      if (kDebugMode) {
-        Logger logger = Logger();
-        logger.e(e);
-      }
+      Logger logger = Logger();
+      logger.e(e);
       Navigator.of(context).pop("An error occured while fetching pages.");
     }
   }
@@ -168,7 +164,6 @@ class _ChapterListViewState extends State<ChapterListView> {
           child: Center(
             child: CircularProgressIndicator(
               value: progress.progress,
-              color: Theme.of(context).colorScheme.secondary,
             ),
           ),
         );
@@ -181,7 +176,7 @@ class _ChapterListViewState extends State<ChapterListView> {
       // Note: SafeArea not used to avoid giving a empty invisible gap at the top
       height: MediaQuery.of(context).viewPadding.top + 60,
       width: double.infinity,
-      color: Theme.of(context).colorScheme.primary,
+      color: Theme.of(context).colorScheme.background,
       child: SafeArea(
         bottom: false,
         left: false,
@@ -194,7 +189,6 @@ class _ChapterListViewState extends State<ChapterListView> {
               },
               icon: Icon(
                 Icons.arrow_back,
-                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             Text(
@@ -209,7 +203,6 @@ class _ChapterListViewState extends State<ChapterListView> {
                 child: IconButton(
                   icon: Icon(
                     Icons.open_in_browser,
-                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   onPressed: () {
                     launchUrl(
@@ -228,46 +221,34 @@ class _ChapterListViewState extends State<ChapterListView> {
 
   Container FooterView(BuildContext context) {
     return Container(
-      color: Theme.of(context).colorScheme.primary.withAlpha(220),
+      color: Theme.of(context).colorScheme.background,
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
         ElevatedButton.icon(
-            label: Text("Prev",
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onBackground,
-                )),
+            label: Text("Prev"),
             onPressed: widget.chapterIndex < widget.manga.chapters.length - 1
                 ? () {
-                    Navigator.of(context).pushReplacement(
-                      PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => ChapterListView(
-                              widget.manga, widget.chapterIndex + 1),
-                          transitionDuration: const Duration(milliseconds: 0)),
-                    );
+                    Navigator.of(context).pushReplacement(createRoute(
+                        ChapterListView(
+                            widget.manga, widget.chapterIndex + 1)));
                   }
                 : null,
             icon: Icon(
-                size: 30,
-                Icons.skip_previous_rounded,
-                color: Theme.of(context).colorScheme.onBackground)),
+              size: 30,
+              Icons.skip_previous_rounded,
+            )),
         ElevatedButton.icon(
-            label: Text("Next",
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onBackground,
-                )),
+            label: Text("Next", style: TextStyle()),
             onPressed: widget.chapterIndex > 0
                 ? () {
-                    Navigator.of(context).pushReplacement(
-                      PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => ChapterListView(
-                              widget.manga, widget.chapterIndex - 1),
-                          transitionDuration: const Duration(milliseconds: 0)),
-                    );
+                    Navigator.of(context).pushReplacement(createRoute(
+                        ChapterListView(
+                            widget.manga, widget.chapterIndex - 1)));
                   }
                 : null,
             icon: Icon(
-                size: 30,
-                Icons.skip_next_rounded,
-                color: Theme.of(context).colorScheme.onBackground)),
+              size: 30,
+              Icons.skip_next_rounded,
+            )),
       ]),
     );
   }
@@ -344,10 +325,7 @@ class _ChapterListViewState extends State<ChapterListView> {
                 isFocused ? HeaderView(context) : Container()
               ],
             )
-          : Center(
-              child: CircularProgressIndicator(
-              color: Theme.of(context).colorScheme.secondary,
-            )),
+          : Center(child: CircularProgressIndicator()),
     );
   }
 }

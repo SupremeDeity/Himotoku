@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
-import 'package:logger/logger.dart';
 import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Data/Manga.dart';
 import 'package:himotoku/Sources/Source.dart';
@@ -21,11 +19,12 @@ class Manganato extends Source {
   String get baseUrl => _baseUrl;
 
   @override
-  getChapterPageList(String startLink) async {
+  Future<List<String>>? getChapterPageList(String startLink) async {
     try {
       var url = Uri.parse(startLink);
 
-      var response = await http.get(url);
+      var response = await http.get(url).onError(
+          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
 
       List<String> pageList = [];
@@ -39,22 +38,17 @@ class Manganato extends Source {
 
       return pageList;
     } catch (e) {
-      if (kDebugMode) {
-        var logger = Logger();
-
-        logger.e(e);
-      }
+      return Future.error(e);
     }
   }
 
   @override
-  getMangaDetails(Manga manga) async {
+  Future<Manga>? getMangaDetails(Manga manga) async {
     try {
       var url = Uri.parse(manga.mangaLink);
 
-      var response = await http.get(
-        url,
-      );
+      var response = await http.get(url).onError(
+          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
 
       List<Chapter> chapterList = [];
@@ -66,56 +60,45 @@ class Manganato extends Source {
 
       var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
 
-      try {
-        final allManga = isarInstance!.mangas;
+      final allManga = isarInstance!.mangas;
 
-        // Get chapter list
-        for (int x = 0; x < q2.length; x++) {
-          var chapterName = q2[x].text.trim();
-          var chapterLink = q2[x].attributes['href']!;
-          var isRead =
-              x < manga.chapters.length ? manga.chapters[x].isRead : false;
+      // Get chapter list
+      for (int x = 0; x < q2.length; x++) {
+        var chapterName = q2[x].text.trim();
+        var chapterLink = q2[x].attributes['href']!;
+        var isRead =
+            x < manga.chapters.length ? manga.chapters[x].isRead : false;
 
-          final nChap = Chapter()
-            ..name = chapterName
-            ..link = chapterLink
-            ..isRead = isRead;
+        final nChap = Chapter()
+          ..name = chapterName
+          ..link = chapterLink
+          ..isRead = isRead;
 
-          chapterList.add(nChap);
-        }
-
-        // Note: Manganato does not have "Artist/Studio"
-        Manga updatedManga = manga.copyWith(
-          chapters: chapterList,
-          authorName: q1[1].text.trim(),
-          status: q1[2].text.trim(),
-          synopsis: q3!.text.replaceFirst(r"Description :", "").trim(),
-          id: manga.id,
-          inLibrary: manga.inLibrary,
-        );
-
-        await isarInstance.writeTxn(() async {
-          await allManga.put(updatedManga);
-        });
-        return updatedManga;
-      } catch (e) {
-        if (kDebugMode) {
-          var logger = Logger();
-
-          logger.e(e);
-        }
+        chapterList.add(nChap);
       }
+
+      // Note: Manganato does not have "Artist/Studio"
+      Manga updatedManga = manga.copyWith(
+        chapters: chapterList,
+        authorName: q1[1].text.trim(),
+        status: q1[2].text.trim(),
+        synopsis: q3!.text.replaceFirst(r"Description :", "").trim(),
+        id: manga.id,
+        inLibrary: manga.inLibrary,
+      );
+
+      await isarInstance.writeTxn(() async {
+        await allManga.put(updatedManga);
+      });
+      return updatedManga;
     } catch (e) {
-      if (kDebugMode) {
-        var logger = Logger();
-
-        logger.e(e);
-      }
+      return Future.error(e);
     }
   }
 
   @override
-  getMangaList(int pageKey, {String searchQuery = ""}) async {
+  Future<List<Manga>>? getMangaList(int pageKey,
+      {String searchQuery = ""}) async {
     try {
       Uri url;
       if (searchQuery.isEmpty) {
@@ -123,10 +106,14 @@ class Manganato extends Source {
             _baseUrl, "/advanced_search", {'s': sort, 'page': '$pageKey'});
       } else {
         url = Uri.https(
-            _baseUrl, "/search/story/$searchQuery", {'page': '$pageKey'});
+            _baseUrl,
+            "/search/story/${searchQuery.trim().replaceAll(RegExp('[\\s]'), "_")}",
+            {'page': '$pageKey'});
+        print(url);
       }
 
-      var response = await http.get(url);
+      var response = await http.get(url).onError(
+          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
       List<Manga> mangaList = [];
 
@@ -152,11 +139,7 @@ class Manganato extends Source {
 
       return mangaList;
     } catch (e) {
-      if (kDebugMode) {
-        var logger = Logger();
-
-        logger.e(e);
-      }
+      return Future.error(e);
     }
   }
 

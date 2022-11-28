@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
-import 'package:logger/logger.dart';
 import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Data/Manga.dart';
 import 'package:himotoku/Sources/Source.dart';
@@ -24,11 +22,12 @@ class ReaperScans extends Source {
   String get baseUrl => _baseUrl;
 
   @override
-  getChapterPageList(String startLink) async {
+  Future<List<String>> getChapterPageList(String startLink) async {
     try {
       var url = Uri.parse(startLink);
 
-      var response = await http.get(url);
+      var response = await http.get(url).onError(
+          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
 
       List<String> pageList = [];
@@ -42,21 +41,17 @@ class ReaperScans extends Source {
 
       return pageList;
     } catch (e) {
-      if (kDebugMode) {
-        var logger = Logger();
-
-        logger.e(e);
-      }
-      // return manga;
+      return Future.error(e);
     }
   }
 
   @override
-  getMangaDetails(Manga manga) async {
+  Future<Manga>? getMangaDetails(Manga manga) async {
     try {
       var url = Uri.parse(manga.mangaLink);
 
-      var response = await http.get(url);
+      var response = await http.get(url).onError(
+          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
 
       List<Chapter> chapterList = [];
@@ -72,60 +67,52 @@ class ReaperScans extends Source {
 
       // Get chapter list
 
-      try {
-        final allManga = isarInstance!.mangas;
+      final allManga = isarInstance!.mangas;
 
-        for (int x = 0; x < q3.length; x++) {
-          var chapterName = q2[x].text;
-          var chapterLink = q3[x].attributes['href']!;
+      for (int x = 0; x < q3.length; x++) {
+        var chapterName = q2[x].text;
+        var chapterLink = q3[x].attributes['href']!;
 
-          var isRead =
-              x < manga.chapters.length ? manga.chapters[x].isRead : false;
+        var isRead =
+            x < manga.chapters.length ? manga.chapters[x].isRead : false;
 
-          final nChap = Chapter()
-            ..name = chapterName.trim()
-            ..link = chapterLink.trim()
-            ..isRead = isRead;
-          chapterList.add(nChap);
-        }
-
-        Manga updatedManga = manga.copyWith(
-            synopsis: q4?.text.trim() ?? "",
-            chapters: chapterList,
-            id: manga.id,
-            inLibrary: manga.inLibrary,
-            status: q5[1].text.trim());
-
-        await isarInstance.writeTxn(() async {
-          await allManga.put(updatedManga);
-        });
-
-        return updatedManga;
-      } catch (e) {
-        if (kDebugMode) {
-          var logger = Logger();
-
-          logger.e(e);
-        }
+        final nChap = Chapter()
+          ..name = chapterName.trim()
+          ..link = chapterLink.trim()
+          ..isRead = isRead;
+        chapterList.add(nChap);
       }
+
+      Manga updatedManga = manga.copyWith(
+          synopsis: q4?.text.trim() ?? "",
+          chapters: chapterList,
+          id: manga.id,
+          inLibrary: manga.inLibrary,
+          status: q5[1].text.trim());
+
+      await isarInstance.writeTxn(() async {
+        await allManga.put(updatedManga);
+      });
+
+      return updatedManga;
     } catch (e) {
-      if (kDebugMode) {
-        var logger = Logger();
-
-        logger.e(e);
-      }
-      // return manga;
+      return Future.error(e);
     }
   }
 
   // TODO: IMPLEMENT SORT AND FILTER
   @override
-  getMangaList(int pageKey, {String searchQuery = ""}) async {
+  Future<List<Manga>> getMangaList(int pageKey,
+      {String searchQuery = ""}) async {
     try {
+      if (searchQuery.isNotEmpty) {
+        throw APP_ERROR.SOURCE_SEARCH_NOT_SUPPORTED;
+      }
       Uri url;
 
       url = Uri.https(_baseUrl, baseSourceExplore, {'page': "$pageKey"});
-      var response = await http.get(url);
+      var response = await http.get(url).onError(
+          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
       List<Manga> mangaList = [];
 
@@ -149,11 +136,7 @@ class ReaperScans extends Source {
 
       return mangaList;
     } catch (e) {
-      if (kDebugMode) {
-        var logger = Logger();
-
-        logger.e(e);
-      }
+      return Future.error(e);
     }
   }
 

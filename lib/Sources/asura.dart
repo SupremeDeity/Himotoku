@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
-import 'package:logger/logger.dart';
 import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Data/Manga.dart';
 import 'package:himotoku/Sources/Source.dart';
@@ -21,11 +19,13 @@ class Asura extends Source {
   String get baseUrl => _baseUrl;
 
   @override
-  getChapterPageList(String startLink) async {
+  Future<List<String>>? getChapterPageList(String startLink) async {
     try {
       var url = Uri.parse(startLink);
 
-      var response = await http.get(url);
+      var response = await http.get(url).onError(
+          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
+
       var parsedHtml = parse(response.body);
 
       List<String> pageList = [];
@@ -39,21 +39,17 @@ class Asura extends Source {
 
       return pageList;
     } catch (e) {
-      if (kDebugMode) {
-        var logger = Logger();
-
-        logger.e(e);
-      }
-      // return manga;
+      return Future.error(e);
     }
   }
 
   @override
-  getMangaDetails(Manga manga) async {
+  Future<Manga>? getMangaDetails(Manga manga) async {
     try {
       var url = Uri.parse(manga.mangaLink);
 
-      var response = await http.get(url);
+      var response = await http.get(url).onError(
+          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
 
       List<Chapter> chapterList = [];
@@ -69,57 +65,46 @@ class Asura extends Source {
 
       var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
 
-      try {
-        final allManga = isarInstance!.mangas;
-        for (int x = 0; x < q3.length; x++) {
-          var chapterName = q3[x].children[0].text.trim();
-          var chapterLink = q3[x].attributes['href']!;
+      final allManga = isarInstance!.mangas;
+      for (int x = 0; x < q3.length; x++) {
+        var chapterName = q3[x].children[0].text.trim();
+        var chapterLink = q3[x].attributes['href']!;
 
-          var isRead =
-              x < manga.chapters.length ? manga.chapters[x].isRead : false;
+        var isRead =
+            x < manga.chapters.length ? manga.chapters[x].isRead : false;
 
-          final nChap = Chapter()
-            ..name = chapterName
-            ..link = chapterLink
-            ..isRead = isRead;
-          chapterList.add(nChap);
-        }
-        Manga updatedManga = manga.copyWith(
-          authorName: q1[1].previousElementSibling?.text.trim() == "Author"
-              ? q1[1].text.trim()
-              : null,
-          mangaStudio: q1[2].previousElementSibling?.text.trim() == "Artist"
-              ? q1[2].text.trim()
-              : null,
-          synopsis: q4?.text.trim() ?? "",
-          status: q2[0].text.trim(),
-          chapters: chapterList,
-          id: manga.id,
-          inLibrary: manga.inLibrary,
-        );
-
-        await isarInstance.writeTxn(() async {
-          await allManga.put(updatedManga);
-        });
-        return updatedManga;
-      } catch (e) {
-        if (kDebugMode) {
-          var logger = Logger();
-
-          logger.e(e);
-        }
+        final nChap = Chapter()
+          ..name = chapterName
+          ..link = chapterLink
+          ..isRead = isRead;
+        chapterList.add(nChap);
       }
+      Manga updatedManga = manga.copyWith(
+        authorName: q1[1].previousElementSibling?.text.trim() == "Author"
+            ? q1[1].text.trim()
+            : null,
+        mangaStudio: q1[2].previousElementSibling?.text.trim() == "Artist"
+            ? q1[2].text.trim()
+            : null,
+        synopsis: q4?.text.trim() ?? "",
+        status: q2[0].text.trim(),
+        chapters: chapterList,
+        id: manga.id,
+        inLibrary: manga.inLibrary,
+      );
+
+      await isarInstance.writeTxn(() async {
+        await allManga.put(updatedManga);
+      });
+      return updatedManga;
     } catch (e) {
-      if (kDebugMode) {
-        var logger = Logger();
-
-        logger.e(e);
-      }
+      return Future.error(e);
     }
   }
 
   @override
-  getMangaList(int pageKey, {String searchQuery = ""}) async {
+  Future<List<Manga>>? getMangaList(int pageKey,
+      {String searchQuery = ""}) async {
     try {
       Uri url;
       if (searchQuery.isEmpty) {
@@ -127,7 +112,8 @@ class Asura extends Source {
       } else {
         url = Uri.https(_baseUrl, "/page/$pageKey", {'s': searchQuery});
       }
-      var response = await http.get(url);
+      var response = await http.get(url).onError(
+          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
       List<Manga> mangaList = [];
 
@@ -152,11 +138,7 @@ class Asura extends Source {
 
       return mangaList;
     } catch (e) {
-      if (kDebugMode) {
-        var logger = Logger();
-
-        logger.e(e);
-      }
+      return Future.error(e);
     }
   }
 
