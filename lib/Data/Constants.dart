@@ -4,6 +4,12 @@ import 'package:flutter/cupertino.dart';
 
 import 'Setting.dart';
 
+enum APP_ERROR {
+  SOURCE_SEARCH_NOT_SUPPORTED,
+  SOURCE_HOST_ERROR,
+  CHAPTER_NO_PAGES,
+}
+
 var APP_ICON = Image.asset(
   "assets/splash-icon.png",
   height: 64,

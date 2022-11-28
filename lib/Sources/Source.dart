@@ -7,13 +7,13 @@ abstract class Source {
   final name = "";
   final iconUrl = "";
 
-  getMangaList(int pageKey, {String searchQuery = ""});
+  Future<List<Manga>>? getMangaList(int pageKey, {String searchQuery = ""});
 
   // Second stage:
   /// Gets details like author, artist, status, chapter list of given `manga`.
   ///
   /// Source field of `manga` param must be valid.
-  getMangaDetails(Manga manga);
+  Future<Manga>? getMangaDetails(Manga manga);
 
-  getChapterPageList(String startLink);
+  Future<List<String>>? getChapterPageList(String startLink);
 }

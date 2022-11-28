@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names,
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -61,11 +60,9 @@ class _ChapterListViewState extends State<ChapterListView> {
               ),
               context)
           .asStream()) {
-        if (kDebugMode) {
-          var logger = Logger();
+        var logger = Logger();
 
-          logger.i("image ${x + 1}/$len loaded");
-        }
+        logger.i("image ${x + 1}/$len loaded");
         loaded[x] = CachedNetworkImage(
           imageUrl: pageLinks[x],
           cacheKey: pageLinks[x],
@@ -120,16 +117,14 @@ class _ChapterListViewState extends State<ChapterListView> {
       List<String>? newItems = await SourcesMap[widget.manga.source]!
           .getChapterPageList(widget.manga.chapters[widget.chapterIndex].link!);
       if (newItems!.isEmpty) {
-        Navigator.of(context).pop("No pages found.");
+        Navigator.of(context).pop(APP_ERROR.CHAPTER_NO_PAGES);
       }
       setState(() {
         pageLinks = newItems;
       });
     } catch (e) {
-      if (kDebugMode) {
-        Logger logger = Logger();
-        logger.e(e);
-      }
+      Logger logger = Logger();
+      logger.e(e);
       Navigator.of(context).pop("An error occured while fetching pages.");
     }
   }

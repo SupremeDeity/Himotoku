@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:himotoku/Sources/SourceHelper.dart';
-// import 'package:himotoku/FileOutput.dart';
 import 'package:isar/isar.dart';
 import 'package:himotoku/Data/Constants.dart';
 

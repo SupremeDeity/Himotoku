@@ -4,6 +4,7 @@
   - [Introduction](#introduction)
   - [Prerequisite](#prerequisite)
   - [Installing](#installing)
+    - [Which file should I choose?](#which-file-should-i-choose)
   - [Bug reporting](#bug-reporting)
   - [Contributing](#contributing)
   - [FAQ](#faq)
@@ -16,14 +17,20 @@
 
 An ad-free android comic reading app created as a hobby and for learning purposes.
 
+<img src="./resources/framedshot01.png" alt="framed shot 01" width=400></img>
+<img src="./resources/framedshot02.png" alt="framed shot 02" width=400></img>
+
 ## Prerequisite
 This app requires a minimum of **Android 4.1(Jelly Bean, API 16)**.
 
 ## Installing
-Installing the app is easy. Just head over to [Releases] and pick the latest stable version.
+Installing the app is easy. Just head over to [Releases] and pick the latest version.
 
-<img src="./resources/framedshot01.png" alt="framed shot 01" width=400></img>
-<img src="./resources/framedshot02.png" alt="framed shot 02" width=400></img>
+### Which file should I choose?
+Each release contains multiple *apk* files.
+
+1) A single large *apk* file (**app-release.apk**) which should work on all mobiles, choose this if you dont know what to select. 
+2) Multiple smaller *apk* file which work only for target architectures, choose one if you know what to select.
 
 > Note: While installing, your mobile might prompt you to allow installation from unknown sources.
 

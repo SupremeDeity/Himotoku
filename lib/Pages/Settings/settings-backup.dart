@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
@@ -58,10 +57,8 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
       }
     } catch (e) {
-      if (kDebugMode) {
-        Logger logger = Logger();
-        logger.e(e);
-      }
+      Logger logger = Logger();
+      logger.e(e);
       var snackbar = const SnackBar(content: Text("Failed to save backup."));
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }
@@ -94,10 +91,8 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
         }
       }
     } catch (e) {
-      if (kDebugMode) {
-        Logger logger = Logger();
-        logger.e(e);
-      }
+      Logger logger = Logger();
+      logger.e(e);
       // var snackbar = const SnackBar(content: Text("Failed to save backup."));
       // ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }

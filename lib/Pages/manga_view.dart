@@ -94,7 +94,7 @@ class _MangaViewState extends State<MangaView> {
               Navigator.of(context)
                   .push(createRoute(ChapterListView(manga!, index - 1)))
                   .then((value) {
-                if (value != null) {
+                if (value == APP_ERROR.CHAPTER_NO_PAGES) {
                   ScaffoldMessenger.of(context)
                     ..removeCurrentSnackBar()
                     ..showSnackBar(SnackBar(
@@ -276,13 +276,20 @@ class _MangaViewState extends State<MangaView> {
           ? RefreshIndicator(
               key: _refreshIndicatorKey,
               onRefresh: () async {
-                Manga m =
-                    await SourcesMap[manga!.source]!.getMangaDetails(manga!);
+                try {
+                  Manga? m =
+                      await SourcesMap[manga!.source]!.getMangaDetails(manga!);
 
-                setState(() {
-                  manga = m;
-                  isInLibrary = m.inLibrary;
-                });
+                  setState(() {
+                    manga = m;
+                    isInLibrary = m?.inLibrary ?? false;
+                  });
+                } catch (e) {
+                  if (e == APP_ERROR.SOURCE_HOST_ERROR) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error trying to fetch host.")));
+                  }
+                }
               },
               triggerMode: RefreshIndicatorTriggerMode.onEdge,
               child: ListView.builder(
