@@ -223,11 +223,17 @@ class _PackageListTile extends StatelessWidget {
           ? Theme.of(context).highlightColor
           : Theme.of(context).cardColor,
       child: ListTile(
-        title: Text(packageName),
+        title: Text(
+          packageName,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
         subtitle: Text(MaterialLocalizations.of(context)
             .licensesPackageDetailText(numberLicenses)),
         selected: isSelected,
         onTap: onTap,
+        tileColor: Theme.of(context).colorScheme.background,
       ),
     );
   }

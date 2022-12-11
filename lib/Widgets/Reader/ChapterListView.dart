@@ -1,9 +1,8 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names,
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:http/http.dart' as http;
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:logger/logger.dart';
@@ -36,38 +35,25 @@ class _ChapterListViewState extends State<ChapterListView> {
   // Loads images sequentially (one-by-one)
   Stream<List<Widget>> generatePages() async* {
     int len = pageLinks.length;
-    List<Widget> loaded = List.generate(
+    List<Widget> loaded = List.filled(
         len,
-        growable: false,
-        (index) => const Padding(
-              padding: EdgeInsets.symmetric(vertical: 200.0),
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            ));
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 200.0),
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ));
 
     for (int x = 0; x < len; x++) {
-      await for (var _ in precacheImage(
-              CachedNetworkImageProvider(
-                pageLinks[x],
-                cacheManager: CacheManager(
-                  Config(
-                    "chapterCache",
-                    stalePeriod: Duration(minutes: 1),
-                  ),
-                ),
-              ),
-              context)
-          .asStream()) {
-        var logger = Logger();
-
-        logger.i("image ${x + 1}/$len loaded");
-        loaded[x] = CachedNetworkImage(
-          imageUrl: pageLinks[x],
-          cacheKey: pageLinks[x],
-        );
-        yield loaded;
-      }
+      var response = await http.get(Uri.parse(pageLinks[x]));
+      var image = Image.memory(
+        fit: BoxFit.cover,
+        response.bodyBytes,
+      );
+      setState(() {
+        loaded[x] = image;
+      });
+      yield loaded;
     }
   }
 
@@ -81,7 +67,8 @@ class _ChapterListViewState extends State<ChapterListView> {
   @override
   void initState() {
     updateSettings();
-    // Check if page is already read.
+    // * Check if page is already read.
+    // TODO: find a better solution to this.
     setState(() {
       isRead = widget.manga.chapters[widget.chapterIndex].isRead;
     });
@@ -140,34 +127,6 @@ class _ChapterListViewState extends State<ChapterListView> {
 
   setCurrentScroll(double value) {
     _scrollController.jumpTo(value);
-  }
-
-  // Get Length of pages
-  // Start with first image -> Wait till loaded, return image on load
-  // Start with second image and so on...
-
-  CachedNetworkImage ChapterPage(int index) {
-    return CachedNetworkImage(
-      httpHeaders: {"Referer": widget.manga.mangaLink},
-      fit: BoxFit.fitWidth,
-      imageUrl: pageLinks[index],
-      filterQuality: FilterQuality.medium,
-      errorWidget: (context, url, error) {
-        return Text("Error: $error");
-      },
-      progressIndicatorBuilder: (context, url, progress) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 200,
-          ),
-          child: Center(
-            child: CircularProgressIndicator(
-              value: progress.progress,
-            ),
-          ),
-        );
-      },
-    );
   }
 
   Container HeaderView(BuildContext context) {

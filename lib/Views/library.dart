@@ -198,7 +198,9 @@ class _LibraryState extends State<Library> {
                       primary: false,
                       toolbarHeight: 0,
                       automaticallyImplyLeading: false,
-                      bottom: const TabBar(
+                      bottom: TabBar(
+                        labelColor: Theme.of(context).colorScheme.onBackground,
+                        indicatorColor: Theme.of(context).colorScheme.primary,
                         tabs: [
                           Tab(
                             text: "Sort",

@@ -32,7 +32,7 @@ class Themes {
   static ThemeData get defaultLight {
     return ThemeData.light(
       useMaterial3: true,
-    );
+    ).copyWith(colorScheme: ColorScheme.highContrastLight());
   }
 
   static ThemeData get crimsonLightTheme {

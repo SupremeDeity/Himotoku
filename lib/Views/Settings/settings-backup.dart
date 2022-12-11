@@ -30,6 +30,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
 
   updateSettings() async {
     var settings = await isarDB.settings.get(0);
+
     setState(() {
       backupExportLocation = settings!.backupExportLocation;
     });
@@ -114,11 +115,22 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          shape: Border.all(),
+          titleTextStyle: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onBackground),
           title: const Text('Export locally'),
           content: SingleChildScrollView(
             child: ListBody(
                 children: backupExportLocation.isNotEmpty
-                    ? [const Text('Exporting to:'), Text(backupExportLocation)]
+                    ? [
+                        const Text('Exporting to:'),
+                        Text(backupExportLocation,
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary))
+                      ]
                     : [
                         const Text(
                             "Please set \"Export Location\" prior to this.")
@@ -158,7 +170,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           title: const Text("Export Location"),
           leading: const Icon(Icons.folder_outlined),
           subtitle: Text(
-            backupExportLocation,
+            backupExportLocation.isNotEmpty ? backupExportLocation : "Not set",
           ),
           onTap: () {
             pickDirectoryLocation();
@@ -175,16 +187,6 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
             _showMyDialog();
           },
         ),
-        // TODO: ADD CLOUD EXPORT SUPPORT
-        // ListTile(
-        //   title: Text("Cloud Export"),
-        //   leading: Icon(Icons.cloud_upload_outlined),
-        //   subtitle: Text(
-        //     "Export to Google Drive.",
-        //   ),
-        //   trailing: Icon(Icons.arrow_forward),
-        //   onTap: () {},
-        // ),
         Padding(
           padding: const EdgeInsets.only(left: 12.0, top: 12.0),
           child: Text(
