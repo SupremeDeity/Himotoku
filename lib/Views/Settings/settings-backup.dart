@@ -5,12 +5,12 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:himotoku/Data/database/database.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
-import 'package:himotoku/Data/Setting.dart';
+import 'package:himotoku/Data/models/Manga.dart';
+import 'package:himotoku/Data/models/Setting.dart';
 
 class ImportExportSettings extends StatefulWidget {
   const ImportExportSettings({Key? key}) : super(key: key);
@@ -21,7 +21,6 @@ class ImportExportSettings extends StatefulWidget {
 
 class _ImportExportSettingsState extends State<ImportExportSettings> {
   String backupExportLocation = "";
-  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME)!;
 
   @override
   void initState() {
@@ -30,7 +29,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
   }
 
   updateSettings() async {
-    var settings = await isarInstance.settings.get(0);
+    var settings = await isarDB.settings.get(0);
     setState(() {
       backupExportLocation = settings!.backupExportLocation;
     });
@@ -39,11 +38,8 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
   void export(BuildContext context) async {
     try {
       if (await Permission.manageExternalStorage.request().isGranted) {
-        var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
-        var jsonContent = await isarInstance!.mangas
-            .filter()
-            .inLibraryEqualTo(true)
-            .exportJson();
+        var jsonContent =
+            await isarDB.mangas.filter().inLibraryEqualTo(true).exportJson();
         var content = jsonEncode(jsonContent);
 
         DateTime now = DateTime.now();
@@ -67,8 +63,6 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
   void import(BuildContext context) async {
     try {
       if (await Permission.manageExternalStorage.request().isGranted) {
-        var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
-
         var backupFileLocation = await FilePicker.platform.pickFiles();
 
         if (backupFileLocation != null) {
@@ -82,8 +76,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
             return element as Map<String, dynamic>;
           }).toList();
 
-          await isarInstance!
-              .writeTxn(() => isarInstance.mangas.importJson(content));
+          await isarDB.writeTxn(() => isarDB.mangas.importJson(content));
 
           var snackbar = const SnackBar(content: Text("Imported backup."));
           // ignore: use_build_context_synchronously
@@ -102,9 +95,9 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory != null) {
       if (selectedDirectory != "/") {
-        await isarInstance.writeTxn(() async {
-          var settings = await isarInstance.settings.get(0);
-          await isarInstance.settings.put(
+        await isarDB.writeTxn(() async {
+          var settings = await isarDB.settings.get(0);
+          await isarDB.settings.put(
               settings!.copyWith(newBackupExportLocation: selectedDirectory));
         });
 

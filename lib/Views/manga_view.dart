@@ -3,11 +3,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:himotoku/Pages/RouteBuilder.dart';
+import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:isar/isar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
+import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Sources/SourceHelper.dart';
 import 'package:himotoku/Widgets/Reader/ChapterListView.dart';
 
@@ -26,7 +27,6 @@ class _MangaViewState extends State<MangaView> {
   int causeUpdate = 0;
 
   bool isInLibrary = false;
-  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
   Manga? manga;
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
@@ -41,7 +41,7 @@ class _MangaViewState extends State<MangaView> {
     initGetManga();
 
     // Somewhat temporary fix to update chapter list after pressing back button
-    isarInstance!.mangas.watchLazy().listen((event) {
+    isarDB.mangas.watchLazy().listen((event) {
       if (mounted) {
         setState(() {
           causeUpdate += 1;
@@ -53,7 +53,7 @@ class _MangaViewState extends State<MangaView> {
   }
 
   initGetManga() async {
-    var libmanga = await isarInstance?.mangas
+    var libmanga = await isarDB.mangas
         .filter()
         .mangaLinkEqualTo(widget.mangaInstance.mangaLink)
         .findFirst();
@@ -72,9 +72,9 @@ class _MangaViewState extends State<MangaView> {
   }
 
   void addToLibrary() async {
-    await isarInstance!.writeTxn(() async {
+    await isarDB.writeTxn(() async {
       manga!.setInLibrary = !manga!.inLibrary;
-      await isarInstance!.mangas.put(manga!);
+      await isarDB.mangas.put(manga!);
     });
     setState(() {
       isInLibrary = manga!.inLibrary;

@@ -1,22 +1,23 @@
-import 'package:isar/isar.dart';
+import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 
 class ReaperScans extends Source {
   final baseSourceExplore = "/comics";
-  final _chapterNameQuery = "p.truncate";
+
   final _baseChapterListQuery = "a[href*=\"chapter-\"].transition.block";
   final _baseUrl = "reaperscans.com";
+  final _chapterNameQuery = "p.truncate";
   final _chapterPageListQuery = "img.display-block";
   // final _mangaAuthorQuery = ".summary-content"; -> Disabled
   final _mangaListQuery =
       "a[href*=\"comic\"].transition.relative"; // base query to get manga list
 
-  final _mangaSynopsisQuery = ".prose";
   final _mangaStatusQuery = ".whitespace-nowrap.text-neutral-200";
+  final _mangaSynopsisQuery = ".prose";
 
   @override
   String get baseUrl => _baseUrl;
@@ -63,11 +64,9 @@ class ReaperScans extends Source {
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
       var q5 = parsedHtml.querySelectorAll(_mangaStatusQuery);
 
-      var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
-
       // Get chapter list
 
-      final allManga = isarInstance!.mangas;
+      final allManga = isarDB.mangas;
 
       for (int x = 0; x < q3.length; x++) {
         var chapterName = q2[x].text;
@@ -90,7 +89,7 @@ class ReaperScans extends Source {
           inLibrary: manga.inLibrary,
           status: q5[1].text.trim());
 
-      await isarInstance.writeTxn(() async {
+      await isarDB.writeTxn(() async {
         await allManga.put(updatedManga);
       });
 

@@ -1,6 +1,6 @@
-import 'package:isar/isar.dart';
+import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
@@ -63,9 +63,7 @@ class Asura extends Source {
       // Query4: Gets synopsis
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
-      var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
-
-      final allManga = isarInstance!.mangas;
+      final allManga = isarDB.mangas;
       for (int x = 0; x < q3.length; x++) {
         var chapterName = q3[x].children[0].text.trim();
         var chapterLink = q3[x].attributes['href']!;
@@ -93,7 +91,7 @@ class Asura extends Source {
         inLibrary: manga.inLibrary,
       );
 
-      await isarInstance.writeTxn(() async {
+      await isarDB.writeTxn(() async {
         await allManga.put(updatedManga);
       });
       return updatedManga;

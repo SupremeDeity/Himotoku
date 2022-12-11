@@ -8,7 +8,7 @@ import 'package:http/http.dart';
 // import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Pages/Settings/settings-about-licenses.dart';
+import 'package:himotoku/Views/Settings/settings-about-licenses.dart';
 import 'package:version/version.dart';
 import 'package:yaml/yaml.dart';
 

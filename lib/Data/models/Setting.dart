@@ -25,7 +25,7 @@ class Setting {
 
   // Reader Settings
   /// Reader UI Fullscreen
-  bool fullscreen = false;
+  bool fullscreen = true;
   bool splitTallImages = false;
 
   // Backup Settings

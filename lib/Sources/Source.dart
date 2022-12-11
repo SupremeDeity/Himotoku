@@ -1,11 +1,13 @@
 // Parent class for all "Sources"
-import 'package:himotoku/Data/Manga.dart';
+
+import 'package:himotoku/Data/models/Manga.dart';
 
 abstract class Source {
-  /// Bypass cloudflare with baseurl referer header
+  /// * Bypass cloudflare with baseurl referer header.
   final baseUrl = "";
-  final name = "";
+
   final iconUrl = "";
+  final name = "";
 
   Future<List<Manga>>? getMangaList(int pageKey, {String searchQuery = ""});
 

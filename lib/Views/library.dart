@@ -3,14 +3,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:himotoku/Pages/RouteBuilder.dart';
+import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Data/models/Manga.dart';
+import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:himotoku/Sources/SourceHelper.dart';
 import 'package:isar/isar.dart';
 import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
-import 'package:himotoku/Data/Setting.dart';
-import 'package:himotoku/Pages/explore.dart';
-import 'package:himotoku/Widgets/BottomNavBar.dart';
+import 'package:himotoku/Data/models/Setting.dart';
+import 'package:himotoku/Views/explore.dart';
 import 'package:himotoku/Widgets/Library/ComfortableTile.dart';
 
 class Library extends StatefulWidget {
@@ -23,7 +23,6 @@ class Library extends StatefulWidget {
 class _LibraryState extends State<Library> {
   StreamSubscription<void>? cancelSubscription;
   FilterOptions? filterOptions;
-  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
   List<Manga> mangaInLibrary = [];
   LibrarySort sortSettings = LibrarySort.az;
 
@@ -36,7 +35,7 @@ class _LibraryState extends State<Library> {
   @override
   void initState() {
     Stream<void> instanceChanged =
-        isarInstance!.mangas.watchLazy(fireImmediately: true);
+        isarDB.mangas.watchLazy(fireImmediately: true);
     cancelSubscription = instanceChanged.listen((event) {
       updateSettings();
     });
@@ -45,7 +44,7 @@ class _LibraryState extends State<Library> {
   }
 
   updateSettings() async {
-    var settings = await isarInstance?.settings.get(0);
+    var settings = await isarDB.settings.get(0);
     setState(() {
       sortSettings =
           settings != null ? settings.sortSettings : DEFAULT_LIBRARY_SORT;
@@ -56,11 +55,9 @@ class _LibraryState extends State<Library> {
   }
 
   getLibrary() async {
-    var inLibrary = isarInstance!.mangas
-        .filter()
-        .inLibraryEqualTo(true)
-        .optional(filterOptions?.started == true,
-            (query) => query.chaptersElement((q) => q.isReadEqualTo(true)));
+    var inLibrary = isarDB.mangas.filter().inLibraryEqualTo(true).optional(
+        filterOptions?.started == true,
+        (query) => query.chaptersElement((q) => q.isReadEqualTo(true)));
 
     QueryBuilder<Manga, Manga, QAfterSortBy>? sortQuery;
     List<Manga> library = [];
@@ -81,7 +78,6 @@ class _LibraryState extends State<Library> {
     }
 
     library = await sortQuery.findAll();
-
     setState(() {
       mangaInLibrary = library;
     });
@@ -110,9 +106,9 @@ class _LibraryState extends State<Library> {
             // Update library.
             getLibrary();
 
-            await isarInstance!.writeTxn(() async {
-              var settings = await isarInstance!.settings.get(0);
-              await isarInstance!.settings
+            await isarDB.writeTxn(() async {
+              var settings = await isarDB.settings.get(0);
+              await isarDB.settings
                   .put(settings!.copyWith(newSortSettings: sortSettings));
             });
           },
@@ -135,9 +131,9 @@ class _LibraryState extends State<Library> {
             // Update library.
             getLibrary();
 
-            await isarInstance!.writeTxn(() async {
-              var settings = await isarInstance!.settings.get(0);
-              await isarInstance!.settings
+            await isarDB.writeTxn(() async {
+              var settings = await isarDB.settings.get(0);
+              await isarDB.settings
                   .put(settings!.copyWith(newSortSettings: sortSettings));
             });
           },
@@ -157,9 +153,9 @@ class _LibraryState extends State<Library> {
               filterOptions?.started = value!;
             });
             getLibrary();
-            await isarInstance!.writeTxn(() async {
-              var settings = await isarInstance!.settings.get(0);
-              await isarInstance!.settings.put(settings!.copyWith(
+            await isarDB.writeTxn(() async {
+              var settings = await isarDB.settings.get(0);
+              await isarDB.settings.put(settings!.copyWith(
                   newFilterOptions:
                       settings.filterOptions.copyWith(newStarted: value)));
             });
@@ -191,6 +187,7 @@ class _LibraryState extends State<Library> {
     return FloatingActionButton(
         onPressed: () {
           showModalBottomSheet(
+            backgroundColor: Theme.of(context).colorScheme.background,
             context: context,
             builder: (context) {
               return StatefulBuilder(
@@ -230,14 +227,13 @@ class _LibraryState extends State<Library> {
     return Scaffold(
       floatingActionButton: filterFloatingButton(context),
       appBar: appBar(context),
-      bottomNavigationBar: BottomNavBar(0),
       body: mangaInLibrary.isNotEmpty
           ? RefreshIndicator(
               onRefresh: () async {
-                mangaInLibrary.asMap().forEach((index, manga) async {
+                for (Manga manga in mangaInLibrary) {
                   await SourcesMap[manga.source]!.getMangaDetails(manga);
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                });
+                }
               },
               child: GridView.builder(
                 itemCount: mangaInLibrary.length,
@@ -288,7 +284,6 @@ class CustomSearchClass extends SearchDelegate {
   CustomSearchClass(this.filterCondition);
 
   FilterOptions filterCondition;
-  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
   var results = [];
 
   @override
@@ -347,7 +342,7 @@ class CustomSearchClass extends SearchDelegate {
   getResults() {
     if (query.isNotEmpty) {
       results.clear();
-      results = isarInstance!.mangas
+      results = isarDB.mangas
           .filter()
           .inLibraryEqualTo(true)
           .optional(filterCondition.started == true,

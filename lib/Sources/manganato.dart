@@ -1,6 +1,6 @@
-import 'package:isar/isar.dart';
+import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
@@ -58,9 +58,7 @@ class Manganato extends Source {
       var q2 = parsedHtml.querySelectorAll(_baseChapterListQuery);
       var q3 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
-      var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
-
-      final allManga = isarInstance!.mangas;
+      final allManga = isarDB.mangas;
 
       // Get chapter list
       for (int x = 0; x < q2.length; x++) {
@@ -87,7 +85,7 @@ class Manganato extends Source {
         inLibrary: manga.inLibrary,
       );
 
-      await isarInstance.writeTxn(() async {
+      await isarDB.writeTxn(() async {
         await allManga.put(updatedManga);
       });
       return updatedManga;

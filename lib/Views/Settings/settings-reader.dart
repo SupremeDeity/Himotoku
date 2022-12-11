@@ -3,10 +3,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
+import 'package:himotoku/Data/database/database.dart';
 import 'package:logger/logger.dart';
-import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Setting.dart';
+import 'package:himotoku/Data/models/Setting.dart';
 
 class ReaderSettings extends StatefulWidget {
   const ReaderSettings({Key? key}) : super(key: key);
@@ -16,16 +15,21 @@ class ReaderSettings extends StatefulWidget {
 }
 
 class _ReaderSettingsState extends State<ReaderSettings> {
-  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME)!;
+  StreamSubscription<void>? cancelSubscription;
   bool? fullscreen;
   bool? splitTallImages;
-  StreamSubscription<void>? cancelSubscription;
+
+  @override
+  void dispose() {
+    cancelSubscription!.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
     try {
       Stream<void> settingsChanged =
-          isarInstance.settings.watchObjectLazy(0, fireImmediately: true);
+          isarDB.settings.watchObjectLazy(0, fireImmediately: true);
       cancelSubscription = settingsChanged.listen((event) async {
         updateSettings();
       });
@@ -37,17 +41,11 @@ class _ReaderSettingsState extends State<ReaderSettings> {
   }
 
   updateSettings() async {
-    var settings = await isarInstance.settings.get(0);
+    var settings = await isarDB.settings.get(0);
     setState(() {
       splitTallImages = settings!.splitTallImages;
       fullscreen = settings.fullscreen;
     });
-  }
-
-  @override
-  void dispose() {
-    cancelSubscription!.cancel();
-    super.dispose();
   }
 
   @override
@@ -68,18 +66,17 @@ class _ReaderSettingsState extends State<ReaderSettings> {
             ],
           ),
         ),
-        ListTile(
+        SwitchListTile(
             title: const Text("Fullscreen"),
             subtitle: const Text("Go fullscreen mode while reading."),
-            trailing: Switch(
-                value: fullscreen ?? false,
-                onChanged: (value) async {
-                  await isarInstance.writeTxn(() async {
-                    var settings = await isarInstance.settings.get(0);
-                    await isarInstance.settings
-                        .put(settings!.copyWith(newFullscreen: value));
-                  });
-                })),
+            value: fullscreen ?? false,
+            onChanged: (value) async {
+              await isarDB.writeTxn(() async {
+                var settings = await isarDB.settings.get(0);
+                await isarDB.settings
+                    .put(settings!.copyWith(newFullscreen: value));
+              });
+            }),
         // Padding(
         //   padding: const EdgeInsets.only(left: 12.0, top: 12.0, bottom: 12.0),
         //   child: Row(
@@ -101,9 +98,9 @@ class _ReaderSettingsState extends State<ReaderSettings> {
         //     trailing: Switch(
         //         value: splitTallImages ?? false,
         //         onChanged: (value) async {
-        //           await isarInstance.writeTxn(() async {
-        //             var settings = await isarInstance.settings.get(0);
-        //             await isarInstance.settings
+        //           await isarDB.writeTxn(() async {
+        //             var settings = await isarDB.settings.get(0);
+        //             await isarDB.settings
         //                 .put(settings!.copyWith(newSplitTallImages: value));
         //           });
         //         }))

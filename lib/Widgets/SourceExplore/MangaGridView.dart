@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:himotoku/Data/Constants.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:logger/logger.dart';
-import 'package:himotoku/Data/Manga.dart';
+import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:himotoku/Widgets/Library/ComfortableTile.dart';
 

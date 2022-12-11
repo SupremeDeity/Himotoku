@@ -1,8 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names,
 
 import 'package:flutter/cupertino.dart';
-
-import 'Setting.dart';
+import 'package:himotoku/Data/models/Setting.dart';
 
 enum APP_ERROR {
   SOURCE_SEARCH_NOT_SUPPORTED,

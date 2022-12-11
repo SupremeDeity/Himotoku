@@ -4,13 +4,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:himotoku/Pages/RouteBuilder.dart';
-import 'package:isar/isar.dart';
+import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:logger/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
-import 'package:himotoku/Data/Setting.dart';
+import 'package:himotoku/Data/models/Manga.dart';
+import 'package:himotoku/Data/models/Setting.dart';
 import 'package:himotoku/Sources/SourceHelper.dart';
 
 class ChapterListView extends StatefulWidget {
@@ -28,7 +28,6 @@ class _ChapterListViewState extends State<ChapterListView> {
   bool fullscreen = false;
   bool isFocused = false;
   bool isRead = false;
-  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME)!;
   List<String> pageLinks = [];
   Stream<List<Widget>>? pageGenStream;
 
@@ -103,7 +102,7 @@ class _ChapterListViewState extends State<ChapterListView> {
   }
 
   updateSettings() async {
-    var settings = await isarInstance.settings.get(0);
+    var settings = await isarDB.settings.get(0);
     setState(() {
       fullscreen = settings!.fullscreen;
     });
@@ -133,9 +132,9 @@ class _ChapterListViewState extends State<ChapterListView> {
     setState(() {
       isRead = true;
     });
-    await isarInstance.writeTxn(() {
+    await isarDB.writeTxn(() {
       widget.manga.chapters[widget.chapterIndex].isRead = true;
-      return isarInstance.mangas.put(widget.manga);
+      return isarDB.mangas.put(widget.manga);
     });
   }
 
