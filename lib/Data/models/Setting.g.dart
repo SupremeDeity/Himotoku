@@ -911,6 +911,11 @@ const FilterOptionsSchema = Schema(
       id: 0,
       name: r'started',
       type: IsarType.bool,
+    ),
+    r'unread': PropertySchema(
+      id: 1,
+      name: r'unread',
+      type: IsarType.bool,
     )
   },
   estimateSize: _filterOptionsEstimateSize,
@@ -935,6 +940,7 @@ void _filterOptionsSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeBool(offsets[0], object.started);
+  writer.writeBool(offsets[1], object.unread);
 }
 
 FilterOptions _filterOptionsDeserialize(
@@ -945,6 +951,7 @@ FilterOptions _filterOptionsDeserialize(
 ) {
   final object = FilterOptions();
   object.started = reader.readBool(offsets[0]);
+  object.unread = reader.readBool(offsets[1]);
   return object;
 }
 
@@ -956,6 +963,8 @@ P _filterOptionsDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
+      return (reader.readBool(offset)) as P;
+    case 1:
       return (reader.readBool(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -969,6 +978,16 @@ extension FilterOptionsQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'started',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<FilterOptions, FilterOptions, QAfterFilterCondition>
+      unreadEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'unread',
         value: value,
       ));
     });

@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Views/RouteBuilder.dart';
-import 'package:logger/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Data/models/Manga.dart';
@@ -45,11 +44,15 @@ class _ChapterListViewState extends State<ChapterListView> {
         ));
 
     for (int x = 0; x < len; x++) {
-      var response = await http.get(Uri.parse(pageLinks[x]));
+      var response = await http.get(Uri.parse(pageLinks[x]),
+          headers: {"Referer": widget.manga.mangaLink});
       var image = Image.memory(
         fit: BoxFit.cover,
         response.bodyBytes,
       );
+
+      if (!mounted) return;
+
       setState(() {
         loaded[x] = image;
       });
@@ -109,9 +112,7 @@ class _ChapterListViewState extends State<ChapterListView> {
         pageLinks = newItems;
       });
     } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
-      Navigator.of(context).pop("An error occured while fetching pages.");
+      Navigator.of(context).pop(e);
     }
   }
 

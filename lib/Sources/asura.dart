@@ -23,8 +23,9 @@ class Asura extends Source {
     try {
       var url = Uri.parse(startLink);
 
-      var response = await http.get(url).onError(
-          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
+      var response = await http
+          .get(url)
+          .onError((error, stackTrace) => throw APP_ERROR.SOURCE_HOST_ERROR);
 
       var parsedHtml = parse(response.body);
 
@@ -48,8 +49,9 @@ class Asura extends Source {
     try {
       var url = Uri.parse(manga.mangaLink);
 
-      var response = await http.get(url).onError(
-          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
+      var response = await http
+          .get(url)
+          .onError((error, stackTrace) => throw APP_ERROR.SOURCE_HOST_ERROR);
       var parsedHtml = parse(response.body);
 
       List<Chapter> chapterList = [];
@@ -110,8 +112,9 @@ class Asura extends Source {
       } else {
         url = Uri.https(_baseUrl, "/page/$pageKey", {'s': searchQuery});
       }
-      var response = await http.get(url).onError(
-          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
+      var response = await http
+          .get(url)
+          .onError((error, stackTrace) => throw APP_ERROR.SOURCE_HOST_ERROR);
       var parsedHtml = parse(response.body);
       List<Manga> mangaList = [];
 
@@ -146,4 +149,10 @@ class Asura extends Source {
 
   @override
   String get name => "Asura Scans";
+
+  @override
+  List<String>? getSortOptions() {
+    // TODO: implement getSortOptions
+    throw UnimplementedError();
+  }
 }

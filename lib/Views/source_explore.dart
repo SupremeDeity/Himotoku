@@ -30,6 +30,40 @@ class _SourceExploreState extends State<SourceExplore> {
           widget.source.name,
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: "Sort",
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            builder: ((bc) => StatefulBuilder(
+                  builder: ((context, setModalState) => Scaffold(
+                      appBar: AppBar(
+                        automaticallyImplyLeading: false,
+                        centerTitle: true,
+                        title: Text("Sort"),
+                      ),
+                      body: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            DropdownButton(
+                              value: "latest",
+                              items: [
+                                DropdownMenuItem(
+                                    child: Text("Latest"), value: "latest"),
+                                DropdownMenuItem(
+                                    child: Text("Popular"), value: "popular"),
+                              ],
+                              onChanged: (v) {},
+                            )
+                          ],
+                        ),
+                      ))),
+                )),
+          );
+        },
+        child: Icon(Icons.sort_sharp),
+      ),
       body: MangaGridView(widget.source),
     );
   }

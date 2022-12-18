@@ -107,7 +107,6 @@ class Manganato extends Source {
             _baseUrl,
             "/search/story/${searchQuery.trim().replaceAll(RegExp('[\\s]'), "_")}",
             {'page': '$pageKey'});
-        print(url);
       }
 
       var response = await http.get(url).onError(
@@ -146,4 +145,10 @@ class Manganato extends Source {
 
   @override
   String get name => "Manganato";
+  
+  @override
+  List<String>? getSortOptions() {
+    // TODO: implement getSortOptions
+    throw UnimplementedError();
+  }
 }

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:himotoku/Data/Constants.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:logger/logger.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:himotoku/Widgets/Library/ComfortableTile.dart';
@@ -49,8 +48,6 @@ class _MangaGridViewState extends State<MangaGridView> {
       }
     } catch (error) {
       _pagingController.error = error;
-      Logger logger = Logger();
-      logger.e(error);
       if (error == APP_ERROR.SOURCE_SEARCH_NOT_SUPPORTED) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content:

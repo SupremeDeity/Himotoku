@@ -10,8 +10,6 @@ enum LibrarySort {
   za,
   status,
   statusDesc,
-  // added,
-  // addedDesc,
 }
 
 @Collection()
@@ -20,8 +18,8 @@ class Setting {
   Id? id;
 
   // Theme Settings
-  /// Theme String must match with the keys from [themeMap]
-  String theme = themeMap.keys.elementAt(0);
+  /// Theme String must match with the keys from [ThemesMap]
+  String theme = ThemesMap.keys.elementAt(0);
 
   // Reader Settings
   /// Reader UI Fullscreen
@@ -67,9 +65,13 @@ class FilterOptions {
   @Ignore()
   FilterOptions copyWith({
     bool? newStarted,
+    bool? newUnread,
   }) {
-    return FilterOptions()..started = newStarted ?? started;
+    return FilterOptions()
+      ..started = newStarted ?? started
+      ..unread = newUnread ?? unread;
   }
 
   bool started = false;
+  bool unread = false;
 }

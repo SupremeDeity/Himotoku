@@ -18,4 +18,6 @@ abstract class Source {
   Future<Manga>? getMangaDetails(Manga manga);
 
   Future<List<String>>? getChapterPageList(String startLink);
+
+  List<String>? getSortOptions();
 }

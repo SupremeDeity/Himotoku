@@ -144,4 +144,10 @@ class ReaperScans extends Source {
 
   @override
   String get name => "Reaper Scans";
+
+  @override
+  List<String>? getSortOptions() {
+    // TODO: implement getSortOptions
+    throw UnimplementedError();
+  }
 }

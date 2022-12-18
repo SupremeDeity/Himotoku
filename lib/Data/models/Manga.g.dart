@@ -101,9 +101,22 @@ const MangaSchema = CollectionSchema(
         )
       ],
     ),
-    r'mangaName_source': IndexSchema(
-      id: 5312265551782195816,
-      name: r'mangaName_source',
+    r'mangaLink': IndexSchema(
+      id: -3951341863019326799,
+      name: r'mangaLink',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'mangaLink',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'mangaName': IndexSchema(
+      id: 5190626073667389456,
+      name: r'mangaName',
       unique: false,
       replace: false,
       properties: [
@@ -111,9 +124,17 @@ const MangaSchema = CollectionSchema(
           name: r'mangaName',
           type: IndexType.hash,
           caseSensitive: true,
-        ),
+        )
+      ],
+    ),
+    r'status': IndexSchema(
+      id: -107785170620420283,
+      name: r'status',
+      unique: false,
+      replace: false,
+      properties: [
         IndexPropertySchema(
-          name: r'source',
+          name: r'status',
           type: IndexType.hash,
           caseSensitive: true,
         )
@@ -425,29 +446,74 @@ extension MangaQueryWhere on QueryBuilder<Manga, Manga, QWhereClause> {
     });
   }
 
-  QueryBuilder<Manga, Manga, QAfterWhereClause> mangaNameEqualToAnySource(
+  QueryBuilder<Manga, Manga, QAfterWhereClause> mangaLinkEqualTo(
+      String mangaLink) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'mangaLink',
+        value: [mangaLink],
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> mangaLinkNotEqualTo(
+      String mangaLink) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'mangaLink',
+              lower: [],
+              upper: [mangaLink],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'mangaLink',
+              lower: [mangaLink],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'mangaLink',
+              lower: [mangaLink],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'mangaLink',
+              lower: [],
+              upper: [mangaLink],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> mangaNameEqualTo(
       String mangaName) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'mangaName_source',
+        indexName: r'mangaName',
         value: [mangaName],
       ));
     });
   }
 
-  QueryBuilder<Manga, Manga, QAfterWhereClause> mangaNameNotEqualToAnySource(
+  QueryBuilder<Manga, Manga, QAfterWhereClause> mangaNameNotEqualTo(
       String mangaName) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'mangaName_source',
+              indexName: r'mangaName',
               lower: [],
               upper: [mangaName],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'mangaName_source',
+              indexName: r'mangaName',
               lower: [mangaName],
               includeLower: false,
               upper: [],
@@ -455,13 +521,13 @@ extension MangaQueryWhere on QueryBuilder<Manga, Manga, QWhereClause> {
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'mangaName_source',
+              indexName: r'mangaName',
               lower: [mangaName],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'mangaName_source',
+              indexName: r'mangaName',
               lower: [],
               upper: [mangaName],
               includeUpper: false,
@@ -470,45 +536,44 @@ extension MangaQueryWhere on QueryBuilder<Manga, Manga, QWhereClause> {
     });
   }
 
-  QueryBuilder<Manga, Manga, QAfterWhereClause> mangaNameSourceEqualTo(
-      String mangaName, String source) {
+  QueryBuilder<Manga, Manga, QAfterWhereClause> statusEqualTo(String status) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'mangaName_source',
-        value: [mangaName, source],
+        indexName: r'status',
+        value: [status],
       ));
     });
   }
 
-  QueryBuilder<Manga, Manga, QAfterWhereClause>
-      mangaNameEqualToSourceNotEqualTo(String mangaName, String source) {
+  QueryBuilder<Manga, Manga, QAfterWhereClause> statusNotEqualTo(
+      String status) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'mangaName_source',
-              lower: [mangaName],
-              upper: [mangaName, source],
+              indexName: r'status',
+              lower: [],
+              upper: [status],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'mangaName_source',
-              lower: [mangaName, source],
+              indexName: r'status',
+              lower: [status],
               includeLower: false,
-              upper: [mangaName],
+              upper: [],
             ));
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'mangaName_source',
-              lower: [mangaName, source],
+              indexName: r'status',
+              lower: [status],
               includeLower: false,
-              upper: [mangaName],
+              upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'mangaName_source',
-              lower: [mangaName],
-              upper: [mangaName, source],
+              indexName: r'status',
+              lower: [],
+              upper: [status],
               includeUpper: false,
             ));
       }

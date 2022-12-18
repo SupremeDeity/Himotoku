@@ -1,10 +1,10 @@
 // ignore_for_file:
 
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
-import 'package:logger/logger.dart';
 import 'package:himotoku/Data/models/Setting.dart';
 import 'package:himotoku/Data/Theme.dart';
 
@@ -28,8 +28,7 @@ class _SettingsThemeState extends State<SettingsTheme> {
         updateSettings();
       });
     } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
+      log(e.toString());
     }
     super.initState();
   }
@@ -52,11 +51,11 @@ class _SettingsThemeState extends State<SettingsTheme> {
     return Scaffold(
       appBar: AppBar(title: const Text("Theme")),
       body: ListView(
-        children: List.generate(themeMap.length, (index) {
+        children: List.generate(ThemesMap.length, (index) {
           return RadioListTile(
-            title: Text(themeMap.keys.elementAt(index)),
+            title: Text(ThemesMap.keys.elementAt(index)),
             activeColor: Theme.of(context).colorScheme.surfaceTint,
-            value: themeMap.keys.elementAt(index),
+            value: ThemesMap.keys.elementAt(index),
             groupValue: theme,
             onChanged: (value) async {
               await isarDB.writeTxn(() async {

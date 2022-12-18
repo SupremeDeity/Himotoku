@@ -1,7 +1,9 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'dart:async';
+import 'dart:math';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
@@ -51,13 +53,22 @@ class _LibraryState extends State<Library> {
       filterOptions =
           settings != null ? settings.filterOptions : FilterOptions();
     });
-    getLibrary();
+    sortAndFilterLibrary();
   }
 
-  getLibrary() async {
-    var inLibrary = isarDB.mangas.filter().inLibraryEqualTo(true).optional(
-        filterOptions?.started == true,
-        (query) => query.chaptersElement((q) => q.isReadEqualTo(true)));
+  sortAndFilterLibrary() async {
+    var inLibrary = isarDB.mangas
+        .where()
+        .inLibraryEqualTo(true)
+        .filter()
+        .optional(
+            filterOptions?.started == true,
+            (query) =>
+                query.chaptersElement((chapter) => chapter.isReadEqualTo(true)))
+        .optional(
+            filterOptions?.unread == true,
+            (query) => query
+                .chaptersElement((chapter) => chapter.isReadEqualTo(false)));
 
     QueryBuilder<Manga, Manga, QAfterSortBy>? sortQuery;
     List<Manga> library = [];
@@ -75,9 +86,14 @@ class _LibraryState extends State<Library> {
       case LibrarySort.statusDesc:
         sortQuery = inLibrary.sortByStatusDesc();
         break;
+      default:
+        sortQuery = null;
+        break;
+      // case LibrarySort.unread:
+      //   break;
     }
 
-    library = await sortQuery.findAll();
+    library = await sortQuery?.findAll() ?? await inLibrary.findAll();
     setState(() {
       mangaInLibrary = library;
     });
@@ -104,7 +120,7 @@ class _LibraryState extends State<Library> {
             setModalState(() {});
 
             // Update library.
-            getLibrary();
+            sortAndFilterLibrary();
 
             await isarDB.writeTxn(() async {
               var settings = await isarDB.settings.get(0);
@@ -129,7 +145,7 @@ class _LibraryState extends State<Library> {
             // Cause update in modal.
             setModalState(() {});
             // Update library.
-            getLibrary();
+            sortAndFilterLibrary();
 
             await isarDB.writeTxn(() async {
               var settings = await isarDB.settings.get(0);
@@ -152,7 +168,7 @@ class _LibraryState extends State<Library> {
             setModalState(() {
               filterOptions?.started = value!;
             });
-            getLibrary();
+            sortAndFilterLibrary();
             await isarDB.writeTxn(() async {
               var settings = await isarDB.settings.get(0);
               await isarDB.settings.put(settings!.copyWith(
@@ -161,6 +177,22 @@ class _LibraryState extends State<Library> {
             });
           },
           title: const Text("Started"),
+        ),
+        CheckboxListTile(
+          value: filterOptions?.unread,
+          onChanged: (value) async {
+            setModalState(() {
+              filterOptions?.unread = value!;
+            });
+            sortAndFilterLibrary();
+            await isarDB.writeTxn(() async {
+              var settings = await isarDB.settings.get(0);
+              await isarDB.settings.put(settings!.copyWith(
+                  newFilterOptions:
+                      settings.filterOptions.copyWith(newUnread: value)));
+            });
+          },
+          title: const Text("Unread"),
         )
       ],
     );
@@ -168,15 +200,19 @@ class _LibraryState extends State<Library> {
 
   AppBar appBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       title: const Text("Library"),
       actions: [
+        IconButton(
+            onPressed: () => refreshLibrary(),
+            icon: Icon(Icons.refresh_rounded),
+            tooltip: "Update library"),
         IconButton(
           onPressed: () {
             showSearch(
                 context: context, delegate: CustomSearchClass(filterOptions!));
           },
           icon: const Icon(Icons.search),
+          tooltip: "Search in library",
         )
       ],
       automaticallyImplyLeading: false,
@@ -185,6 +221,7 @@ class _LibraryState extends State<Library> {
 
   FloatingActionButton filterFloatingButton(BuildContext context) {
     return FloatingActionButton(
+        tooltip: "Sort and Filter",
         onPressed: () {
           showModalBottomSheet(
             backgroundColor: Theme.of(context).colorScheme.background,
@@ -230,29 +267,21 @@ class _LibraryState extends State<Library> {
       floatingActionButton: filterFloatingButton(context),
       appBar: appBar(context),
       body: mangaInLibrary.isNotEmpty
-          ? RefreshIndicator(
-              onRefresh: () async {
-                for (Manga manga in mangaInLibrary) {
-                  await SourcesMap[manga.source]!.getMangaDetails(manga);
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                }
-              },
-              child: GridView.builder(
-                itemCount: mangaInLibrary.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  childAspectRatio: 2 / 3,
-                  crossAxisCount: 2,
-                ),
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: ComfortableTile(
-                      mangaInLibrary[index],
-                      cacheImage: true,
-                    ),
-                  );
-                },
+          ? GridView.builder(
+              itemCount: mangaInLibrary.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                childAspectRatio: 2 / 3,
+                crossAxisCount: 2,
               ),
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: ComfortableTile(
+                    mangaInLibrary[index],
+                    cacheImage: true,
+                  ),
+                );
+              },
             )
           : Center(
               child: Column(
@@ -279,6 +308,36 @@ class _LibraryState extends State<Library> {
               ),
             ),
     );
+  }
+
+  refreshLibrary() async {
+    int notifID = 1;
+    for (int mangaIndex = 0; mangaIndex < mangaInLibrary.length; mangaIndex++) {
+      int progress =
+          min(((mangaIndex + 1) / mangaInLibrary.length * 100).round(), 100);
+
+      Manga manga = mangaInLibrary[mangaIndex];
+
+      AwesomeNotifications().createNotification(
+          content: NotificationContent(
+            id: notifID,
+            channelKey: 'library_update',
+            title:
+                'Updating library (${mangaIndex + 1}/${mangaInLibrary.length})',
+            body: manga.mangaName,
+            actionType: ActionType.Default,
+            category: NotificationCategory.Progress,
+            notificationLayout: NotificationLayout.ProgressBar,
+            progress: progress,
+            autoDismissible: false,
+            locked: true,
+          ),
+          actionButtons: [
+            NotificationActionButton(key: "cancel", label: "Cancel")
+          ]);
+      await SourcesMap[manga.source]!.getMangaDetails(manga);
+    }
+    AwesomeNotifications().dismiss(notifID);
   }
 }
 

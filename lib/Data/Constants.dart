@@ -19,6 +19,3 @@ var APP_REPO_RELEASE = "https://github.com/SupremeDeity08/himotoku/releases";
 
 const ISAR_INSTANCE_NAME = "isarInstance";
 const DEFAULT_LIBRARY_SORT = LibrarySort.az;
-
-/// Cache key for [ComfortableTile] & [MangaView]
-const MTILE_CACHE_KEY = "mTileCache";

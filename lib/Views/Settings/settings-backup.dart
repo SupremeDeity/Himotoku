@@ -1,13 +1,13 @@
 // ignore_for_file:
 
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:isar/isar.dart';
-import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/models/Setting.dart';
@@ -39,23 +39,44 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
   void export(BuildContext context) async {
     try {
       if (await Permission.manageExternalStorage.request().isGranted) {
-        var jsonContent =
-            await isarDB.mangas.filter().inLibraryEqualTo(true).exportJson();
-        var content = jsonEncode(jsonContent);
+        final archive = Archive();
+        var mangaRawJson;
+        var settingsRawJson;
+
+        // TODO(SupremeDeity): Try minimizing the exported fields to only the
+        // required fields of [Manga]
+        await isarDB.mangas
+            .where()
+            .inLibraryEqualTo(true)
+            .exportJsonRaw(((rawJson) {
+          mangaRawJson = Uint8List.fromList(rawJson);
+        }));
+        await isarDB.settings.where().idEqualTo(0).exportJsonRaw((rawJson) {
+          settingsRawJson = Uint8List.fromList(rawJson);
+        });
+
+        final mangaArchiveFile =
+            ArchiveFile(isarDB.mangas.name, mangaRawJson.length, mangaRawJson);
+        archive.addFile(mangaArchiveFile);
+        final settingsArchiveFile = ArchiveFile(
+            isarDB.settings.name, settingsRawJson.length, settingsRawJson);
+        archive.addFile(settingsArchiveFile);
+        List<int>? encodedZip = ZipEncoder().encode(archive);
+
+        if (encodedZip == null) return;
 
         DateTime now = DateTime.now();
         String backupLocation =
-            "$backupExportLocation/himotokuBackup-${now.day}-${now.month}-${now.year}-${now.millisecond}";
+            "$backupExportLocation/himotokuBackup-${now.day}-${now.month}-${now.year}-${now.millisecond}.zip";
 
         File file = await File(backupLocation).create(recursive: true);
 
-        await file.writeAsBytes(gzip.encode(utf8.encode(content)));
+        await file.writeAsBytes(encodedZip);
+
         var snackbar = SnackBar(content: Text("Saved to $backupLocation"));
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
       }
     } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
       var snackbar = const SnackBar(content: Text("Failed to save backup."));
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }
@@ -70,14 +91,19 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           File file = File(backupFileLocation.files.single.path!);
 
           var backupContentBytes = await file.readAsBytes();
-          List<dynamic> rawContent = json.decode(
-            utf8.decode(gzip.decode(backupContentBytes)),
-          );
-          List<Map<String, dynamic>> content = rawContent.map((element) {
-            return element as Map<String, dynamic>;
-          }).toList();
 
-          await isarDB.writeTxn(() => isarDB.mangas.importJson(content));
+          var archive = ZipDecoder().decodeBytes(backupContentBytes);
+
+          for (var file in archive) {
+            if (file.isFile && file.name == isarDB.mangas.name) {
+              await isarDB
+                  .writeTxn(() => isarDB.mangas.importJsonRaw(file.content));
+            }
+            if (file.isFile && file.name == isarDB.settings.name) {
+              await isarDB
+                  .writeTxn(() => isarDB.settings.importJsonRaw(file.content));
+            }
+          }
 
           var snackbar = const SnackBar(content: Text("Imported backup."));
           // ignore: use_build_context_synchronously
@@ -85,10 +111,8 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
         }
       }
     } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
-      // var snackbar = const SnackBar(content: Text("Failed to save backup."));
-      // ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      var snackbar = const SnackBar(content: Text("Failed to save backup."));
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }
   }
 

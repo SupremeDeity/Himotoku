@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
-import 'package:logger/logger.dart';
 import 'package:himotoku/Data/models/Setting.dart';
 
 class ReaderSettings extends StatefulWidget {
@@ -33,10 +32,7 @@ class _ReaderSettingsState extends State<ReaderSettings> {
       cancelSubscription = settingsChanged.listen((event) async {
         updateSettings();
       });
-    } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
-    }
+    } catch (e) {}
     super.initState();
   }
 
@@ -77,33 +73,6 @@ class _ReaderSettingsState extends State<ReaderSettings> {
                     .put(settings!.copyWith(newFullscreen: value));
               });
             }),
-        // Padding(
-        //   padding: const EdgeInsets.only(left: 12.0, top: 12.0, bottom: 12.0),
-        //   child: Row(
-        //     children: [
-        //       Text(
-        //         "Quality & Performance",
-        //         style: TextStyle(
-        //             color: context.theme.colorScheme.primary,
-        //             fontWeight: FontWeight.w500),
-        //       ),
-        //     ],
-        //   ),
-        // ),
-        // ListTile(
-        //     title: Text("Split tall images"),
-        //     isThreeLine: true,
-        //     subtitle: Text(
-        //         "Splits tall images into smaller parts.\nImproves quality but impacts loading time."),
-        //     trailing: Switch(
-        //         value: splitTallImages ?? false,
-        //         onChanged: (value) async {
-        //           await isarDB.writeTxn(() async {
-        //             var settings = await isarDB.settings.get(0);
-        //             await isarDB.settings
-        //                 .put(settings!.copyWith(newSplitTallImages: value));
-        //           });
-        //         }))
       ]),
     );
   }

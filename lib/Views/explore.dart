@@ -15,55 +15,42 @@ class _ExploreState extends State<Explore> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Explore"),
-        automaticallyImplyLeading: false,
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 12.0, top: 12.0),
-            child: Text(
-              '${SourcesMap.length} source(s)',
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w500),
+        appBar: AppBar(
+          title: const Text("Explore"),
+          automaticallyImplyLeading: false,
+        ),
+        body: Column(
+          children: [
+            ListTile(
+              title: Text('Sources (${SourcesMap.length})'),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: SourcesMap.length,
-                itemBuilder: (context, index) {
-                  final key = SourcesMap.keys.elementAt(index);
-                  final value = SourcesMap.values.elementAt(index);
-                  return Column(
-                    children: [
-                      ListTile(
-                          contentPadding: const EdgeInsets.all(5),
-                          onTap: () {
-                            Navigator.of(context).push(createRoute(
-                              SourceExplore(
-                                value,
-                              ),
-                            ));
-                          },
-                          title: Text(key),
-                          leading: CachedNetworkImage(
-                            imageUrl: value.iconUrl,
-                            fit: BoxFit.fitWidth,
-                            width: 32,
-                            height: 32,
-                            memCacheWidth: 64,
-                          )),
-                      const Divider(),
-                    ],
-                  );
-                }),
-          ),
-        ],
-      ),
-    );
+            Expanded(
+              child: ListView.builder(
+                  itemCount: SourcesMap.length,
+                  itemBuilder: (ctx, index) {
+                    final key = SourcesMap.keys.elementAt(index);
+                    final value = SourcesMap.values.elementAt(index);
+                    return ListTile(
+                      onTap: () => Navigator.of(ctx)
+                          .push(createRoute(SourceExplore(value))),
+                      leading: CachedNetworkImage(
+                        imageUrl: value.iconUrl,
+                        height: 24,
+                        width: 24,
+                        memCacheHeight: 70,
+                        maxHeightDiskCache: 70,
+                      ),
+                      trailing: Icon(Icons.arrow_circle_right_outlined),
+                      title: Text(
+                        key,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                    );
+                  }),
+            )
+          ],
+        ));
   }
 }
