@@ -4,6 +4,7 @@ import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
+import 'package:collection/collection.dart';
 
 class Asura extends Source {
   final _baseChapterListQuery = "#chapterlist .eph-num a";
@@ -54,8 +55,6 @@ class Asura extends Source {
           .onError((error, stackTrace) => throw APP_ERROR.SOURCE_HOST_ERROR);
       var parsedHtml = parse(response.body);
 
-      List<Chapter> chapterList = [];
-
       // Query1: gets author, artist
       var q1 = parsedHtml.querySelectorAll(_mangaAuthorQuery);
       // Query2: gets status
@@ -70,15 +69,21 @@ class Asura extends Source {
         var chapterName = q3[x].children[0].text.trim();
         var chapterLink = q3[x].attributes['href']!;
 
+        Chapter? chapterInMangaLib = manga.chapters.firstWhereOrNull(
+            (element) =>
+                element.name == chapterName || element.link == chapterLink);
+        if (chapterInMangaLib != null) continue;
+
         var isRead =
-            x < manga.chapters.length ? manga.chapters[x].isRead : false;
+            chapterInMangaLib != null ? chapterInMangaLib.isRead : false;
 
         final nChap = Chapter()
           ..name = chapterName
           ..link = chapterLink
           ..isRead = isRead;
-        chapterList.add(nChap);
+        manga.chapters.add(nChap);
       }
+
       Manga updatedManga = manga.copyWith(
         authorName: q1[1].previousElementSibling?.text.trim() == "Author"
             ? q1[1].text.trim()
@@ -88,7 +93,6 @@ class Asura extends Source {
             : null,
         synopsis: q4?.text.trim() ?? "",
         status: q2[0].text.trim(),
-        chapters: chapterList,
         id: manga.id,
         inLibrary: manga.inLibrary,
       );
@@ -96,6 +100,7 @@ class Asura extends Source {
       await isarDB.writeTxn(() async {
         await allManga.put(updatedManga);
       });
+
       return updatedManga;
     } catch (e) {
       return Future.error(e);

@@ -4,6 +4,7 @@ import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
+import 'package:collection/collection.dart';
 
 class ReaperScans extends Source {
   final baseSourceExplore = "/comics";
@@ -55,8 +56,6 @@ class ReaperScans extends Source {
           (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
 
-      List<Chapter> chapterList = [];
-
       var q2 = parsedHtml.querySelectorAll(_chapterNameQuery);
       // Query3: Gets chapter list
       var q3 = parsedHtml.querySelectorAll(_baseChapterListQuery);
@@ -72,19 +71,23 @@ class ReaperScans extends Source {
         var chapterName = q2[x].text;
         var chapterLink = q3[x].attributes['href']!;
 
+        Chapter? chapterInMangaLib = manga.chapters.firstWhereOrNull(
+            (element) =>
+                element.name == chapterName || element.link == chapterLink);
+        if (chapterInMangaLib != null) continue;
+
         var isRead =
-            x < manga.chapters.length ? manga.chapters[x].isRead : false;
+            chapterInMangaLib != null ? chapterInMangaLib.isRead : false;
 
         final nChap = Chapter()
-          ..name = chapterName.trim()
-          ..link = chapterLink.trim()
+          ..name = chapterName
+          ..link = chapterLink
           ..isRead = isRead;
-        chapterList.add(nChap);
+        manga.chapters.add(nChap);
       }
 
       Manga updatedManga = manga.copyWith(
           synopsis: q4?.text.trim() ?? "",
-          chapters: chapterList,
           id: manga.id,
           inLibrary: manga.inLibrary,
           status: q5[1].text.trim());

@@ -1,7 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:himotoku/Data/database/database.dart';
 
@@ -17,20 +16,16 @@ void main() async {
 
   await getIsar();
 
-  AwesomeNotifications().initialize(
-    // set the icon to null if you want to use the default app icon
-    'resource://drawable/splash',
-    [
-      NotificationChannel(
-        channelKey: 'library_update',
-        channelName: 'Library update notification',
-        channelDescription: 'Notification channel for library updates.',
-        defaultColor: Colors.blue,
-        channelShowBadge: false,
-        importance: NotificationImportance.Low,
-      )
-    ],
-    debug: kDebugMode ? true : false,
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+// initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('splash');
+  final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
   );
 
   runApp(
@@ -51,38 +46,12 @@ class _himotokuMainState extends State<himotokuMain> {
   @override
   void initState() {
     initPrefs();
-    AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
-      if (!isAllowed) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (bc) => AlertDialog(
-            backgroundColor: Theme.of(context).colorScheme.background,
-            shape: Border.all(),
-            titleTextStyle: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onBackground),
-            title: Text(
-              "Allow notifications?",
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    AwesomeNotifications()
-                        .requestPermissionToSendNotifications();
-                  },
-                  child: Text("Allow")),
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(bc);
-                  },
-                  child: Text("Don't allow")),
-            ],
-          ),
-        );
-      }
-    });
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        FlutterLocalNotificationsPlugin();
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestPermission();
     super.initState();
   }
 
@@ -118,7 +87,6 @@ class _himotokuMainState extends State<himotokuMain> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // home: const Library(),
       home: const MainView(),
       themeMode: ThemeMode.system,
       theme: currentTheme,

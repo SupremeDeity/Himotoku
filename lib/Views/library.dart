@@ -3,12 +3,13 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_isolate/flutter_isolate.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
-import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:himotoku/Sources/SourceHelper.dart';
+import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:isar/isar.dart';
 import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Data/models/Setting.dart';
@@ -27,6 +28,7 @@ class _LibraryState extends State<Library> {
   FilterOptions? filterOptions;
   List<Manga> mangaInLibrary = [];
   LibrarySort sortSettings = LibrarySort.az;
+  bool isUpdating = false;
 
   @override
   void dispose() {
@@ -136,14 +138,14 @@ class _LibraryState extends State<Library> {
                   ? const Icon(Icons.arrow_downward)
                   : null),
           onTap: () async {
-            if (sortSettings == LibrarySort.status) {
-              sortSettings = LibrarySort.statusDesc;
-            } else {
-              sortSettings = LibrarySort.status;
-            }
-
             // Cause update in modal.
-            setModalState(() {});
+            setModalState(() {
+              if (sortSettings == LibrarySort.status) {
+                sortSettings = LibrarySort.statusDesc;
+              } else {
+                sortSettings = LibrarySort.status;
+              }
+            });
             // Update library.
             sortAndFilterLibrary();
 
@@ -203,7 +205,7 @@ class _LibraryState extends State<Library> {
       title: const Text("Library"),
       actions: [
         IconButton(
-            onPressed: () => refreshLibrary(),
+            onPressed: () {},
             icon: Icon(Icons.refresh_rounded),
             tooltip: "Update library"),
         IconButton(
@@ -310,34 +312,48 @@ class _LibraryState extends State<Library> {
     );
   }
 
-  refreshLibrary() async {
+  @pragma('vm:entry-point')
+  static void refreshLibrary() async {
+    var mangaInLibrary =
+        await isarDB.mangas.where().inLibraryEqualTo(true).findAll();
     int notifID = 1;
+
     for (int mangaIndex = 0; mangaIndex < mangaInLibrary.length; mangaIndex++) {
-      int progress =
+      final int progress =
           min(((mangaIndex + 1) / mangaInLibrary.length * 100).round(), 100);
 
       Manga manga = mangaInLibrary[mangaIndex];
 
-      AwesomeNotifications().createNotification(
-          content: NotificationContent(
-            id: notifID,
-            channelKey: 'library_update',
-            title:
-                'Updating library (${mangaIndex + 1}/${mangaInLibrary.length})',
-            body: manga.mangaName,
-            actionType: ActionType.Default,
-            category: NotificationCategory.Progress,
-            notificationLayout: NotificationLayout.ProgressBar,
-            progress: progress,
-            autoDismissible: false,
-            locked: true,
-          ),
-          actionButtons: [
-            NotificationActionButton(key: "cancel", label: "Cancel")
-          ]);
-      await SourcesMap[manga.source]!.getMangaDetails(manga);
+      AndroidNotificationDetails androidNotificationDetails =
+          AndroidNotificationDetails('library_update', 'Library updates',
+              channelDescription:
+                  'A channel for displaying library update notifications.',
+              importance: Importance.defaultImportance,
+              priority: Priority.defaultPriority,
+              showProgress: true,
+              maxProgress: 100,
+              autoCancel: false,
+              category: AndroidNotificationCategory.progress,
+              channelShowBadge: false,
+              ongoing: true,
+              enableVibration: false,
+              progress: progress,
+              actions: [AndroidNotificationAction("CANCEL", "Cancel")]);
+      NotificationDetails notificationDetails =
+          NotificationDetails(android: androidNotificationDetails);
+      await FlutterLocalNotificationsPlugin().show(
+        notifID,
+        'Updating library (${mangaIndex + 1}/${mangaInLibrary.length})',
+        manga.mangaName,
+        notificationDetails,
+      );
+
+      await SourcesMap[manga.source]?.getMangaDetails(manga);
     }
-    AwesomeNotifications().dismiss(notifID);
+
+    // setState(() {
+    //   isUpdating = false;
+    // });
   }
 }
 
