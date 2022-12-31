@@ -32,7 +32,7 @@ class Themes {
   static ThemeData get defaultLight {
     return ThemeData.light(
       useMaterial3: true,
-    );
+    ).copyWith(colorScheme: ColorScheme.highContrastLight());
   }
 
   static ThemeData get crimsonLightTheme {
@@ -63,7 +63,7 @@ class Themes {
         ));
   }
 
-  static ThemeData get WarmBlack {
+  static ThemeData get WarmDark {
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: crimsonBackground,
@@ -85,13 +85,11 @@ class Themes {
   }
 }
 
-Map<String, ThemeData> themeMap = {
-  "Default Light": Themes.defaultLight,
-  "Default Dark": Themes.defaultDark,
+Map<String, ThemeData> ThemesMap = {
   "Crimson Light": Themes.crimsonLightTheme,
   "Crimson Dark": Themes.crimsonDarkTheme,
   "Periwinkle Light": Themes.PeriwinkleLight,
   "Periwinkle Dark": Themes.PeriwinkleDark,
-  "Warm Black": Themes.WarmBlack,
-  "Warm Light": Themes.WarmLight
+  "Warm Light": Themes.WarmLight,
+  "Warm Dark": Themes.WarmDark,
 };

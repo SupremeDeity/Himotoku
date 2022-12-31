@@ -30,7 +30,7 @@
 //   bool splitTallImages = false;
 //   bool isFocused = false;
 //   bool isRead = false;
-//   var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME)!;
+//   var isarDB = Isar.getInstance(ISAR_INSTANCE_NAME)!;
 //   List<String> pageLinks = [];
 //   List<dynamic> pages = [];
 
@@ -104,7 +104,7 @@
 //   }
 
 //   updateSettings() async {
-//     var settings = await isarInstance.settings.get(0);
+//     var settings = await isarDB.settings.get(0);
 //     setState(() {
 //       fullscreen = settings!.fullscreen;
 //       splitTallImages = settings.splitTallImages;
@@ -144,9 +144,9 @@
 //     setState(() {
 //       isRead = true;
 //     });
-//     await isarInstance.writeTxn(() {
+//     await isarDB.writeTxn(() {
 //       widget.manga.chapters[widget.chapterIndex].isRead = true;
-//       return isarInstance.mangas.put(widget.manga);
+//       return isarDB.mangas.put(widget.manga);
 //     });
 //   }
 

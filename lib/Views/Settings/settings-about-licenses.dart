@@ -4,7 +4,7 @@
 
 // THIS FILE CONTAINS A MODIFIED VERSION OF THE ORIGINAL SOURCE BY "The Flutter Authors"
 
-// ignore_for_file: prefer_const_constructors, , unused_element
+// ignore_for_file: prefer_const_constructors, unused_element
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Flow;
@@ -223,11 +223,17 @@ class _PackageListTile extends StatelessWidget {
           ? Theme.of(context).highlightColor
           : Theme.of(context).cardColor,
       child: ListTile(
-        title: Text(packageName),
+        title: Text(
+          packageName,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
         subtitle: Text(MaterialLocalizations.of(context)
             .licensesPackageDetailText(numberLicenses)),
         selected: isSelected,
         onTap: onTap,
+        tileColor: Theme.of(context).colorScheme.background,
       ),
     );
   }

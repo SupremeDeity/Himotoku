@@ -3,11 +3,8 @@ include: package:flutter_lints/flutter.yaml
 linter:
   # https://dart-lang.github.io/linter/lints/index.html.
   rules:
-    avoid_print: true,
-    cancel_subscriptions: true,
     file_names: false,
-    
-  
+
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
 analyzer:

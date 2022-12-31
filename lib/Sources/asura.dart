@@ -1,9 +1,10 @@
-import 'package:isar/isar.dart';
+import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
+import 'package:collection/collection.dart';
 
 class Asura extends Source {
   final _baseChapterListQuery = "#chapterlist .eph-num a";
@@ -23,8 +24,9 @@ class Asura extends Source {
     try {
       var url = Uri.parse(startLink);
 
-      var response = await http.get(url).onError(
-          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
+      var response = await http
+          .get(url)
+          .onError((error, stackTrace) => throw APP_ERROR.SOURCE_HOST_ERROR);
 
       var parsedHtml = parse(response.body);
 
@@ -48,11 +50,10 @@ class Asura extends Source {
     try {
       var url = Uri.parse(manga.mangaLink);
 
-      var response = await http.get(url).onError(
-          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
+      var response = await http
+          .get(url)
+          .onError((error, stackTrace) => throw APP_ERROR.SOURCE_HOST_ERROR);
       var parsedHtml = parse(response.body);
-
-      List<Chapter> chapterList = [];
 
       // Query1: gets author, artist
       var q1 = parsedHtml.querySelectorAll(_mangaAuthorQuery);
@@ -63,22 +64,26 @@ class Asura extends Source {
       // Query4: Gets synopsis
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
-      var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
-
-      final allManga = isarInstance!.mangas;
+      final allManga = isarDB.mangas;
       for (int x = 0; x < q3.length; x++) {
         var chapterName = q3[x].children[0].text.trim();
         var chapterLink = q3[x].attributes['href']!;
 
+        Chapter? chapterInMangaLib = manga.chapters.firstWhereOrNull(
+            (element) =>
+                element.name == chapterName || element.link == chapterLink);
+        if (chapterInMangaLib != null) continue;
+
         var isRead =
-            x < manga.chapters.length ? manga.chapters[x].isRead : false;
+            chapterInMangaLib != null ? chapterInMangaLib.isRead : false;
 
         final nChap = Chapter()
           ..name = chapterName
           ..link = chapterLink
           ..isRead = isRead;
-        chapterList.add(nChap);
+        manga.chapters.add(nChap);
       }
+
       Manga updatedManga = manga.copyWith(
         authorName: q1[1].previousElementSibling?.text.trim() == "Author"
             ? q1[1].text.trim()
@@ -88,14 +93,14 @@ class Asura extends Source {
             : null,
         synopsis: q4?.text.trim() ?? "",
         status: q2[0].text.trim(),
-        chapters: chapterList,
         id: manga.id,
         inLibrary: manga.inLibrary,
       );
 
-      await isarInstance.writeTxn(() async {
+      await isarDB.writeTxn(() async {
         await allManga.put(updatedManga);
       });
+
       return updatedManga;
     } catch (e) {
       return Future.error(e);
@@ -112,8 +117,9 @@ class Asura extends Source {
       } else {
         url = Uri.https(_baseUrl, "/page/$pageKey", {'s': searchQuery});
       }
-      var response = await http.get(url).onError(
-          (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
+      var response = await http
+          .get(url)
+          .onError((error, stackTrace) => throw APP_ERROR.SOURCE_HOST_ERROR);
       var parsedHtml = parse(response.body);
       List<Manga> mangaList = [];
 
@@ -148,4 +154,10 @@ class Asura extends Source {
 
   @override
   String get name => "Asura Scans";
+
+  @override
+  List<String>? getSortOptions() {
+    // TODO: implement getSortOptions
+    throw UnimplementedError();
+  }
 }

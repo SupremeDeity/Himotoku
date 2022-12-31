@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:himotoku/Pages/RouteBuilder.dart';
-import 'package:himotoku/Pages/Settings/settings-about.dart';
-import 'package:himotoku/Pages/Settings/settings-backup.dart';
-import 'package:himotoku/Pages/Settings/settings-reader.dart';
-import 'package:himotoku/Pages/Settings/settings-theme.dart';
-import 'package:himotoku/Widgets/BottomNavBar.dart';
+import 'package:himotoku/Views/RouteBuilder.dart';
+import 'package:himotoku/Views/Settings/settings-about.dart';
+import 'package:himotoku/Views/Settings/settings-backup.dart';
+import 'package:himotoku/Views/Settings/settings-reader.dart';
+import 'package:himotoku/Views/Settings/settings-theme.dart';
 
 class Settings extends StatefulWidget {
   const Settings({Key? key}) : super(key: key);
@@ -28,7 +27,6 @@ class _SettingsState extends State<Settings> {
         title: const Text("Settings"),
         automaticallyImplyLeading: false,
       ),
-      bottomNavigationBar: const BottomNavBar(2),
       body: ListView(
           children: List.generate(
         settingsMap.length,

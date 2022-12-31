@@ -1,16 +1,16 @@
 // ignore_for_file:
 
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:himotoku/Data/database/database.dart';
 import 'package:isar/isar.dart';
-import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
-import 'package:himotoku/Data/Setting.dart';
+import 'package:himotoku/Data/models/Manga.dart';
+import 'package:himotoku/Data/models/Setting.dart';
 
 class ImportExportSettings extends StatefulWidget {
   const ImportExportSettings({Key? key}) : super(key: key);
@@ -21,7 +21,6 @@ class ImportExportSettings extends StatefulWidget {
 
 class _ImportExportSettingsState extends State<ImportExportSettings> {
   String backupExportLocation = "";
-  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME)!;
 
   @override
   void initState() {
@@ -30,7 +29,8 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
   }
 
   updateSettings() async {
-    var settings = await isarInstance.settings.get(0);
+    var settings = await isarDB.settings.get(0);
+
     setState(() {
       backupExportLocation = settings!.backupExportLocation;
     });
@@ -39,26 +39,44 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
   void export(BuildContext context) async {
     try {
       if (await Permission.manageExternalStorage.request().isGranted) {
-        var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
-        var jsonContent = await isarInstance!.mangas
-            .filter()
+        final archive = Archive();
+        var mangaRawJson;
+        var settingsRawJson;
+
+        // TODO(SupremeDeity): Try minimizing the exported fields to only the
+        // required fields of [Manga]
+        await isarDB.mangas
+            .where()
             .inLibraryEqualTo(true)
-            .exportJson();
-        var content = jsonEncode(jsonContent);
+            .exportJsonRaw(((rawJson) {
+          mangaRawJson = Uint8List.fromList(rawJson);
+        }));
+        await isarDB.settings.where().idEqualTo(0).exportJsonRaw((rawJson) {
+          settingsRawJson = Uint8List.fromList(rawJson);
+        });
+
+        final mangaArchiveFile =
+            ArchiveFile(isarDB.mangas.name, mangaRawJson.length, mangaRawJson);
+        archive.addFile(mangaArchiveFile);
+        final settingsArchiveFile = ArchiveFile(
+            isarDB.settings.name, settingsRawJson.length, settingsRawJson);
+        archive.addFile(settingsArchiveFile);
+        List<int>? encodedZip = ZipEncoder().encode(archive);
+
+        if (encodedZip == null) return;
 
         DateTime now = DateTime.now();
         String backupLocation =
-            "$backupExportLocation/himotokuBackup-${now.day}-${now.month}-${now.year}-${now.millisecond}";
+            "$backupExportLocation/himotokuBackup-${now.day}-${now.month}-${now.year}-${now.millisecond}.zip";
 
         File file = await File(backupLocation).create(recursive: true);
 
-        await file.writeAsBytes(gzip.encode(utf8.encode(content)));
+        await file.writeAsBytes(encodedZip);
+
         var snackbar = SnackBar(content: Text("Saved to $backupLocation"));
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
       }
     } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
       var snackbar = const SnackBar(content: Text("Failed to save backup."));
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }
@@ -67,23 +85,25 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
   void import(BuildContext context) async {
     try {
       if (await Permission.manageExternalStorage.request().isGranted) {
-        var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
-
         var backupFileLocation = await FilePicker.platform.pickFiles();
 
         if (backupFileLocation != null) {
           File file = File(backupFileLocation.files.single.path!);
 
           var backupContentBytes = await file.readAsBytes();
-          List<dynamic> rawContent = json.decode(
-            utf8.decode(gzip.decode(backupContentBytes)),
-          );
-          List<Map<String, dynamic>> content = rawContent.map((element) {
-            return element as Map<String, dynamic>;
-          }).toList();
 
-          await isarInstance!
-              .writeTxn(() => isarInstance.mangas.importJson(content));
+          var archive = ZipDecoder().decodeBytes(backupContentBytes);
+
+          for (var file in archive) {
+            if (file.isFile && file.name == isarDB.mangas.name) {
+              await isarDB
+                  .writeTxn(() => isarDB.mangas.importJsonRaw(file.content));
+            }
+            if (file.isFile && file.name == isarDB.settings.name) {
+              await isarDB
+                  .writeTxn(() => isarDB.settings.importJsonRaw(file.content));
+            }
+          }
 
           var snackbar = const SnackBar(content: Text("Imported backup."));
           // ignore: use_build_context_synchronously
@@ -91,10 +111,8 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
         }
       }
     } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
-      // var snackbar = const SnackBar(content: Text("Failed to save backup."));
-      // ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      var snackbar = const SnackBar(content: Text("Failed to save backup."));
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }
   }
 
@@ -102,9 +120,9 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory != null) {
       if (selectedDirectory != "/") {
-        await isarInstance.writeTxn(() async {
-          var settings = await isarInstance.settings.get(0);
-          await isarInstance.settings.put(
+        await isarDB.writeTxn(() async {
+          var settings = await isarDB.settings.get(0);
+          await isarDB.settings.put(
               settings!.copyWith(newBackupExportLocation: selectedDirectory));
         });
 
@@ -121,11 +139,22 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          shape: Border.all(),
+          titleTextStyle: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onBackground),
           title: const Text('Export locally'),
           content: SingleChildScrollView(
             child: ListBody(
                 children: backupExportLocation.isNotEmpty
-                    ? [const Text('Exporting to:'), Text(backupExportLocation)]
+                    ? [
+                        const Text('Exporting to:'),
+                        Text(backupExportLocation,
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary))
+                      ]
                     : [
                         const Text(
                             "Please set \"Export Location\" prior to this.")
@@ -165,7 +194,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           title: const Text("Export Location"),
           leading: const Icon(Icons.folder_outlined),
           subtitle: Text(
-            backupExportLocation,
+            backupExportLocation.isNotEmpty ? backupExportLocation : "Not set",
           ),
           onTap: () {
             pickDirectoryLocation();
@@ -182,16 +211,6 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
             _showMyDialog();
           },
         ),
-        // TODO: ADD CLOUD EXPORT SUPPORT
-        // ListTile(
-        //   title: Text("Cloud Export"),
-        //   leading: Icon(Icons.cloud_upload_outlined),
-        //   subtitle: Text(
-        //     "Export to Google Drive.",
-        //   ),
-        //   trailing: Icon(Icons.arrow_forward),
-        //   onTap: () {},
-        // ),
         Padding(
           padding: const EdgeInsets.only(left: 12.0, top: 12.0),
           child: Text(

@@ -20,7 +20,7 @@ class Manga {
   List<Chapter> chapters = [];
 
   /// Source of Manga
-  @Index()
+  @Index(type: IndexType.hash)
   final String source;
 
   /// Required id by IsarDB
@@ -33,49 +33,21 @@ class Manga {
   String mangaCover;
 
   /// Link to main page of manga.
+  @Index()
   String mangaLink;
 
   /// Title of manga.
-  @Index(composite: [CompositeIndex('source')])
+  @Index(type: IndexType.hash)
   String mangaName;
 
   /// Studio of manga
   String mangaStudio = "-";
 
   /// Status of manga
+  @Index(type: IndexType.hash)
   String status = "-";
 
   String synopsis = "";
-
-  @Ignore()
-  set setChapters(List<Chapter> updatedChapters) {
-    chapters.addAll(updatedChapters);
-  }
-
-  @Ignore()
-  set setStatus(String updatedStatus) {
-    status = updatedStatus;
-  }
-
-  @Ignore()
-  set setAuthorName(String updatedAuthorName) {
-    authorName = updatedAuthorName;
-  }
-
-  @Ignore()
-  set setMangaStudio(String updatedStudio) {
-    mangaStudio = updatedStudio;
-  }
-
-  @Ignore()
-  set setSynopsis(String updatedSynopsis) {
-    synopsis = updatedSynopsis;
-  }
-
-  @Ignore()
-  set setInLibrary(bool updatedInLibrary) {
-    inLibrary = updatedInLibrary;
-  }
 
   @Ignore()
   Manga copyWith({
@@ -112,4 +84,10 @@ class Chapter {
   bool isRead = false;
   String? link;
   String? name;
+
+  bool operator ==(Object other) =>
+      other is Chapter &&
+      isRead == other.isRead &&
+      link == other.link &&
+      name == other.name;
 }

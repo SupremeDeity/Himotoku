@@ -1,16 +1,14 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names,
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:himotoku/Pages/RouteBuilder.dart';
-import 'package:isar/isar.dart';
-import 'package:logger/logger.dart';
+import 'package:http/http.dart' as http;
+import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
-import 'package:himotoku/Data/Setting.dart';
+import 'package:himotoku/Data/models/Manga.dart';
+import 'package:himotoku/Data/models/Setting.dart';
 import 'package:himotoku/Sources/SourceHelper.dart';
 
 class ChapterListView extends StatefulWidget {
@@ -28,7 +26,6 @@ class _ChapterListViewState extends State<ChapterListView> {
   bool fullscreen = false;
   bool isFocused = false;
   bool isRead = false;
-  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME)!;
   List<String> pageLinks = [];
   Stream<List<Widget>>? pageGenStream;
 
@@ -37,38 +34,29 @@ class _ChapterListViewState extends State<ChapterListView> {
   // Loads images sequentially (one-by-one)
   Stream<List<Widget>> generatePages() async* {
     int len = pageLinks.length;
-    List<Widget> loaded = List.generate(
+    List<Widget> loaded = List.filled(
         len,
-        growable: false,
-        (index) => const Padding(
-              padding: EdgeInsets.symmetric(vertical: 200.0),
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            ));
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 200.0),
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ));
 
     for (int x = 0; x < len; x++) {
-      await for (var _ in precacheImage(
-              CachedNetworkImageProvider(
-                pageLinks[x],
-                cacheManager: CacheManager(
-                  Config(
-                    "chapterCache",
-                    stalePeriod: Duration(minutes: 1),
-                  ),
-                ),
-              ),
-              context)
-          .asStream()) {
-        var logger = Logger();
+      var response = await http.get(Uri.parse(pageLinks[x]),
+          headers: {"Referer": widget.manga.mangaLink});
+      var image = Image.memory(
+        fit: BoxFit.cover,
+        response.bodyBytes,
+      );
 
-        logger.i("image ${x + 1}/$len loaded");
-        loaded[x] = CachedNetworkImage(
-          imageUrl: pageLinks[x],
-          cacheKey: pageLinks[x],
-        );
-        yield loaded;
-      }
+      if (!mounted) return;
+
+      setState(() {
+        loaded[x] = image;
+      });
+      yield loaded;
     }
   }
 
@@ -82,7 +70,8 @@ class _ChapterListViewState extends State<ChapterListView> {
   @override
   void initState() {
     updateSettings();
-    // Check if page is already read.
+    // * Check if page is already read.
+    // TODO: find a better solution to this.
     setState(() {
       isRead = widget.manga.chapters[widget.chapterIndex].isRead;
     });
@@ -103,7 +92,7 @@ class _ChapterListViewState extends State<ChapterListView> {
   }
 
   updateSettings() async {
-    var settings = await isarInstance.settings.get(0);
+    var settings = await isarDB.settings.get(0);
     setState(() {
       fullscreen = settings!.fullscreen;
     });
@@ -123,9 +112,7 @@ class _ChapterListViewState extends State<ChapterListView> {
         pageLinks = newItems;
       });
     } catch (e) {
-      Logger logger = Logger();
-      logger.e(e);
-      Navigator.of(context).pop("An error occured while fetching pages.");
+      Navigator.of(context).pop(e);
     }
   }
 
@@ -133,42 +120,14 @@ class _ChapterListViewState extends State<ChapterListView> {
     setState(() {
       isRead = true;
     });
-    await isarInstance.writeTxn(() {
+    await isarDB.writeTxn(() {
       widget.manga.chapters[widget.chapterIndex].isRead = true;
-      return isarInstance.mangas.put(widget.manga);
+      return isarDB.mangas.put(widget.manga);
     });
   }
 
   setCurrentScroll(double value) {
     _scrollController.jumpTo(value);
-  }
-
-  // Get Length of pages
-  // Start with first image -> Wait till loaded, return image on load
-  // Start with second image and so on...
-
-  CachedNetworkImage ChapterPage(int index) {
-    return CachedNetworkImage(
-      httpHeaders: {"Referer": widget.manga.mangaLink},
-      fit: BoxFit.fitWidth,
-      imageUrl: pageLinks[index],
-      filterQuality: FilterQuality.medium,
-      errorWidget: (context, url, error) {
-        return Text("Error: $error");
-      },
-      progressIndicatorBuilder: (context, url, progress) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 200,
-          ),
-          child: Center(
-            child: CircularProgressIndicator(
-              value: progress.progress,
-            ),
-          ),
-        );
-      },
-    );
   }
 
   Container HeaderView(BuildContext context) {

@@ -1,16 +1,19 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:himotoku/Pages/RouteBuilder.dart';
+import 'package:flutter_isolate/flutter_isolate.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Sources/SourceHelper.dart';
+import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:isar/isar.dart';
 import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
-import 'package:himotoku/Data/Setting.dart';
-import 'package:himotoku/Pages/explore.dart';
-import 'package:himotoku/Widgets/BottomNavBar.dart';
+import 'package:himotoku/Data/models/Setting.dart';
+import 'package:himotoku/Views/explore.dart';
 import 'package:himotoku/Widgets/Library/ComfortableTile.dart';
 
 class Library extends StatefulWidget {
@@ -23,9 +26,9 @@ class Library extends StatefulWidget {
 class _LibraryState extends State<Library> {
   StreamSubscription<void>? cancelSubscription;
   FilterOptions? filterOptions;
-  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
   List<Manga> mangaInLibrary = [];
   LibrarySort sortSettings = LibrarySort.az;
+  bool isUpdating = false;
 
   @override
   void dispose() {
@@ -36,7 +39,7 @@ class _LibraryState extends State<Library> {
   @override
   void initState() {
     Stream<void> instanceChanged =
-        isarInstance!.mangas.watchLazy(fireImmediately: true);
+        isarDB.mangas.watchLazy(fireImmediately: true);
     cancelSubscription = instanceChanged.listen((event) {
       updateSettings();
     });
@@ -45,22 +48,29 @@ class _LibraryState extends State<Library> {
   }
 
   updateSettings() async {
-    var settings = await isarInstance?.settings.get(0);
+    var settings = await isarDB.settings.get(0);
     setState(() {
       sortSettings =
           settings != null ? settings.sortSettings : DEFAULT_LIBRARY_SORT;
       filterOptions =
           settings != null ? settings.filterOptions : FilterOptions();
     });
-    getLibrary();
+    sortAndFilterLibrary();
   }
 
-  getLibrary() async {
-    var inLibrary = isarInstance!.mangas
-        .filter()
+  sortAndFilterLibrary() async {
+    var inLibrary = isarDB.mangas
+        .where()
         .inLibraryEqualTo(true)
-        .optional(filterOptions?.started == true,
-            (query) => query.chaptersElement((q) => q.isReadEqualTo(true)));
+        .filter()
+        .optional(
+            filterOptions?.started == true,
+            (query) =>
+                query.chaptersElement((chapter) => chapter.isReadEqualTo(true)))
+        .optional(
+            filterOptions?.unread == true,
+            (query) => query
+                .chaptersElement((chapter) => chapter.isReadEqualTo(false)));
 
     QueryBuilder<Manga, Manga, QAfterSortBy>? sortQuery;
     List<Manga> library = [];
@@ -78,10 +88,14 @@ class _LibraryState extends State<Library> {
       case LibrarySort.statusDesc:
         sortQuery = inLibrary.sortByStatusDesc();
         break;
+      default:
+        sortQuery = null;
+        break;
+      // case LibrarySort.unread:
+      //   break;
     }
 
-    library = await sortQuery.findAll();
-
+    library = await sortQuery?.findAll() ?? await inLibrary.findAll();
     setState(() {
       mangaInLibrary = library;
     });
@@ -108,11 +122,11 @@ class _LibraryState extends State<Library> {
             setModalState(() {});
 
             // Update library.
-            getLibrary();
+            sortAndFilterLibrary();
 
-            await isarInstance!.writeTxn(() async {
-              var settings = await isarInstance!.settings.get(0);
-              await isarInstance!.settings
+            await isarDB.writeTxn(() async {
+              var settings = await isarDB.settings.get(0);
+              await isarDB.settings
                   .put(settings!.copyWith(newSortSettings: sortSettings));
             });
           },
@@ -124,20 +138,20 @@ class _LibraryState extends State<Library> {
                   ? const Icon(Icons.arrow_downward)
                   : null),
           onTap: () async {
-            if (sortSettings == LibrarySort.status) {
-              sortSettings = LibrarySort.statusDesc;
-            } else {
-              sortSettings = LibrarySort.status;
-            }
-
             // Cause update in modal.
-            setModalState(() {});
+            setModalState(() {
+              if (sortSettings == LibrarySort.status) {
+                sortSettings = LibrarySort.statusDesc;
+              } else {
+                sortSettings = LibrarySort.status;
+              }
+            });
             // Update library.
-            getLibrary();
+            sortAndFilterLibrary();
 
-            await isarInstance!.writeTxn(() async {
-              var settings = await isarInstance!.settings.get(0);
-              await isarInstance!.settings
+            await isarDB.writeTxn(() async {
+              var settings = await isarDB.settings.get(0);
+              await isarDB.settings
                   .put(settings!.copyWith(newSortSettings: sortSettings));
             });
           },
@@ -156,15 +170,31 @@ class _LibraryState extends State<Library> {
             setModalState(() {
               filterOptions?.started = value!;
             });
-            getLibrary();
-            await isarInstance!.writeTxn(() async {
-              var settings = await isarInstance!.settings.get(0);
-              await isarInstance!.settings.put(settings!.copyWith(
+            sortAndFilterLibrary();
+            await isarDB.writeTxn(() async {
+              var settings = await isarDB.settings.get(0);
+              await isarDB.settings.put(settings!.copyWith(
                   newFilterOptions:
                       settings.filterOptions.copyWith(newStarted: value)));
             });
           },
           title: const Text("Started"),
+        ),
+        CheckboxListTile(
+          value: filterOptions?.unread,
+          onChanged: (value) async {
+            setModalState(() {
+              filterOptions?.unread = value!;
+            });
+            sortAndFilterLibrary();
+            await isarDB.writeTxn(() async {
+              var settings = await isarDB.settings.get(0);
+              await isarDB.settings.put(settings!.copyWith(
+                  newFilterOptions:
+                      settings.filterOptions.copyWith(newUnread: value)));
+            });
+          },
+          title: const Text("Unread"),
         )
       ],
     );
@@ -172,15 +202,19 @@ class _LibraryState extends State<Library> {
 
   AppBar appBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       title: const Text("Library"),
       actions: [
+        IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.refresh_rounded),
+            tooltip: "Update library"),
         IconButton(
           onPressed: () {
             showSearch(
                 context: context, delegate: CustomSearchClass(filterOptions!));
           },
           icon: const Icon(Icons.search),
+          tooltip: "Search in library",
         )
       ],
       automaticallyImplyLeading: false,
@@ -189,8 +223,10 @@ class _LibraryState extends State<Library> {
 
   FloatingActionButton filterFloatingButton(BuildContext context) {
     return FloatingActionButton(
+        tooltip: "Sort and Filter",
         onPressed: () {
           showModalBottomSheet(
+            backgroundColor: Theme.of(context).colorScheme.background,
             context: context,
             builder: (context) {
               return StatefulBuilder(
@@ -201,7 +237,9 @@ class _LibraryState extends State<Library> {
                       primary: false,
                       toolbarHeight: 0,
                       automaticallyImplyLeading: false,
-                      bottom: const TabBar(
+                      bottom: TabBar(
+                        labelColor: Theme.of(context).colorScheme.onBackground,
+                        indicatorColor: Theme.of(context).colorScheme.primary,
                         tabs: [
                           Tab(
                             text: "Sort",
@@ -230,31 +268,22 @@ class _LibraryState extends State<Library> {
     return Scaffold(
       floatingActionButton: filterFloatingButton(context),
       appBar: appBar(context),
-      bottomNavigationBar: BottomNavBar(0),
       body: mangaInLibrary.isNotEmpty
-          ? RefreshIndicator(
-              onRefresh: () async {
-                mangaInLibrary.asMap().forEach((index, manga) async {
-                  await SourcesMap[manga.source]!.getMangaDetails(manga);
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                });
-              },
-              child: GridView.builder(
-                itemCount: mangaInLibrary.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  childAspectRatio: 2 / 3,
-                  crossAxisCount: 2,
-                ),
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: ComfortableTile(
-                      mangaInLibrary[index],
-                      cacheImage: true,
-                    ),
-                  );
-                },
+          ? GridView.builder(
+              itemCount: mangaInLibrary.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                childAspectRatio: 2 / 3,
+                crossAxisCount: 2,
               ),
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: ComfortableTile(
+                    mangaInLibrary[index],
+                    cacheImage: true,
+                  ),
+                );
+              },
             )
           : Center(
               child: Column(
@@ -282,13 +311,56 @@ class _LibraryState extends State<Library> {
             ),
     );
   }
+
+  @pragma('vm:entry-point')
+  static void refreshLibrary() async {
+    var mangaInLibrary =
+        await isarDB.mangas.where().inLibraryEqualTo(true).findAll();
+    int notifID = 1;
+
+    for (int mangaIndex = 0; mangaIndex < mangaInLibrary.length; mangaIndex++) {
+      final int progress =
+          min(((mangaIndex + 1) / mangaInLibrary.length * 100).round(), 100);
+
+      Manga manga = mangaInLibrary[mangaIndex];
+
+      AndroidNotificationDetails androidNotificationDetails =
+          AndroidNotificationDetails('library_update', 'Library updates',
+              channelDescription:
+                  'A channel for displaying library update notifications.',
+              importance: Importance.defaultImportance,
+              priority: Priority.defaultPriority,
+              showProgress: true,
+              maxProgress: 100,
+              autoCancel: false,
+              category: AndroidNotificationCategory.progress,
+              channelShowBadge: false,
+              ongoing: true,
+              enableVibration: false,
+              progress: progress,
+              actions: [AndroidNotificationAction("CANCEL", "Cancel")]);
+      NotificationDetails notificationDetails =
+          NotificationDetails(android: androidNotificationDetails);
+      await FlutterLocalNotificationsPlugin().show(
+        notifID,
+        'Updating library (${mangaIndex + 1}/${mangaInLibrary.length})',
+        manga.mangaName,
+        notificationDetails,
+      );
+
+      await SourcesMap[manga.source]?.getMangaDetails(manga);
+    }
+
+    // setState(() {
+    //   isUpdating = false;
+    // });
+  }
 }
 
 class CustomSearchClass extends SearchDelegate {
   CustomSearchClass(this.filterCondition);
 
   FilterOptions filterCondition;
-  var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
   var results = [];
 
   @override
@@ -347,7 +419,7 @@ class CustomSearchClass extends SearchDelegate {
   getResults() {
     if (query.isNotEmpty) {
       results.clear();
-      results = isarInstance!.mangas
+      results = isarDB.mangas
           .filter()
           .inLibraryEqualTo(true)
           .optional(filterCondition.started == true,

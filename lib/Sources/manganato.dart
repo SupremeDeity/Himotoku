@@ -1,11 +1,14 @@
-import 'package:isar/isar.dart';
+import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
-import 'package:himotoku/Data/Manga.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
+import 'package:collection/collection.dart';
+
 
 class Manganato extends Source {
+
   final sort = "all";
 
   final _baseChapterListQuery = ".chapter-name";
@@ -51,35 +54,35 @@ class Manganato extends Source {
           (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
 
-      List<Chapter> chapterList = [];
-
       // Query1: gets author, status
       var q1 = parsedHtml.querySelectorAll(_mangaAuthorQuery);
       var q2 = parsedHtml.querySelectorAll(_baseChapterListQuery);
       var q3 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
-      var isarInstance = Isar.getInstance(ISAR_INSTANCE_NAME);
-
-      final allManga = isarInstance!.mangas;
+      final allManga = isarDB.mangas;
 
       // Get chapter list
       for (int x = 0; x < q2.length; x++) {
         var chapterName = q2[x].text.trim();
         var chapterLink = q2[x].attributes['href']!;
+
+        Chapter? chapterInMangaLib = manga.chapters.firstWhereOrNull(
+            (element) =>
+                element.name == chapterName || element.link == chapterLink);
+        if (chapterInMangaLib != null) continue;
+
         var isRead =
-            x < manga.chapters.length ? manga.chapters[x].isRead : false;
+            chapterInMangaLib != null ? chapterInMangaLib.isRead : false;
 
         final nChap = Chapter()
           ..name = chapterName
           ..link = chapterLink
           ..isRead = isRead;
-
-        chapterList.add(nChap);
+        manga.chapters.add(nChap);
       }
 
       // Note: Manganato does not have "Artist/Studio"
       Manga updatedManga = manga.copyWith(
-        chapters: chapterList,
         authorName: q1[1].text.trim(),
         status: q1[2].text.trim(),
         synopsis: q3!.text.replaceFirst(r"Description :", "").trim(),
@@ -87,7 +90,7 @@ class Manganato extends Source {
         inLibrary: manga.inLibrary,
       );
 
-      await isarInstance.writeTxn(() async {
+      await isarDB.writeTxn(() async {
         await allManga.put(updatedManga);
       });
       return updatedManga;
@@ -109,7 +112,6 @@ class Manganato extends Source {
             _baseUrl,
             "/search/story/${searchQuery.trim().replaceAll(RegExp('[\\s]'), "_")}",
             {'page': '$pageKey'});
-        print(url);
       }
 
       var response = await http.get(url).onError(
@@ -148,4 +150,10 @@ class Manganato extends Source {
 
   @override
   String get name => "Manganato";
+
+  @override
+  List<String>? getSortOptions() {
+    // TODO: implement getSortOptions
+    throw UnimplementedError();
+  }
 }
