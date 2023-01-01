@@ -4,11 +4,8 @@ import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
-import 'package:collection/collection.dart';
-
 
 class Manganato extends Source {
-
   final sort = "all";
 
   final _baseChapterListQuery = ".chapter-name";
@@ -54,6 +51,8 @@ class Manganato extends Source {
           (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
 
+      List<Chapter> chapterList = [];
+
       // Query1: gets author, status
       var q1 = parsedHtml.querySelectorAll(_mangaAuthorQuery);
       var q2 = parsedHtml.querySelectorAll(_baseChapterListQuery);
@@ -65,24 +64,20 @@ class Manganato extends Source {
       for (int x = 0; x < q2.length; x++) {
         var chapterName = q2[x].text.trim();
         var chapterLink = q2[x].attributes['href']!;
-
-        Chapter? chapterInMangaLib = manga.chapters.firstWhereOrNull(
-            (element) =>
-                element.name == chapterName || element.link == chapterLink);
-        if (chapterInMangaLib != null) continue;
-
         var isRead =
-            chapterInMangaLib != null ? chapterInMangaLib.isRead : false;
+            x < manga.chapters.length ? manga.chapters[x].isRead : false;
 
         final nChap = Chapter()
           ..name = chapterName
           ..link = chapterLink
           ..isRead = isRead;
-        manga.chapters.add(nChap);
+
+        chapterList.add(nChap);
       }
 
       // Note: Manganato does not have "Artist/Studio"
       Manga updatedManga = manga.copyWith(
+        chapters: chapterList,
         authorName: q1[1].text.trim(),
         status: q1[2].text.trim(),
         synopsis: q3!.text.replaceFirst(r"Description :", "").trim(),

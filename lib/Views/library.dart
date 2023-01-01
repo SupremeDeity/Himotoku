@@ -205,7 +205,7 @@ class _LibraryState extends State<Library> {
       title: const Text("Library"),
       actions: [
         IconButton(
-            onPressed: () {},
+            onPressed: refreshLibrary,
             icon: Icon(Icons.refresh_rounded),
             tooltip: "Update library"),
         IconButton(
@@ -312,13 +312,15 @@ class _LibraryState extends State<Library> {
     );
   }
 
-  @pragma('vm:entry-point')
-  static void refreshLibrary() async {
-    var mangaInLibrary =
-        await isarDB.mangas.where().inLibraryEqualTo(true).findAll();
+  void refreshLibrary() async {
     int notifID = 1;
 
     for (int mangaIndex = 0; mangaIndex < mangaInLibrary.length; mangaIndex++) {
+      // Somewhat temp way to check if notification has been cancelled.
+      final List<ActiveNotification>? activeNotifications =
+          await FlutterLocalNotificationsPlugin().getActiveNotifications();
+      if ((activeNotifications == null || activeNotifications.isEmpty) &&
+          mangaIndex != 0) break;
       final int progress =
           min(((mangaIndex + 1) / mangaInLibrary.length * 100).round(), 100);
 
@@ -350,6 +352,7 @@ class _LibraryState extends State<Library> {
 
       await SourcesMap[manga.source]?.getMangaDetails(manga);
     }
+    FlutterLocalNotificationsPlugin().cancel(notifID);
 
     // setState(() {
     //   isUpdating = false;
