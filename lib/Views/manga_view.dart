@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
-import 'package:himotoku/Views/MangaView/MangaDetailsHeader.dart';
+import 'package:himotoku/Widgets/MangaView/MangaDetailsHeader.dart';
 import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:isar/isar.dart';
 import 'package:himotoku/Data/Constants.dart';
@@ -65,12 +65,7 @@ class _MangaViewState extends State<MangaView> {
   Column ChapterListItem(int index, BuildContext context) {
     return Column(
       children: [
-        Divider(
-          indent: 15,
-          endIndent: 15,
-        ),
         ListTile(
-            visualDensity: VisualDensity.compact,
             onTap: () {
               Navigator.of(context)
                   .push(createRoute(ChapterListView(manga!, index - 1)))

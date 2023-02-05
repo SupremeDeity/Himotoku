@@ -24,7 +24,7 @@ class Setting {
   // Reader Settings
   /// Reader UI Fullscreen
   bool fullscreen = true;
-  bool splitTallImages = false;
+  bool splitTallImages = true;
 
   // Backup Settings
   String backupExportLocation = "";

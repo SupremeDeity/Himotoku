@@ -75,3 +75,26 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 }
+[
+        Debug: '--release',
+        Profile: '--release',
+        Release: '--release'
+].each {
+    def taskPostfix = it.key
+    def profileMode = it.value
+    tasks.whenTaskAdded { task ->
+        if (task.name == "javaPreCompile$taskPostfix") {
+            task.dependsOn "cargoBuild$taskPostfix"
+        }
+    }
+    tasks.register("cargoBuild$taskPostfix", Exec) {
+        workingDir "../../rustlib"
+        environment ANDROID_NDK_HOME: "C:\\Users\\MOHSIN\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393"
+        commandLine 'cargo', 'ndk',
+        "--bindgen",
+        '-o', '../android/app/src/main/jniLibs', 'build'
+        if (profileMode != null) {
+            args profileMode
+        }
+    }
+}

@@ -147,11 +147,15 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
               )
             ],
           ),
-          ExpansionTile(
-            title: Text("Description"),
-            childrenPadding: const EdgeInsets.all(8.0),
-            children: [Text(widget.manga.synopsis)],
-            initiallyExpanded: widget.manga.synopsis.length < synopsisCutoffMin,
+          Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+                title: Text("Description"),
+                childrenPadding: const EdgeInsets.all(8.0),
+                children: [Text(widget.manga.synopsis)],
+                initiallyExpanded:
+                    widget.manga.synopsis.length < synopsisCutoffMin,
+                maintainState: true),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),

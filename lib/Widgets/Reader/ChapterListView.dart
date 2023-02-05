@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:himotoku/rustlib/rustlib.dart';
 import 'package:http/http.dart' as http;
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Views/RouteBuilder.dart';
@@ -24,6 +25,7 @@ class ChapterListView extends StatefulWidget {
 
 class _ChapterListViewState extends State<ChapterListView> {
   bool fullscreen = false;
+  bool splitTallImages = false;
   bool isFocused = false;
   bool isRead = false;
   List<String> pageLinks = [];
@@ -46,10 +48,24 @@ class _ChapterListViewState extends State<ChapterListView> {
     for (int x = 0; x < len; x++) {
       var response = await http.get(Uri.parse(pageLinks[x]),
           headers: {"Referer": widget.manga.mangaLink});
-      var image = Image.memory(
-        fit: BoxFit.cover,
-        response.bodyBytes,
-      );
+      var image;
+      if (splitTallImages) {
+        var imagePieces =
+            await api.rustCropImage(imageBytes: response.bodyBytes);
+        image = Column(
+          children: List.generate(
+              imagePieces?.length ?? 0,
+              (index) => Image.memory(
+                    imagePieces![index].data,
+                    fit: BoxFit.cover,
+                  )),
+        );
+      } else {
+        image = Image.memory(
+          response.bodyBytes,
+          fit: BoxFit.cover,
+        );
+      }
 
       if (!mounted) return;
 
@@ -95,6 +111,7 @@ class _ChapterListViewState extends State<ChapterListView> {
     var settings = await isarDB.settings.get(0);
     setState(() {
       fullscreen = settings!.fullscreen;
+      splitTallImages = settings.splitTallImages;
     });
     if (fullscreen) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
@@ -108,9 +125,11 @@ class _ChapterListViewState extends State<ChapterListView> {
       if (newItems!.isEmpty) {
         Navigator.of(context).pop(APP_ERROR.CHAPTER_NO_PAGES);
       }
-      setState(() {
-        pageLinks = newItems;
-      });
+      if (mounted) {
+        setState(() {
+          pageLinks = newItems;
+        });
+      }
     } catch (e) {
       Navigator.of(context).pop(e);
     }

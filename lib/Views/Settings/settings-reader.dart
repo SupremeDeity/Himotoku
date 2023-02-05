@@ -62,17 +62,46 @@ class _ReaderSettingsState extends State<ReaderSettings> {
             ],
           ),
         ),
-        SwitchListTile(
+        ListTile(
             title: const Text("Fullscreen"),
             subtitle: const Text("Go fullscreen mode while reading."),
-            value: fullscreen ?? false,
-            onChanged: (value) async {
-              await isarDB.writeTxn(() async {
-                var settings = await isarDB.settings.get(0);
-                await isarDB.settings
-                    .put(settings!.copyWith(newFullscreen: value));
-              });
-            }),
+            trailing: Switch(
+                thumbIcon: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return Icon(Icons.check_rounded);
+                  }
+                  if (!states.contains(MaterialState.selected)) {
+                    return Icon(Icons.close);
+                  }
+                }),
+                value: fullscreen ?? false,
+                onChanged: (value) async {
+                  await isarDB.writeTxn(() async {
+                    var settings = await isarDB.settings.get(0);
+                    await isarDB.settings
+                        .put(settings!.copyWith(newFullscreen: value));
+                  });
+                })),
+        ListTile(
+            title: const Text("Split tall images"),
+            subtitle: const Text("Better image quality, but slighty slower."),
+            trailing: Switch(
+                thumbIcon: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return Icon(Icons.check_rounded);
+                  }
+                  if (!states.contains(MaterialState.selected)) {
+                    return Icon(Icons.close);
+                  }
+                }),
+                value: splitTallImages ?? false,
+                onChanged: (value) async {
+                  await isarDB.writeTxn(() async {
+                    var settings = await isarDB.settings.get(0);
+                    await isarDB.settings
+                        .put(settings!.copyWith(newSplitTallImages: value));
+                  });
+                }))
       ]),
     );
   }
