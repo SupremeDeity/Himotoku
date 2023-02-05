@@ -1,0 +1,15 @@
+[package]
+name = "rustlib"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+crate-type = ["lib","staticlib","cdylib",]
+
+[dependencies]
+flutter_rust_bridge = "1"
+image = "0.24.5"
+
+[build-dependencies]
+flutter_rust_bridge_codegen = "1"
