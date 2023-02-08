@@ -9,7 +9,6 @@ class Asura extends Source {
   final _baseChapterListQuery = "#chapterlist .eph-num a";
   final _baseUrl = "asurascans.com";
   final _chapterPageListQuery = "#readerarea img:not(.asurascans)";
-  final _defaultSort = "/manga";
   final _mangaAuthorQuery = ".fmed span";
   final _mangaListQuery = ".listupd .bs a"; // base query to get manga list
   final _mangaStatusQuery = ".imptdt i";
@@ -104,11 +103,12 @@ class Asura extends Source {
 
   @override
   Future<List<Manga>>? getMangaList(int pageKey,
-      {String searchQuery = ""}) async {
+      {String searchQuery = "", String? sort = "default"}) async {
     try {
       Uri url;
       if (searchQuery.isEmpty) {
-        url = Uri.https(_baseUrl, _defaultSort, {'page': "$pageKey"});
+        url =
+            Uri.https(_baseUrl, "/manga", {'page': "$pageKey", "order": sort});
       } else {
         url = Uri.https(_baseUrl, "/page/$pageKey", {'s': searchQuery});
       }
@@ -151,8 +151,12 @@ class Asura extends Source {
   String get name => "Asura Scans";
 
   @override
-  List<String>? getSortOptions() {
-    // TODO: implement getSortOptions
-    throw UnimplementedError();
-  }
+  Map<String, String> sourceSortOptions = {
+    "Default": "default",
+    "A-Z": "title",
+    "Z-A": "titlereverse",
+    "Update": "update",
+    "Added": "latest",
+    "Popular": "popular",
+  };
 }

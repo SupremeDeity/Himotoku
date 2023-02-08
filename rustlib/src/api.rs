@@ -7,7 +7,7 @@ pub struct NativeImage {
 }
 
 pub fn rust_crop_image(image_bytes: Vec<u8>) -> Option<Vec<NativeImage>> {
-    let format = guess_format(&image_bytes).unwrap();
+    let format = guess_format(&image_bytes).unwrap_or(image::ImageFormat::Jpeg);
     match image::load_from_memory_with_format(&image_bytes, format) {
         Ok(img_to_crop) => {
             let mut y = 0;
@@ -31,6 +31,9 @@ pub fn rust_crop_image(image_bytes: Vec<u8>) -> Option<Vec<NativeImage>> {
             }
             Some(piece_list)
         }
-        Err(_) => None,
+        Err(_) => {
+            let img = vec![NativeImage { data: image_bytes }];
+            Some(img)
+        }
     }
 }

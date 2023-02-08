@@ -8,8 +8,9 @@ abstract class Source {
 
   final iconUrl = "";
   final name = "";
+  final Map<String, String> sourceSortOptions = {};
 
-  Future<List<Manga>>? getMangaList(int pageKey, {String searchQuery = ""});
+  Future<List<Manga>>? getMangaList(int pageKey, {String searchQuery = "", String? sort});
 
   // Second stage:
   /// Gets details like author, artist, status, chapter list of given `manga`.
@@ -18,6 +19,4 @@ abstract class Source {
   Future<Manga>? getMangaDetails(Manga manga);
 
   Future<List<String>>? getChapterPageList(String startLink);
-
-  List<String>? getSortOptions();
 }

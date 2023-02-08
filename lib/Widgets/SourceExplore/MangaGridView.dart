@@ -8,12 +8,14 @@ import 'package:himotoku/Sources/Source.dart';
 import 'package:himotoku/Widgets/Library/ComfortableTile.dart';
 
 class MangaGridView extends StatefulWidget {
-  const MangaGridView(this.source, {Key? key, this.searchQuery = ""})
+  const MangaGridView(this.source, {Key? key, this.searchQuery = "", this.sort})
       : super(key: key);
 
   final Source source;
 
   final String searchQuery;
+
+  final String? sort;
 
   @override
   State<MangaGridView> createState() => _MangaGridViewState();
@@ -24,16 +26,24 @@ class _MangaGridViewState extends State<MangaGridView> {
       PagingController(firstPageKey: 1);
   @override
   void initState() {
+    super.initState();
     _pagingController.addPageRequestListener((pageKey) {
       fetchPage(pageKey);
     });
-    super.initState();
+  }
+
+  @override
+  didUpdateWidget(MangaGridView oldMangaGridView) {
+    super.didUpdateWidget(oldMangaGridView);
+    if (oldMangaGridView.sort != widget.sort) {
+      _pagingController.refresh();
+    }
   }
 
   Future<void> fetchPage(int pageKey) async {
     try {
-      List<Manga>? newItems = await widget.source
-          .getMangaList(pageKey, searchQuery: widget.searchQuery);
+      List<Manga>? newItems = await widget.source.getMangaList(pageKey,
+          searchQuery: widget.searchQuery, sort: widget.sort);
       if (newItems != null) {
         final isLastPage = newItems.length < 1;
 

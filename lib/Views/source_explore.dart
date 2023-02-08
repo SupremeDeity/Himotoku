@@ -12,6 +12,7 @@ class SourceExplore extends StatefulWidget {
 }
 
 class _SourceExploreState extends State<SourceExplore> {
+  String? sort;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,7 +37,7 @@ class _SourceExploreState extends State<SourceExplore> {
           showModalBottomSheet(
             context: context,
             builder: ((bc) => StatefulBuilder(
-                  builder: ((context, setModalState) => Scaffold(
+                  builder: ((modalContext, setModalState) => Scaffold(
                       appBar: AppBar(
                         automaticallyImplyLeading: false,
                         centerTitle: true,
@@ -46,15 +47,31 @@ class _SourceExploreState extends State<SourceExplore> {
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
                           children: [
-                            DropdownButton(
-                              value: "latest",
-                              items: [
-                                DropdownMenuItem(
-                                    child: Text("Latest"), value: "latest"),
-                                DropdownMenuItem(
-                                    child: Text("Popular"), value: "popular"),
-                              ],
-                              onChanged: (v) {},
+                            ListTile(
+                              leading: Text(
+                                "Sort by:",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              trailing: DropdownButton(
+                                value: sort ??
+                                    widget.source.sourceSortOptions.values
+                                        .elementAt(0),
+                                items: List.generate(
+                                    widget.source.sourceSortOptions.length,
+                                    (index) => DropdownMenuItem(
+                                        child: Text(widget
+                                            .source.sourceSortOptions.keys
+                                            .elementAt(index)),
+                                        value: widget
+                                            .source.sourceSortOptions.values
+                                            .elementAt(index))),
+                                onChanged: (v) {
+                                  setState(() {
+                                    sort = v;
+                                  });
+                                  Navigator.of(modalContext).pop();
+                                },
+                              ),
                             )
                           ],
                         ),
@@ -64,7 +81,10 @@ class _SourceExploreState extends State<SourceExplore> {
         },
         child: Icon(Icons.sort_sharp),
       ),
-      body: MangaGridView(widget.source),
+      body: MangaGridView(
+        widget.source,
+        sort: sort,
+      ),
     );
   }
 }
