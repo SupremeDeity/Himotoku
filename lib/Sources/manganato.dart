@@ -96,12 +96,12 @@ class Manganato extends Source {
 
   @override
   Future<List<Manga>>? getMangaList(int pageKey,
-      {String searchQuery = ""}) async {
+      {String searchQuery = "", String? sort = ""}) async {
     try {
       Uri url;
       if (searchQuery.isEmpty) {
         url = Uri.https(
-            _baseUrl, "/advanced_search", {'s': sort, 'page': '$pageKey'});
+            _baseUrl, "/advanced_search", {'orby': sort, 'page': '$pageKey'});
       } else {
         url = Uri.https(
             _baseUrl,
@@ -147,8 +147,10 @@ class Manganato extends Source {
   String get name => "Manganato";
 
   @override
-  List<String>? getSortOptions() {
-    // TODO: implement getSortOptions
-    throw UnimplementedError();
-  }
+  Map<String, String> get sourceSortOptions => {
+        "Latest": "latest",
+        "Top View": "topview",
+        "New": "newest",
+        "A-Z": "az",
+      };
 }

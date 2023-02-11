@@ -7,6 +7,7 @@ import 'package:html/parser.dart' show parse;
 
 class ReaperScans extends Source {
   final baseSourceExplore = "/comics";
+  final baseSourceExploreLatest = "/latest/comics";
 
   final _baseChapterListQuery = "a[href*=\"chapter-\"].transition.block";
   final _baseUrl = "reaperscans.com";
@@ -15,6 +16,7 @@ class ReaperScans extends Source {
   // final _mangaAuthorQuery = ".summary-content"; -> Disabled
   final _mangaListQuery =
       "a[href*=\"comic\"].transition.relative"; // base query to get manga list
+  final _mangaListQueryLatest = ".grid p>a";
 
   final _mangaStatusQuery = ".whitespace-nowrap.text-neutral-200";
   final _mangaSynopsisQuery = ".prose";
@@ -99,29 +101,44 @@ class ReaperScans extends Source {
     }
   }
 
-  // TODO: IMPLEMENT SORT AND FILTER
+  // TODO: IMPLEMENT FILTER
   @override
   Future<List<Manga>> getMangaList(int pageKey,
-      {String searchQuery = ""}) async {
+      {String searchQuery = "", String? sort = ""}) async {
     try {
       if (searchQuery.isNotEmpty) {
         throw APP_ERROR.SOURCE_SEARCH_NOT_SUPPORTED;
       }
+
       Uri url;
 
-      url = Uri.https(_baseUrl, baseSourceExplore, {'page': "$pageKey"});
+      url = Uri.https(
+          _baseUrl,
+          sort == "latest" ? baseSourceExploreLatest : baseSourceExplore,
+          {'page': "$pageKey"});
       var response = await http.get(url).onError(
           (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
       List<Manga> mangaList = [];
 
       // Query1: gets title and link
-      var q1 = parsedHtml.querySelectorAll(_mangaListQuery);
+      var q1 = parsedHtml.querySelectorAll(
+          sort == "latest" ? _mangaListQueryLatest : _mangaListQuery);
 
       for (int x = 0; x < q1.length; x++) {
-        var title = q1[x].nextElementSibling!.text;
+        var title =
+            sort == "latest" ? q1[x].text : q1[x].nextElementSibling!.text;
         var mangaLink = q1[x].attributes['href'];
-        var mangaCover = q1[x].children[0].attributes['src'];
+        var mangaCover = sort == "latest"
+            ? q1[x]
+                .parent!
+                .parent!
+                .parent!
+                .previousElementSibling!
+                .children[0]
+                .children[0]
+                .attributes['src']
+            : q1[x].children[0].attributes['src'];
 
         Manga m = Manga(
           source: name.trim(),
@@ -146,8 +163,6 @@ class ReaperScans extends Source {
   String get name => "Reaper Scans";
 
   @override
-  List<String>? getSortOptions() {
-    // TODO: implement getSortOptions
-    throw UnimplementedError();
-  }
+  Map<String, String> get sourceSortOptions =>
+      {"Popular": "popular", "Latest": "latest"};
 }

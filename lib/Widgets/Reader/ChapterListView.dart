@@ -6,6 +6,7 @@ import 'package:himotoku/rustlib/rustlib.dart';
 import 'package:http/http.dart' as http;
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Views/RouteBuilder.dart';
+import 'package:http/retry.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Data/models/Manga.dart';
@@ -39,40 +40,46 @@ class _ChapterListViewState extends State<ChapterListView> {
     List<Widget> loaded = List.filled(
         len,
         const Padding(
-          padding: EdgeInsets.symmetric(vertical: 200.0),
+          padding: EdgeInsets.symmetric(vertical: 500.0),
           child: Center(
             child: CircularProgressIndicator(),
           ),
         ));
 
-    for (int x = 0; x < len; x++) {
-      var response = await http.get(Uri.parse(pageLinks[x]),
-          headers: {"Referer": widget.manga.mangaLink});
-      var image;
-      if (splitTallImages) {
-        var imagePieces =
-            await api.rustCropImage(imageBytes: response.bodyBytes);
-        image = Column(
-          children: List.generate(
-              imagePieces?.length ?? 0,
-              (index) => Image.memory(
-                    imagePieces![index].data,
-                    fit: BoxFit.cover,
-                  )),
-        );
-      } else {
-        image = Image.memory(
-          response.bodyBytes,
-          fit: BoxFit.cover,
-        );
+    var client = RetryClient(http.Client());
+    try {
+      for (int x = 0; x < len; x++) {
+        var response = await client.get(Uri.parse(pageLinks[x]),
+            headers: {"Referer": widget.manga.mangaLink});
+
+        var image;
+        if (splitTallImages) {
+          var imagePieces =
+              await api.rustCropImage(imageBytes: response.bodyBytes);
+          image = Column(
+            children: List.generate(
+                imagePieces?.length ?? 0,
+                (index) => Image.memory(
+                      imagePieces![index].data,
+                      fit: BoxFit.cover,
+                    )),
+          );
+        } else {
+          image = Image.memory(
+            response.bodyBytes,
+            fit: BoxFit.cover,
+          );
+        }
+
+        if (!mounted) return;
+
+        setState(() {
+          loaded[x] = image;
+        });
+        yield loaded;
       }
-
-      if (!mounted) return;
-
-      setState(() {
-        loaded[x] = image;
-      });
-      yield loaded;
+    } finally {
+      client.close();
     }
   }
 
@@ -169,26 +176,26 @@ class _ChapterListViewState extends State<ChapterListView> {
                 Icons.arrow_back,
               ),
             ),
-            Text(
-              widget.manga.chapters[widget.chapterIndex].name ?? "Unknown",
-              style: const TextStyle(
-                fontSize: 20,
+            Expanded(
+              child: Text(
+                widget.manga.chapters[widget.chapterIndex].name ?? "Unknown",
+                style: const TextStyle(
+                  fontSize: 18,
+                ),
               ),
             ),
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  icon: Icon(
-                    Icons.open_in_browser,
-                  ),
-                  onPressed: () {
-                    launchUrl(
-                        Uri.parse(
-                            widget.manga.chapters[widget.chapterIndex].link!),
-                        mode: LaunchMode.externalApplication);
-                  },
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: Icon(
+                  Icons.open_in_browser,
                 ),
+                onPressed: () {
+                  launchUrl(
+                      Uri.parse(
+                          widget.manga.chapters[widget.chapterIndex].link!),
+                      mode: LaunchMode.externalApplication);
+                },
               ),
             )
           ],

@@ -314,6 +314,7 @@ class _LibraryState extends State<Library> {
 
   void refreshLibrary() async {
     int notifID = 1;
+    var updates = {};
 
     for (int mangaIndex = 0; mangaIndex < mangaInLibrary.length; mangaIndex++) {
       // Somewhat temp way to check if notification has been cancelled.
@@ -330,6 +331,7 @@ class _LibraryState extends State<Library> {
           AndroidNotificationDetails('library_update', 'Library updates',
               channelDescription:
                   'A channel for displaying library update notifications.',
+              icon: "splash",
               importance: Importance.defaultImportance,
               priority: Priority.defaultPriority,
               showProgress: true,
@@ -338,11 +340,12 @@ class _LibraryState extends State<Library> {
               category: AndroidNotificationCategory.progress,
               channelShowBadge: false,
               ongoing: true,
-              enableVibration: false,
+              onlyAlertOnce: true,
               progress: progress,
               actions: [AndroidNotificationAction("CANCEL", "Cancel")]);
       NotificationDetails notificationDetails =
           NotificationDetails(android: androidNotificationDetails);
+
       await FlutterLocalNotificationsPlugin().show(
         notifID,
         'Updating library (${mangaIndex + 1}/${mangaInLibrary.length})',
@@ -350,13 +353,40 @@ class _LibraryState extends State<Library> {
         notificationDetails,
       );
 
-      await SourcesMap[manga.source]?.getMangaDetails(manga);
+      var newManga = await SourcesMap[manga.source]?.getMangaDetails(manga);
+
+      var diff = newManga?.chapters
+          .where((element) =>
+              !mangaInLibrary[mangaIndex].chapters.contains(element))
+          .toList();
+      if (diff?.isNotEmpty ?? false) {
+        updates[newManga?.mangaName] = diff?.map((e) => e.name).toList();
+      }
     }
     FlutterLocalNotificationsPlugin().cancel(notifID);
 
-    // setState(() {
-    //   isUpdating = false;
-    // });
+    // Update notifications
+    var updatesNotificationDetails = AndroidNotificationDetails(
+      'library_update',
+      'Library updates',
+      channelDescription:
+          'A channel for displaying library update notifications.',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+      onlyAlertOnce: true,
+      groupKey: "library_new_update",
+    );
+    NotificationDetails notificationDetails =
+        NotificationDetails(android: updatesNotificationDetails);
+    for (var updateIndex = 0; updateIndex < updates.length; updateIndex++) {
+      var chapters = updates.values.elementAt(updateIndex).toString();
+      await FlutterLocalNotificationsPlugin().show(
+        updateIndex,
+        updates.keys.elementAt(updateIndex),
+        chapters.substring(1, chapters.length - 1),
+        notificationDetails,
+      );
+    }
   }
 }
 
