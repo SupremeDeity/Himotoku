@@ -86,8 +86,5 @@ class Chapter {
   String? name;
 
   bool operator ==(Object other) =>
-      other is Chapter &&
-      isRead == other.isRead &&
-      link == other.link &&
-      name == other.name;
+      other is Chapter && link == other.link && name == other.name;
 }
