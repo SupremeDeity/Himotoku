@@ -1,4 +1,4 @@
-package com.supremedeity08.himotoku
+package com.supremedeity.himotoku
 
 import io.flutter.embedding.android.FlutterActivity
 
