@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -156,6 +158,18 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
                 initiallyExpanded:
                     widget.manga.synopsis.length < synopsisCutoffMin,
                 maintainState: true),
+          ),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: List.generate(
+              widget.manga.genres.length,
+              (index) => Chip(
+                  elevation: 1,
+                  label: Text(widget.manga.genres[index],
+                      style: TextStyle(fontSize: 13)),
+                  visualDensity: VisualDensity.compact),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),

@@ -47,7 +47,10 @@ class Manga {
   @Index(type: IndexType.hash)
   String status = "-";
 
+  /// Synopsis/Description of comic
   String synopsis = "";
+
+  List<String> genres = [];
 
   @Ignore()
   Manga copyWith({
@@ -62,6 +65,7 @@ class Manga {
     String? status,
     List<Chapter>? chapters,
     String? synopsis,
+    List<String>? genres,
   }) {
     return Manga(
       source: source ?? this.source,
@@ -75,7 +79,8 @@ class Manga {
       ..mangaStudio = mangaStudio ?? this.mangaStudio
       ..status = status ?? this.status
       ..chapters = chapters ?? this.chapters
-      ..synopsis = synopsis ?? this.synopsis;
+      ..synopsis = synopsis ?? this.synopsis
+      ..genres = genres ?? this.genres;
   }
 }
 
@@ -84,6 +89,8 @@ class Chapter {
   bool isRead = false;
   String? link;
   String? name;
+  // ! Look into storing this as DateTime
+  String? releaseDate;
 
   bool operator ==(Object other) =>
       other is Chapter && link == other.link && name == other.name;

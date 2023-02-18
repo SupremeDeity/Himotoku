@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.10.0"
+  benchmark_harness:
+    dependency: transitive
+    description:
+      name: benchmark_harness
+      sha256: "683bdcf9d96ec6f244d383a8b07f329fe64f0d3ef51739b82417ce904dd29d03"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.1"
   build:
     dependency: transitive
     description:
@@ -475,6 +483,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.0"
+  intl:
+    dependency: transitive
+    description:
+      name: intl
+      sha256: "910f85bce16fb5c6f614e117efa303e85a1731bb0081edf3604a2ae6e9a3cc91"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.17.0"
   io:
     dependency: transitive
     description:
@@ -507,6 +523,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.5"
+  jiffy:
+    dependency: "direct main"
+    description:
+      name: jiffy
+      sha256: "85172c4fc975a50224521c05bf43abc845288863b19d91bd3c221a96a8785dd3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.0"
   js:
     dependency: transitive
     description:
@@ -516,7 +540,7 @@ packages:
     source: hosted
     version: "0.6.5"
   json_annotation:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: json_annotation
       sha256: c33da08e136c3df0190bd5bbe51ae1df4a7d96e7954d1d7249fea2968a72d317
@@ -787,6 +811,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.1"
+  rechron:
+    dependency: "direct main"
+    description:
+      name: rechron
+      sha256: "7d7cda43ebe3eab3ac9dfaf8327e9fcb024d0603265edaa9cdbdaeb20d74c3fb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
+  rechron_core:
+    dependency: transitive
+    description:
+      name: rechron_core
+      sha256: "7c1df1c43bb0cac6a5c1d7b4be36f40cdbfe4dbb239216b630a4750496fa5774"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   rxdart:
     dependency: transitive
     description:

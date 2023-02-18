@@ -1,6 +1,7 @@
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
+import 'package:himotoku/Data/time_util.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
@@ -11,7 +12,7 @@ class Manganato extends Source {
   final _baseChapterListQuery = ".chapter-name";
   final _baseUrl = "manganato.com";
   final String _chapterPageListQuery = ".container-chapter-reader > img";
-  final _mangaAuthorQuery = ".table-value";
+  final _mangaMetadataQuery = ".table-value";
   final _mangaListQuery = ".genres-item-img"; // base query to get manga list
   final _mangaSynopsisQuery = "#panel-story-info-description";
 
@@ -53,8 +54,9 @@ class Manganato extends Source {
 
       List<Chapter> chapterList = [];
 
-      // Query1: gets author, status
-      var q1 = parsedHtml.querySelectorAll(_mangaAuthorQuery);
+      // Query1: gets author, status, genre
+      var q1 = parsedHtml.querySelectorAll(_mangaMetadataQuery);
+
       var q2 = parsedHtml.querySelectorAll(_baseChapterListQuery);
       var q3 = parsedHtml.querySelector(_mangaSynopsisQuery);
 
@@ -66,11 +68,15 @@ class Manganato extends Source {
         var chapterLink = q2[x].attributes['href']!;
         var isRead =
             x < manga.chapters.length ? manga.chapters[x].isRead : false;
+        String chapterReleaseDate = DateNormalize(
+            q2[x].nextElementSibling?.nextElementSibling?.text ?? "",
+            "MMM dd,yy");
 
         final nChap = Chapter()
           ..name = chapterName
           ..link = chapterLink
-          ..isRead = isRead;
+          ..isRead = isRead
+          ..releaseDate = chapterReleaseDate;
 
         chapterList.add(nChap);
       }
@@ -83,6 +89,7 @@ class Manganato extends Source {
         synopsis: q3!.text.replaceFirst(r"Description :", "").trim(),
         id: manga.id,
         inLibrary: manga.inLibrary,
+        genres: q1[3].text.trim().split(" - "),
       );
 
       await isarDB.writeTxn(() async {
