@@ -1,19 +1,28 @@
-/// Normalizes all dates to a single uniform format.
 import 'package:jiffy/jiffy.dart';
 import 'package:rechron/rechron.dart' as rechron;
 
-String DateNormalize(String date, [String? format]) {
-  final String pattern = "dd/MM/yyyy";
+const String pattern = "dd/MM/yyyy";
+
+/// Normalizes all dates to a single uniform format.
+DateTime? DateNormalize(String date, [String? format]) {
   // Try relative date parsing first
   DateTime? relativeDate = rechron.tryParse<DateTime>(date);
 
   // try parsing with normal date format with loose checking.
   if (relativeDate == null) {
     try {
-      return Jiffy(date, format).format(pattern);
+      return Jiffy.parse(date, pattern: format).dateTime;
     } catch (e) {
-      return "";
+      return null;
     }
   }
-  return Jiffy(relativeDate).format(pattern);
+  return Jiffy.parseFromDateTime(relativeDate).dateTime;
+}
+
+String DateTimeToString(DateTime? dt) {
+  try {
+    return Jiffy.parseFromDateTime(dt!).format(pattern: pattern);
+  } catch (e) {
+    return "";
+  }
 }

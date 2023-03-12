@@ -2,17 +2,13 @@
 
 import 'dart:convert';
 import 'dart:ffi';
-import 'dart:isolate';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart' hide showLicensePage;
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart';
-import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-// import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Views/Settings/settings-about-licenses.dart';
@@ -215,48 +211,8 @@ class _SettingsAboutState extends State<SettingsAbout> {
         if (!(await downloadDirectory.exists())) {
           await downloadDirectory.create();
         }
-        ReceivePort _port = ReceivePort();
-        await Isolate.spawn<List<dynamic>>(
-            downloadApk, [currentAsset, downloadDirectory.path, _port.sendPort],
-            errorsAreFatal: false);
-        _port.listen((message) async {
-          int count = message[0];
-          int total = message[1];
-          AndroidNotificationDetails androidNotificationDetails =
-              AndroidNotificationDetails('downloader', 'Downloader',
-                  channelDescription:
-                      'A channel for displaying download progress and events.',
-                  icon: "splash",
-                  importance: Importance.defaultImportance,
-                  priority: Priority.defaultPriority,
-                  showProgress: true,
-                  maxProgress: 100,
-                  autoCancel: false,
-                  category: AndroidNotificationCategory.progress,
-                  channelShowBadge: false,
-                  ongoing: true,
-                  onlyAlertOnce: true,
-                  progress: ((count / total * 100)).toInt(),
-                  actions: [AndroidNotificationAction("CANCEL_APK", "Cancel")]);
-          NotificationDetails notificationDetails =
-              NotificationDetails(android: androidNotificationDetails);
 
-          if (count < total) {
-            await FlutterLocalNotificationsPlugin().show(
-              currentAsset['id'],
-              'Downloading new version...',
-              currentAsset['name'],
-              notificationDetails,
-            );
-          } else {
-            FlutterLocalNotificationsPlugin().cancel(currentAsset['id']);
-
-            OpenResult result = await OpenFilex.open(
-                "${downloadDirectory.path}/${currentAsset['name']}",
-                type: "application/vnd.android.package-archive");
-            print(result.message);
-          }
-        });
+        downloadApk([currentAsset, downloadDirectory.path]);
       }
     }
   }
@@ -264,18 +220,17 @@ class _SettingsAboutState extends State<SettingsAbout> {
 
 void downloadApk(var data) async {
   try {
-    final dio = Dio();
-
-    await dio.download(
-      data[0]['browser_download_url'],
-      "${data[1]}/${data[0]['name']}",
-      onReceiveProgress: (count, total) async {
-        // print("$count/$total");
-        data[2].send([count, total]);
-      },
+    await FlutterDownloader.enqueue(
+      url: data[0]['browser_download_url'],
+      fileName: data[0]['name'],
+      headers: {}, // optional: header send with url (auth token etc)
+      savedDir: "${data[1]}",
+      showNotification:
+          true, // show download progress in status bar (for Android)
+      openFileFromNotification:
+          true, // click on notification to open downloaded file (for Android)
     );
-    // print(response.statusCode);
   } catch (e) {
-    print(e);
+    debugPrint(e.toString());
   }
 }

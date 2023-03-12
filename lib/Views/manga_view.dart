@@ -33,8 +33,6 @@ class _MangaViewState extends State<MangaView> {
   @override
   void initState() {
     initGetManga();
-    // print(DateNormalize("Feb 02,23", "MMM dd,yy"));
-    // print(DateNormalize("Feb 02,23", "MMM dd,yy"));
 
     // Somewhat temporary fix to update chapter list after pressing back button
     isarDB.mangas.watchLazy().listen((event) {
@@ -105,7 +103,7 @@ class _MangaViewState extends State<MangaView> {
           ),
           trailing: manga!.chapters[index - 1].releaseDate != null
               ? Text(
-                  manga!.chapters[index - 1].releaseDate ?? "",
+                  DateTimeToString(manga!.chapters[index - 1].releaseDate),
                   style: TextStyle(
                       color: Theme.of(context).dividerColor, fontSize: 12),
                 )

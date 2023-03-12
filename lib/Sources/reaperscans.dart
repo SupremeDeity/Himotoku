@@ -74,7 +74,7 @@ class ReaperScans extends Source {
       for (int x = 0; x < q3.length; x++) {
         var chapterName = q2[x].text;
         var chapterLink = q3[x].attributes['href']!;
-        String chapterReleaseDate = DateNormalize(q2[x]
+        DateTime? chapterReleaseDate = DateNormalize(q2[x]
                 .parent
                 ?.nextElementSibling
                 ?.text

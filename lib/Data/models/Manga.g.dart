@@ -2429,7 +2429,7 @@ const ChapterSchema = Schema(
     r'releaseDate': PropertySchema(
       id: 3,
       name: r'releaseDate',
-      type: IsarType.string,
+      type: IsarType.dateTime,
     )
   },
   estimateSize: _chapterEstimateSize,
@@ -2456,12 +2456,6 @@ int _chapterEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
-  {
-    final value = object.releaseDate;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
   return bytesCount;
 }
 
@@ -2474,7 +2468,7 @@ void _chapterSerialize(
   writer.writeBool(offsets[0], object.isRead);
   writer.writeString(offsets[1], object.link);
   writer.writeString(offsets[2], object.name);
-  writer.writeString(offsets[3], object.releaseDate);
+  writer.writeDateTime(offsets[3], object.releaseDate);
 }
 
 Chapter _chapterDeserialize(
@@ -2487,7 +2481,7 @@ Chapter _chapterDeserialize(
   object.isRead = reader.readBool(offsets[0]);
   object.link = reader.readStringOrNull(offsets[1]);
   object.name = reader.readStringOrNull(offsets[2]);
-  object.releaseDate = reader.readStringOrNull(offsets[3]);
+  object.releaseDate = reader.readDateTimeOrNull(offsets[3]);
   return object;
 }
 
@@ -2505,7 +2499,7 @@ P _chapterDeserializeProp<P>(
     case 2:
       return (reader.readStringOrNull(offset)) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -2832,54 +2826,46 @@ extension ChapterQueryFilter
   }
 
   QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+      DateTime? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'releaseDate',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateGreaterThan(
-    String? value, {
+    DateTime? value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'releaseDate',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateLessThan(
-    String? value, {
+    DateTime? value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'releaseDate',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateBetween(
-    String? lower,
-    String? upper, {
+    DateTime? lower,
+    DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
@@ -2888,76 +2874,6 @@ extension ChapterQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'releaseDate',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'releaseDate',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'releaseDate',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'releaseDate',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'releaseDate',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Chapter, Chapter, QAfterFilterCondition>
-      releaseDateIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'releaseDate',
-        value: '',
       ));
     });
   }

@@ -68,7 +68,7 @@ class Manganato extends Source {
         var chapterLink = q2[x].attributes['href']!;
         var isRead =
             x < manga.chapters.length ? manga.chapters[x].isRead : false;
-        String chapterReleaseDate = DateNormalize(
+        DateTime? chapterReleaseDate = DateNormalize(
             q2[x].nextElementSibling?.nextElementSibling?.text ?? "",
             "MMM dd,yy");
 

@@ -89,8 +89,7 @@ class Chapter {
   bool isRead = false;
   String? link;
   String? name;
-  // ! Look into storing this as DateTime
-  String? releaseDate;
+  DateTime? releaseDate;
 
   bool operator ==(Object other) =>
       other is Chapter && link == other.link && name == other.name;

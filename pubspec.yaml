@@ -19,9 +19,10 @@ environment:
 dependencies:
   archive: ^3.3.5
   cached_network_image: ^3.2.2
-  dio: ^5.0.0
   ffi: ^2.0.1
   file_picker: ^5.2.0+1
+  firebase_core: ^2.7.1
+  firebase_crashlytics: ^3.0.16
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.3.0
@@ -36,9 +37,10 @@ dependencies:
   infinite_scroll_pagination: ^3.2.0
   isar: ^3.0.2
   isar_flutter_libs: ^3.0.2
-  jiffy: ^5.0.0
+  jiffy: ^6.1.0
   json_annotation: ^4.8.0
-  open_filex: ^4.3.2
+  flutter_downloader: ^1.10.2
+  inview_notifier_list: ^3.0.0
   path_provider: ^2.0.11
   permission_handler: ^10.1.0
   rechron: ^0.2.0

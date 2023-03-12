@@ -71,7 +71,7 @@ class Asura extends Source {
       final allManga = isarDB.mangas;
       for (int x = 0; x < q3.length; x++) {
         var chapterName = q3[x].children[0].text.trim();
-        String chapterReleaseDate =
+        DateTime? chapterReleaseDate =
             DateNormalize(q3[x].children[1].text.trim(), "MMMM dd, yyyy");
         var chapterLink = q3[x].attributes['href']!;
         print(chapterReleaseDate);

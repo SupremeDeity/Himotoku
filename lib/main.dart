@@ -1,8 +1,8 @@
-import 'dart:isolate';
-import 'dart:ui';
-
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:himotoku/Data/database/database.dart';
@@ -11,12 +11,27 @@ import 'package:himotoku/Data/models/Setting.dart';
 import 'package:himotoku/Data/Theme.dart';
 import 'package:himotoku/Views/main_view.dart';
 
+// Firebase
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 // import 'package:himotoku/test.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+  await FlutterDownloader.initialize(
+    debug:
+        kDebugMode, // optional: set to false to disable printing logs to console (default: true)
+  );
+
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await getIsar();
 
   runApp(
@@ -93,6 +108,7 @@ class _himotokuMainState extends State<himotokuMain> {
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.requestPermission();
+    await FlutterDownloader.registerCallback(downloaderCallback);
     FlutterNativeSplash.remove();
   }
 
@@ -105,3 +121,6 @@ class _himotokuMainState extends State<himotokuMain> {
     );
   }
 }
+
+@pragma('vm:entry-point')
+void downloaderCallback(String id, DownloadTaskStatus status, int progress) {}
