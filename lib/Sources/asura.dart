@@ -74,7 +74,6 @@ class Asura extends Source {
         DateTime? chapterReleaseDate =
             DateNormalize(q3[x].children[1].text.trim(), "MMMM dd, yyyy");
         var chapterLink = q3[x].attributes['href']!;
-        print(chapterReleaseDate);
 
         var isRead =
             x < manga.chapters.length ? manga.chapters[x].isRead : false;
