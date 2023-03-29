@@ -10,7 +10,13 @@ enum APP_ERROR {
 }
 
 var APP_ICON = Image.asset(
-  "assets/splash-icon.png",
+  "assets/splash.png",
+  height: 64,
+  width: 64,
+);
+
+var APP_ICON_LIGHT = Image.asset(
+  "assets/splash-light.png",
   height: 64,
   width: 64,
 );

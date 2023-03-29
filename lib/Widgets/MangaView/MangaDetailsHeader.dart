@@ -157,6 +157,18 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
                     widget.manga.synopsis.length < synopsisCutoffMin,
                 maintainState: true),
           ),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: List.generate(
+              widget.manga.genres.length,
+              (index) => Chip(
+                  elevation: 1,
+                  label: Text(widget.manga.genres[index],
+                      style: TextStyle(fontSize: 13)),
+                  visualDensity: VisualDensity.compact),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(

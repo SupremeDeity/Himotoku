@@ -1,6 +1,7 @@
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
+import 'package:himotoku/Data/time_util.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
@@ -73,6 +74,13 @@ class ReaperScans extends Source {
       for (int x = 0; x < q3.length; x++) {
         var chapterName = q2[x].text;
         var chapterLink = q3[x].attributes['href']!;
+        DateTime? chapterReleaseDate = DateNormalize(q2[x]
+                .parent
+                ?.nextElementSibling
+                ?.text
+                .trim()
+                .replaceFirst('Released', '') ??
+            "");
 
         var isRead =
             x < manga.chapters.length ? manga.chapters[x].isRead : false;
@@ -80,7 +88,8 @@ class ReaperScans extends Source {
         final nChap = Chapter()
           ..name = chapterName.trim()
           ..link = chapterLink.trim()
-          ..isRead = isRead;
+          ..isRead = isRead
+          ..releaseDate = chapterReleaseDate;
         chapterList.add(nChap);
       }
 

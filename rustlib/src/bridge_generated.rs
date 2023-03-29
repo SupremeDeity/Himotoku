@@ -21,7 +21,11 @@ use std::sync::Arc;
 
 // Section: wire functions
 
-fn wire_rust_crop_image_impl(port_: MessagePort, image_bytes: impl Wire2Api<Vec<u8>> + UnwindSafe) {
+fn wire_rust_crop_image_impl(
+    port_: MessagePort,
+    image_bytes: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    max_height: impl Wire2Api<u32> + UnwindSafe,
+) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
             debug_name: "rust_crop_image",
@@ -30,7 +34,8 @@ fn wire_rust_crop_image_impl(port_: MessagePort, image_bytes: impl Wire2Api<Vec<
         },
         move || {
             let api_image_bytes = image_bytes.wire2api();
-            move |task_callback| Ok(rust_crop_image(api_image_bytes))
+            let api_max_height = max_height.wire2api();
+            move |task_callback| Ok(rust_crop_image(api_image_bytes, api_max_height))
         },
     )
 }
@@ -54,6 +59,11 @@ where
 {
     fn wire2api(self) -> Option<T> {
         (!self.is_null()).then(|| self.wire2api())
+    }
+}
+impl Wire2Api<u32> for u32 {
+    fn wire2api(self) -> u32 {
+        self
     }
 }
 impl Wire2Api<u8> for u8 {

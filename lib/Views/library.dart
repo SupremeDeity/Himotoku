@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_isolate/flutter_isolate.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
@@ -15,6 +14,7 @@ import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Data/models/Setting.dart';
 import 'package:himotoku/Views/explore.dart';
 import 'package:himotoku/Widgets/Library/ComfortableTile.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class Library extends StatefulWidget {
   const Library({Key? key}) : super(key: key);
@@ -45,6 +45,7 @@ class _LibraryState extends State<Library> {
     });
 
     super.initState();
+    validatePermissions();
   }
 
   updateSettings() async {
@@ -301,7 +302,7 @@ class _LibraryState extends State<Library> {
                           const Text("Navigate to "),
                           TextButton(
                               onPressed: () => Navigator.of(context)
-                                  .pushReplacement(createRoute(Explore())),
+                                  .push(createRoute(Explore())),
                               child: const Text("Explore")),
                           const Text("to add to your library.")
                         ],
@@ -385,6 +386,47 @@ class _LibraryState extends State<Library> {
         updates.keys.elementAt(updateIndex),
         chapters.substring(1, chapters.length - 1),
         notificationDetails,
+      );
+    }
+  }
+
+  void validatePermissions() async {
+    if (!await Permission.manageExternalStorage.isGranted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape: Border.all(),
+          title: RichText(
+            text: TextSpan(
+              style: TextStyle(fontSize: 20),
+              children: [
+                TextSpan(text: "Allow "),
+                TextSpan(
+                    text: "Himotoku",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                TextSpan(text: " to manage files on your device?"),
+              ],
+            ),
+          ),
+          content: Text(
+              "Himotoku needs permission to manage files on your device for backup, downloading chapters etc."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text("Deny"),
+            ),
+            TextButton(
+              onPressed: () async {
+                await Permission.manageExternalStorage.request();
+                Navigator.of(ctx).pop();
+              },
+              child: Text("Allow"),
+            )
+          ],
+        ),
       );
     }
   }

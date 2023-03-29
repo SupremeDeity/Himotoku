@@ -6,12 +6,11 @@ pub struct NativeImage {
     pub data: Vec<u8>,
 }
 
-pub fn rust_crop_image(image_bytes: Vec<u8>) -> Option<Vec<NativeImage>> {
+pub fn rust_crop_image(image_bytes: Vec<u8>, max_height: u32) -> Option<Vec<NativeImage>> {
     let format = guess_format(&image_bytes).unwrap_or(image::ImageFormat::Jpeg);
     match image::load_from_memory_with_format(&image_bytes, format) {
         Ok(img_to_crop) => {
             let mut y = 0;
-            let max_height = 6000;
             let mut piece_list: Vec<NativeImage> = vec![];
             let (img_width, img_height) = img_to_crop.dimensions();
             while y < img_height {

@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names,
 
+import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:himotoku/rustlib/rustlib.dart';
@@ -55,7 +56,7 @@ class _ChapterListViewState extends State<ChapterListView> {
         var image;
         if (splitTallImages) {
           var imagePieces =
-              await api.rustCropImage(imageBytes: response.bodyBytes);
+              await api.rustCropImage(imageBytes: response.bodyBytes, maxHeight: 6000);
           image = Column(
             children: List.generate(
                 imagePieces?.length ?? 0,

@@ -35,7 +35,7 @@ external RustlibWasmModule get wasmModule;
 class RustlibWasmModule implements WasmModule {
   external Object /* Promise */ call([String? moduleName]);
   external RustlibWasmModule bind(dynamic thisArg, String moduleName);
-  external dynamic /* void */ wire_rust_crop_image(NativePortType port_, Uint8List image_bytes);
+  external dynamic /* void */ wire_rust_crop_image(NativePortType port_, Uint8List image_bytes, int max_height);
 }
 
 // Section: WASM wire connector
@@ -43,5 +43,5 @@ class RustlibWasmModule implements WasmModule {
 class RustlibWire extends FlutterRustBridgeWasmWireBase<RustlibWasmModule> {
   RustlibWire(FutureOr<WasmModule> module) : super(WasmModule.cast<RustlibWasmModule>(module));
 
-  void wire_rust_crop_image(NativePortType port_, Uint8List image_bytes) => wasmModule.wire_rust_crop_image(port_, image_bytes);
+  void wire_rust_crop_image(NativePortType port_, Uint8List image_bytes, int max_height) => wasmModule.wire_rust_crop_image(port_, image_bytes, max_height);
 }

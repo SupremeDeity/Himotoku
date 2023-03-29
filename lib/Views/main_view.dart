@@ -12,7 +12,7 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   var _currentIndex = 0;
-  var routes = const [
+  var routes = [
     Library(),
     Explore(),
     Settings(),
@@ -20,22 +20,35 @@ class _MainViewState extends State<MainView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(children: routes, index: _currentIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.book), label: "Library"),
-          BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings")
-        ],
-        currentIndex: _currentIndex,
-        onTap: (itemIndex) {
-          if (itemIndex != _currentIndex) {
-            setState(() {
-              _currentIndex = itemIndex;
-            });
-          }
-        },
+    return WillPopScope(
+      onWillPop: () {
+        if (_currentIndex != 0) {
+          setState(() {
+            _currentIndex = 0;
+          });
+          return Future.value(false);
+        }
+        return Future.value(true);
+      },
+      child: Scaffold(
+        body: IndexedStack(children: routes, index: _currentIndex),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(icon: Icon(Icons.book), label: "Library"),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.explore), label: "Explore"),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.settings), label: "Settings")
+          ],
+          currentIndex: _currentIndex,
+          onTap: (itemIndex) {
+            if (itemIndex != _currentIndex) {
+              setState(() {
+                _currentIndex = itemIndex;
+              });
+            }
+          },
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Data/time_util.dart';
 import 'package:himotoku/Widgets/MangaView/MangaDetailsHeader.dart';
 import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:isar/isar.dart';
@@ -66,40 +67,48 @@ class _MangaViewState extends State<MangaView> {
     return Column(
       children: [
         ListTile(
-            onTap: () {
-              Navigator.of(context)
-                  .push(createRoute(ChapterListView(manga!, index - 1)))
-                  .then((value) {
-                if (value != null) {
-                  var error = "Error occured while fetching page.";
+          onTap: () {
+            Navigator.of(context)
+                .push(createRoute(ChapterListView(manga!, index - 1)))
+                .then((value) {
+              if (value != null) {
+                var error = "Error occured while fetching page.";
 
-                  if (value == APP_ERROR.CHAPTER_NO_PAGES) {
-                    error = "No pages found.";
-                  }
-
-                  ScaffoldMessenger.of(context)
-                    ..removeCurrentSnackBar()
-                    ..showSnackBar(SnackBar(
-                      duration: Duration(milliseconds: 2300),
-                      content: Text(
-                        error,
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 15),
-                      ),
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                    ));
+                if (value == APP_ERROR.CHAPTER_NO_PAGES) {
+                  error = "No pages found.";
                 }
-              });
-            },
-            title: Text(
-              manga!.chapters[index - 1].name!,
-              style: TextStyle(
-                color: manga!.chapters[index - 1].isRead
-                    ? Theme.of(context).colorScheme.outline
-                    : Theme.of(context).colorScheme.primary,
-              ),
-            )),
+
+                ScaffoldMessenger.of(context)
+                  ..removeCurrentSnackBar()
+                  ..showSnackBar(SnackBar(
+                    duration: Duration(milliseconds: 2300),
+                    content: Text(
+                      error,
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 15),
+                    ),
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                  ));
+              }
+            });
+          },
+          title: Text(
+            manga!.chapters[index - 1].name!,
+            style: TextStyle(
+              color: manga!.chapters[index - 1].isRead
+                  ? Theme.of(context).colorScheme.outline
+                  : Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          trailing: manga!.chapters[index - 1].releaseDate != null
+              ? Text(
+                  DateTimeToString(manga!.chapters[index - 1].releaseDate),
+                  style: TextStyle(
+                      color: Theme.of(context).dividerColor, fontSize: 12),
+                )
+              : null,
+        ),
       ],
     );
   }

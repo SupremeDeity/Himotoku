@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "911247864819",
+    "project_id": "himotoku-425dc",
+    "storage_bucket": "himotoku-425dc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:911247864819:android:304b5cccb50ac7b7f29886",
+        "android_client_info": {
+          "package_name": "com.supremedeity.himotoku"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "911247864819-n2o9kq81afn6cgh9uopmfvanm0onlbk0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQEEYuZe5BZQx6wtGxdRjYJncE0g0vYQc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "911247864819-n2o9kq81afn6cgh9uopmfvanm0onlbk0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

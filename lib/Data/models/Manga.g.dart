@@ -28,43 +28,48 @@ const MangaSchema = CollectionSchema(
       type: IsarType.objectList,
       target: r'Chapter',
     ),
-    r'inLibrary': PropertySchema(
+    r'genres': PropertySchema(
       id: 2,
+      name: r'genres',
+      type: IsarType.stringList,
+    ),
+    r'inLibrary': PropertySchema(
+      id: 3,
       name: r'inLibrary',
       type: IsarType.bool,
     ),
     r'mangaCover': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'mangaCover',
       type: IsarType.string,
     ),
     r'mangaLink': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'mangaLink',
       type: IsarType.string,
     ),
     r'mangaName': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'mangaName',
       type: IsarType.string,
     ),
     r'mangaStudio': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'mangaStudio',
       type: IsarType.string,
     ),
     r'source': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'source',
       type: IsarType.string,
     ),
     r'status': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'status',
       type: IsarType.string,
     ),
     r'synopsis': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'synopsis',
       type: IsarType.string,
     )
@@ -164,6 +169,13 @@ int _mangaEstimateSize(
       bytesCount += ChapterSchema.estimateSize(value, offsets, allOffsets);
     }
   }
+  bytesCount += 3 + object.genres.length * 3;
+  {
+    for (var i = 0; i < object.genres.length; i++) {
+      final value = object.genres[i];
+      bytesCount += value.length * 3;
+    }
+  }
   bytesCount += 3 + object.mangaCover.length * 3;
   bytesCount += 3 + object.mangaLink.length * 3;
   bytesCount += 3 + object.mangaName.length * 3;
@@ -187,14 +199,15 @@ void _mangaSerialize(
     ChapterSchema.serialize,
     object.chapters,
   );
-  writer.writeBool(offsets[2], object.inLibrary);
-  writer.writeString(offsets[3], object.mangaCover);
-  writer.writeString(offsets[4], object.mangaLink);
-  writer.writeString(offsets[5], object.mangaName);
-  writer.writeString(offsets[6], object.mangaStudio);
-  writer.writeString(offsets[7], object.source);
-  writer.writeString(offsets[8], object.status);
-  writer.writeString(offsets[9], object.synopsis);
+  writer.writeStringList(offsets[2], object.genres);
+  writer.writeBool(offsets[3], object.inLibrary);
+  writer.writeString(offsets[4], object.mangaCover);
+  writer.writeString(offsets[5], object.mangaLink);
+  writer.writeString(offsets[6], object.mangaName);
+  writer.writeString(offsets[7], object.mangaStudio);
+  writer.writeString(offsets[8], object.source);
+  writer.writeString(offsets[9], object.status);
+  writer.writeString(offsets[10], object.synopsis);
 }
 
 Manga _mangaDeserialize(
@@ -204,10 +217,10 @@ Manga _mangaDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Manga(
-    mangaCover: reader.readString(offsets[3]),
-    mangaLink: reader.readString(offsets[4]),
-    mangaName: reader.readString(offsets[5]),
-    source: reader.readString(offsets[7]),
+    mangaCover: reader.readString(offsets[4]),
+    mangaLink: reader.readString(offsets[5]),
+    mangaName: reader.readString(offsets[6]),
+    source: reader.readString(offsets[8]),
   );
   object.authorName = reader.readString(offsets[0]);
   object.chapters = reader.readObjectList<Chapter>(
@@ -217,11 +230,12 @@ Manga _mangaDeserialize(
         Chapter(),
       ) ??
       [];
+  object.genres = reader.readStringList(offsets[2]) ?? [];
   object.id = id;
-  object.inLibrary = reader.readBool(offsets[2]);
-  object.mangaStudio = reader.readString(offsets[6]);
-  object.status = reader.readString(offsets[8]);
-  object.synopsis = reader.readString(offsets[9]);
+  object.inLibrary = reader.readBool(offsets[3]);
+  object.mangaStudio = reader.readString(offsets[7]);
+  object.status = reader.readString(offsets[9]);
+  object.synopsis = reader.readString(offsets[10]);
   return object;
 }
 
@@ -243,9 +257,9 @@ P _mangaDeserializeProp<P>(
           ) ??
           []) as P;
     case 2:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringList(offset) ?? []) as P;
     case 3:
-      return (reader.readString(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
       return (reader.readString(offset)) as P;
     case 5:
@@ -257,6 +271,8 @@ P _mangaDeserializeProp<P>(
     case 8:
       return (reader.readString(offset)) as P;
     case 9:
+      return (reader.readString(offset)) as P;
+    case 10:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -788,6 +804,220 @@ extension MangaQueryFilter on QueryBuilder<Manga, Manga, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'chapters',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'genres',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'genres',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'genres',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'genres',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'genres',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'genres',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresElementContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'genres',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresElementMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'genres',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'genres',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'genres',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genres',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genres',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genres',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genres',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genres',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> genresLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genres',
         lower,
         includeLower,
         upper,
@@ -2034,6 +2264,12 @@ extension MangaQueryWhereDistinct on QueryBuilder<Manga, Manga, QDistinct> {
     });
   }
 
+  QueryBuilder<Manga, Manga, QDistinct> distinctByGenres() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'genres');
+    });
+  }
+
   QueryBuilder<Manga, Manga, QDistinct> distinctByInLibrary() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'inLibrary');
@@ -2106,6 +2342,12 @@ extension MangaQueryProperty on QueryBuilder<Manga, Manga, QQueryProperty> {
   QueryBuilder<Manga, List<Chapter>, QQueryOperations> chaptersProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'chapters');
+    });
+  }
+
+  QueryBuilder<Manga, List<String>, QQueryOperations> genresProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'genres');
     });
   }
 
@@ -2183,6 +2425,11 @@ const ChapterSchema = Schema(
       id: 2,
       name: r'name',
       type: IsarType.string,
+    ),
+    r'releaseDate': PropertySchema(
+      id: 3,
+      name: r'releaseDate',
+      type: IsarType.dateTime,
     )
   },
   estimateSize: _chapterEstimateSize,
@@ -2221,6 +2468,7 @@ void _chapterSerialize(
   writer.writeBool(offsets[0], object.isRead);
   writer.writeString(offsets[1], object.link);
   writer.writeString(offsets[2], object.name);
+  writer.writeDateTime(offsets[3], object.releaseDate);
 }
 
 Chapter _chapterDeserialize(
@@ -2233,6 +2481,7 @@ Chapter _chapterDeserialize(
   object.isRead = reader.readBool(offsets[0]);
   object.link = reader.readStringOrNull(offsets[1]);
   object.name = reader.readStringOrNull(offsets[2]);
+  object.releaseDate = reader.readDateTimeOrNull(offsets[3]);
   return object;
 }
 
@@ -2249,6 +2498,8 @@ P _chapterDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 2:
       return (reader.readStringOrNull(offset)) as P;
+    case 3:
+      return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -2554,6 +2805,75 @@ extension ChapterQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'name',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'releaseDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'releaseDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'releaseDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'releaseDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'releaseDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Chapter, Chapter, QAfterFilterCondition> releaseDateBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'releaseDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }

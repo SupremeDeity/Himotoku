@@ -11,3 +11,4 @@ analyzer:
   errors:
     todo: ignore
     fixme: ignore
+    invalid_annotation_target: ignore

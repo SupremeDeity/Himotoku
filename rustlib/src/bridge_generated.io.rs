@@ -2,8 +2,12 @@ use super::*;
 // Section: wire functions
 
 #[no_mangle]
-pub extern "C" fn wire_rust_crop_image(port_: i64, image_bytes: *mut wire_uint_8_list) {
-    wire_rust_crop_image_impl(port_, image_bytes)
+pub extern "C" fn wire_rust_crop_image(
+    port_: i64,
+    image_bytes: *mut wire_uint_8_list,
+    max_height: u32,
+) {
+    wire_rust_crop_image_impl(port_, image_bytes, max_height)
 }
 
 // Section: allocate functions

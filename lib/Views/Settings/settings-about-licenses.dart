@@ -472,7 +472,7 @@ class _PackageLicensePageState extends State<_PackageLicensePage> {
       );
     }
     return DefaultTextStyle(
-      style: theme.textTheme.caption!,
+      style: theme.textTheme.bodySmall!,
       child: page,
     );
   }
@@ -497,8 +497,8 @@ class _PackageLicensePageTitle extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(title, style: theme.headline6?.copyWith(color: color)),
-        Text(subtitle, style: theme.subtitle2?.copyWith(color: color)),
+        Text(title, style: theme.titleLarge?.copyWith(color: color)),
+        Text(subtitle, style: theme.titleSmall?.copyWith(color: color)),
       ],
     );
   }

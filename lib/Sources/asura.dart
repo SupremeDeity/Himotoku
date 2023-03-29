@@ -1,6 +1,7 @@
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
+import 'package:himotoku/Data/time_util.dart';
 import 'package:himotoku/Sources/Source.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
@@ -13,6 +14,7 @@ class Asura extends Source {
   final _mangaListQuery = ".listupd .bs a"; // base query to get manga list
   final _mangaStatusQuery = ".imptdt i";
   final _mangaSynopsisQuery = "div[itemprop=\"description\"]";
+  final _mangaGenresQuery = ".mgen > a";
 
   @override
   String get baseUrl => _baseUrl;
@@ -63,10 +65,14 @@ class Asura extends Source {
       var q3 = parsedHtml.querySelectorAll(_baseChapterListQuery);
       // Query4: Gets synopsis
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
+      // Query4: Gets genres
+      var q5 = parsedHtml.querySelectorAll(_mangaGenresQuery);
 
       final allManga = isarDB.mangas;
       for (int x = 0; x < q3.length; x++) {
         var chapterName = q3[x].children[0].text.trim();
+        DateTime? chapterReleaseDate =
+            DateNormalize(q3[x].children[1].text.trim(), "MMMM dd, yyyy");
         var chapterLink = q3[x].attributes['href']!;
 
         var isRead =
@@ -75,9 +81,12 @@ class Asura extends Source {
         final nChap = Chapter()
           ..name = chapterName
           ..link = chapterLink
-          ..isRead = isRead;
+          ..isRead = isRead
+          ..releaseDate = chapterReleaseDate;
+
         chapterList.add(nChap);
       }
+
       Manga updatedManga = manga.copyWith(
         authorName: q1[1].previousElementSibling?.text.trim() == "Author"
             ? q1[1].text.trim()
@@ -90,6 +99,7 @@ class Asura extends Source {
         chapters: chapterList,
         id: manga.id,
         inLibrary: manga.inLibrary,
+        genres: q5.map((e) => e.text.trim()).toList(),
       );
 
       await isarDB.writeTxn(() async {

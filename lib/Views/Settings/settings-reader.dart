@@ -73,6 +73,7 @@ class _ReaderSettingsState extends State<ReaderSettings> {
                   if (!states.contains(MaterialState.selected)) {
                     return Icon(Icons.close);
                   }
+                  return null;
                 }),
                 value: fullscreen ?? false,
                 onChanged: (value) async {
@@ -93,6 +94,7 @@ class _ReaderSettingsState extends State<ReaderSettings> {
                   if (!states.contains(MaterialState.selected)) {
                     return Icon(Icons.close);
                   }
+                  return null;
                 }),
                 value: splitTallImages ?? false,
                 onChanged: (value) async {
