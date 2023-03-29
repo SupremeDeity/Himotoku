@@ -57,6 +57,7 @@ dev_dependencies:
   #   sdk: flutter
   freezed: ^2.3.2
   isar_generator: ^3.0.2
+  flutter_launcher_icons: ^0.12.0
 
 # The following section is specific to Flutter packages.
 flutter:
@@ -65,9 +66,16 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/splash-icon.png
+    - assets/splash.png
+    - assets/splash-light.png
     - pubspec.yaml
   # fonts:
   #   - family: Nunito
   #     fonts:
   #      - asset: assets/Fonts/Nunito/Nunito.ttf
+flutter_icons:
+  android: true
+  ios: false
+  image_path: "assets/ic_launcher.png"
+
+  min_sdk_android: 16 # android min sdk min:16, default 21

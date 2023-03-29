@@ -9,7 +9,7 @@ import 'package:meta/meta.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 
 abstract class Rustlib {
-  Future<List<NativeImage>?> rustCropImage({required Uint8List imageBytes, dynamic hint});
+  Future<List<NativeImage>?> rustCropImage({required Uint8List imageBytes, required int maxHeight, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kRustCropImageConstMeta;
 }

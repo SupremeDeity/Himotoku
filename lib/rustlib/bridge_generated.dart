@@ -16,14 +16,16 @@ class RustlibImpl implements Rustlib {
   /// Only valid on web/WASM platforms.
   factory RustlibImpl.wasm(FutureOr<WasmModule> module) => RustlibImpl(module as ExternalLibrary);
   RustlibImpl.raw(this._platform);
-  Future<List<NativeImage>?> rustCropImage({required Uint8List imageBytes, dynamic hint}) {
+  Future<List<NativeImage>?> rustCropImage({required Uint8List imageBytes, required int maxHeight, dynamic hint}) {
     var arg0 = _platform.api2wire_uint_8_list(imageBytes);
+    var arg1 = api2wire_u32(maxHeight);
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_rust_crop_image(port_, arg0),
+      callFfi: (port_) => _platform.inner.wire_rust_crop_image(port_, arg0, arg1),
       parseSuccessData: _wire2api_opt_list_native_image,
       constMeta: kRustCropImageConstMeta,
       argValues: [
-        imageBytes
+        imageBytes,
+        maxHeight
       ],
       hint: hint,
     ));
@@ -32,7 +34,8 @@ class RustlibImpl implements Rustlib {
   FlutterRustBridgeTaskConstMeta get kRustCropImageConstMeta => const FlutterRustBridgeTaskConstMeta(
         debugName: "rust_crop_image",
         argNames: [
-          "imageBytes"
+          "imageBytes",
+          "maxHeight"
         ],
       );
 
@@ -67,6 +70,11 @@ class RustlibImpl implements Rustlib {
 }
 
 // Section: api2wire
+
+@protected
+int api2wire_u32(int raw) {
+  return raw;
+}
 
 @protected
 int api2wire_u8(int raw) {

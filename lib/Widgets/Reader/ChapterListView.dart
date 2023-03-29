@@ -55,12 +55,8 @@ class _ChapterListViewState extends State<ChapterListView> {
 
         var image;
         if (splitTallImages) {
-          Trace customTrace = FirebasePerformance.instance
-              .newTrace('rustlib-splitTallImage-trace');
-          await customTrace.start();
           var imagePieces =
-              await api.rustCropImage(imageBytes: response.bodyBytes);
-          await customTrace.stop();
+              await api.rustCropImage(imageBytes: response.bodyBytes, maxHeight: 6000);
           image = Column(
             children: List.generate(
                 imagePieces?.length ?? 0,

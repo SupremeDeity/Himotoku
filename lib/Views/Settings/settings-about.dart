@@ -6,6 +6,7 @@ import 'dart:ffi';
 import 'package:flutter/material.dart' hide showLicensePage;
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_native_splash/cli_commands.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -28,6 +29,7 @@ class _SettingsAboutState extends State<SettingsAbout> {
       "https://api.github.com/repos/supremedeity/himotoku/releases";
 
   String name = "appName";
+  String description = "";
   String releaseUrl = "https://github.com/SupremeDeity/himotoku/releases/";
 
   @override
@@ -44,6 +46,7 @@ class _SettingsAboutState extends State<SettingsAbout> {
     setState(() {
       currentVersion = Version.parse(yaml['version']);
       name = yaml['name'];
+      description = yaml['description'];
     });
   }
 
@@ -142,25 +145,46 @@ class _SettingsAboutState extends State<SettingsAbout> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: APP_ICON,
+              child: Theme.of(context).brightness == Brightness.dark
+                  ? APP_ICON_LIGHT
+                  : APP_ICON,
             ),
             Center(
                 child: Text(
               name.replaceRange(0, 1, name[0].toUpperCase()),
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            )),
-            Center(
-                child: Text(
-              currentVersion.toString(),
-              style: TextStyle(color: Theme.of(context).hintColor),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             )),
             Center(
               child: Text(
-                "Licensed under GNU GPLv3",
+                description,
                 style: TextStyle(color: Theme.of(context).hintColor),
               ),
             ),
+            Center(
+              child: RichText(
+                text: TextSpan(
+                    text: "Licensed under ",
+                    style: TextStyle(color: Theme.of(context).hintColor),
+                    children: [
+                      TextSpan(
+                          text: "GNU GPLv3",
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                              fontWeight: FontWeight.bold))
+                    ]),
+              ),
+            ),
             const Padding(padding: EdgeInsets.all(20)),
+            ListTile(
+              title: const Text("Version"),
+              subtitle: Text(
+                "${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch} ${currentVersion.isPreRelease ? currentVersion.preRelease[0].capitalize() : ""}",
+                style: TextStyle(color: Theme.of(context).hintColor),
+              ),
+            ),
             ListTile(
               onTap: () {
                 showLicensePage(context: context);
