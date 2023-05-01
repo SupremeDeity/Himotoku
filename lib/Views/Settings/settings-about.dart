@@ -178,8 +178,10 @@ class _SettingsAboutState extends State<SettingsAbout> {
               ),
             ),
             const Padding(padding: EdgeInsets.all(20)),
+            Divider(),
             ListTile(
-              title: const Text("Version"),
+              title: const Text("Version",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text(
                 "${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch} ${currentVersion.isPreRelease ? currentVersion.preRelease[0].capitalize() : ""}",
                 style: TextStyle(color: Theme.of(context).hintColor),

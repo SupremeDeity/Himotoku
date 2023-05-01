@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
@@ -112,19 +113,22 @@ class ReaperScans extends Source {
 
   // TODO: IMPLEMENT FILTER
   @override
-  Future<List<Manga>> getMangaList(int pageKey,
-      {String searchQuery = "", String? sort = ""}) async {
+  Future<List<Manga>> getMangaList(
+    int pageKey, {
+    String searchQuery = "",
+    String? orderBy = "",
+    String? statusBy = "",
+    String? typesBy = "",
+    List<String>? genresBy = const [],
+  }) async {
     try {
       if (searchQuery.isNotEmpty) {
         throw APP_ERROR.SOURCE_SEARCH_NOT_SUPPORTED;
       }
 
-      Uri url;
+      Uri url = Uri.https(_baseUrl, orderBy ?? "/comics", {'page': "$pageKey"});
+      debugPrint("$url");
 
-      url = Uri.https(
-          _baseUrl,
-          sort == "latest" ? baseSourceExploreLatest : baseSourceExplore,
-          {'page': "$pageKey"});
       var response = await http.get(url).onError(
           (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
       var parsedHtml = parse(response.body);
@@ -132,13 +136,16 @@ class ReaperScans extends Source {
 
       // Query1: gets title and link
       var q1 = parsedHtml.querySelectorAll(
-          sort == "latest" ? _mangaListQueryLatest : _mangaListQuery);
+          orderBy == orderBySortOptions["Latest"]
+              ? _mangaListQueryLatest
+              : _mangaListQuery);
 
       for (int x = 0; x < q1.length; x++) {
-        var title =
-            sort == "latest" ? q1[x].text : q1[x].nextElementSibling!.text;
+        var title = orderBy == orderBySortOptions["Latest"]
+            ? q1[x].text
+            : q1[x].nextElementSibling!.text;
         var mangaLink = q1[x].attributes['href'];
-        var mangaCover = sort == "latest"
+        var mangaCover = orderBy == orderBySortOptions["Latest"]
             ? q1[x]
                 .parent!
                 .parent!
@@ -172,6 +179,6 @@ class ReaperScans extends Source {
   String get name => "Reaper Scans";
 
   @override
-  Map<String, String> get sourceSortOptions =>
-      {"Popular": "popular", "Latest": "latest"};
+  Map<String, String> get orderBySortOptions =>
+      {"Default": "/comics", "Latest": "/latest/comics"};
 }

@@ -20,24 +20,14 @@ class Themes {
         seedColor: crimsonPrimary,
         brightness: Brightness.dark,
       ),
+      fontFamily: "Inter",
     );
-  }
-
-  static ThemeData get defaultDark {
-    return ThemeData.dark(
-      useMaterial3: true,
-    );
-  }
-
-  static ThemeData get defaultLight {
-    return ThemeData.light(
-      useMaterial3: true,
-    ).copyWith(colorScheme: ColorScheme.highContrastLight());
   }
 
   static ThemeData get crimsonLightTheme {
     return ThemeData(
         useMaterial3: true,
+        fontFamily: "Inter",
         colorScheme: ColorScheme.fromSeed(
           seedColor: crimsonPrimary,
         ));
@@ -46,6 +36,7 @@ class Themes {
   static ThemeData get PeriwinkleLight {
     return ThemeData(
         useMaterial3: true,
+        fontFamily: "Inter",
         colorScheme: ColorScheme.fromSeed(
           seedColor: periwinklePrimary,
         ));
@@ -54,6 +45,7 @@ class Themes {
   static ThemeData get PeriwinkleDark {
     return ThemeData(
         useMaterial3: true,
+        fontFamily: "Inter",
         scaffoldBackgroundColor: crimsonBackground,
         bottomNavigationBarTheme:
             BottomNavigationBarThemeData(backgroundColor: crimsonBackground),
@@ -66,6 +58,7 @@ class Themes {
   static ThemeData get WarmDark {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: "Inter",
       scaffoldBackgroundColor: crimsonBackground,
       bottomNavigationBarTheme:
           BottomNavigationBarThemeData(backgroundColor: crimsonBackground),
@@ -79,6 +72,7 @@ class Themes {
   static ThemeData get WarmLight {
     return ThemeData(
         useMaterial3: true,
+        fontFamily: "Inter",
         colorScheme: ColorScheme.fromSeed(
           seedColor: warmPrimary,
         ));

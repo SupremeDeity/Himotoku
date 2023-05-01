@@ -16,7 +16,7 @@ class _SettingsState extends State<Settings> {
   Map<String, dynamic> settingsMap = const {
     "Appearance": [Icons.palette, SettingsTheme()],
     "Reader": [Icons.menu_book_rounded, ReaderSettings()],
-    "Backup": [Icons.backup_outlined, ImportExportSettings()],
+    "Backup & Restore": [Icons.backup_outlined, ImportExportSettings()],
     "About": [Icons.info_outline_rounded, SettingsAbout()],
   };
 

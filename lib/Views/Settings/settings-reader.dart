@@ -63,7 +63,12 @@ class _ReaderSettingsState extends State<ReaderSettings> {
           ),
         ),
         ListTile(
-            title: const Text("Fullscreen"),
+            title: const Text("Fullscreen",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            leading: Icon(
+              Icons.fullscreen,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             subtitle: const Text("Go fullscreen mode while reading."),
             trailing: Switch(
                 thumbIcon: MaterialStateProperty.resolveWith((states) {
@@ -84,7 +89,12 @@ class _ReaderSettingsState extends State<ReaderSettings> {
                   });
                 })),
         ListTile(
-            title: const Text("Split tall images"),
+            title: const Text("Split tall images",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            leading: Icon(
+              Icons.horizontal_split,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             subtitle: const Text("Better image quality, but slighty slower."),
             trailing: Switch(
                 thumbIcon: MaterialStateProperty.resolveWith((states) {

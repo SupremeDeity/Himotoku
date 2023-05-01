@@ -22,7 +22,10 @@ class _ExploreState extends State<Explore> {
         body: Column(
           children: [
             ListTile(
-              title: Text('Sources (${SourcesMap.length})'),
+              title: Text(
+                'Sources [${SourcesMap.length}]',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             Expanded(
               child: ListView.builder(

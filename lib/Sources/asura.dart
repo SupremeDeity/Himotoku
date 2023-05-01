@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
@@ -112,16 +113,33 @@ class Asura extends Source {
   }
 
   @override
-  Future<List<Manga>>? getMangaList(int pageKey,
-      {String searchQuery = "", String? sort = "default"}) async {
+  Future<List<Manga>>? getMangaList(
+    int pageKey, {
+    String searchQuery = "",
+    String orderBy = "",
+    String statusBy = "",
+    String typesBy = "",
+    List<String>? genresBy = const [],
+  }) async {
     try {
       Uri url;
-      if (searchQuery.isEmpty) {
-        url =
-            Uri.https(_baseUrl, "/manga", {'page': "$pageKey", "order": sort});
+      if (searchQuery.isEmpty ||
+          statusBy.isEmpty ||
+          typesBy.isEmpty ||
+          orderBy.isEmpty) {
+        url = Uri.https(_baseUrl, "/manga", {
+          'page': "$pageKey",
+          "order": orderBy,
+          "status": statusBy,
+          "type": typesBy,
+          "genre[]": genresBy
+        });
       } else {
         url = Uri.https(_baseUrl, "/page/$pageKey", {'s': searchQuery});
       }
+
+      debugPrint("$url");
+
       var response = await http
           .get(url)
           .onError((error, stackTrace) => throw APP_ERROR.SOURCE_HOST_ERROR);
@@ -132,6 +150,13 @@ class Asura extends Source {
       var q1 = parsedHtml.querySelectorAll(_mangaListQuery);
       // Query2: gets cover art
       var q2 = parsedHtml.querySelectorAll("$_mangaListQuery img");
+
+      // ? sample code to print all filters and values
+      // var q3 = parsedHtml.querySelectorAll(".dropdown-menu.c4.genrez li");
+      // for (int x = 0; x < q3.length; x++) {
+      //   debugPrint(
+      //       "'${q3[x].text.trim()}': '${q3[x].firstChild?.attributes['value']}',");
+      // }
 
       for (int x = 0; x < q1.length; x++) {
         var title = q1[x].attributes['title'];
@@ -161,12 +186,109 @@ class Asura extends Source {
   String get name => "Asura Scans";
 
   @override
-  Map<String, String> sourceSortOptions = {
+  Map<String, String> orderBySortOptions = {
     "Default": "default",
     "A-Z": "title",
     "Z-A": "titlereverse",
     "Update": "update",
     "Added": "latest",
     "Popular": "popular",
+  };
+
+  @override
+  Map<String, String> typeSortOptions = {
+    "All": "",
+    "Manga": "manga",
+    "Manhwa": "manhwa",
+    "Manhua": "manhua",
+    "Comic": "comic",
+    "Novel": "novel",
+  };
+
+  @override
+  Map<String, String> statusSortOptions = {
+    "All": "",
+    "Ongoing": "ongoing",
+    "Completed": "completed",
+    "Hiatus": "hiatus",
+    "Dropped": "dropped",
+    "Coming Soon": "coming soon",
+  };
+
+  @override
+  Map<String, String> genreSortOptions = {
+    'Action': 'action',
+    'Adaptation': 'adaptation',
+    'Adult': 'adult',
+    'Adventure': 'adventure',
+    'Another chance': 'another-chance',
+    'apocalypse': 'apocalypse',
+    'Comedy': 'comedy',
+    'Coming Soon': 'coming-soon',
+    'Cultivation': 'cultivation',
+    'Demon': 'demon',
+    'Discord': 'discord',
+    'Drama': 'drama',
+    'Dungeons': 'dungeons',
+    'Ecchi': 'ecchi',
+    'Fantasy': 'fantasy',
+    'Game': 'game',
+    'Genius': 'genius',
+    'Genius MC': 'genius-mc',
+    'Harem': 'harem',
+    'Hero': 'hero',
+    'Historical': 'historical',
+    'Isekai': 'isekai',
+    'Josei': 'josei',
+    'Kool Kids': 'kool-kids',
+    'Loli': 'loli',
+    'Magic': 'magic',
+    'Martial Arts': 'martial-arts',
+    'Mature': 'mature',
+    'Mecha': 'mecha',
+    'Modern Setting': 'modern-setting',
+    'Monsters': 'monsters',
+    'Murim': 'murim',
+    'Mystery': 'mystery',
+    'Necromancer': 'necromancer',
+    'Noble': 'noble',
+    'Overpowered': 'overpowered',
+    'Pets': 'pets',
+    'Post-Apocalyptic': 'post-apocalyptic',
+    'Psychological': 'psychological',
+    'Rebirth': 'rebirth',
+    'Regression': 'regression',
+    'Reincarnation': 'reincarnation',
+    'Return': 'return',
+    'Returned': 'returned',
+    'Returner': 'returner',
+    'Revenge': 'revenge',
+    'Romance': 'romance',
+    'School Life': 'school-life',
+    'Sci-fi': 'sci-fi',
+    'Seinen': 'seinen',
+    'Shoujo': 'shoujo',
+    'Shounen': 'shounen',
+    'Slice of Life': 'slice-of-life',
+    'Sports': 'sports',
+    'Super Hero': 'super-hero',
+    'Superhero': 'superhero',
+    'Supernatural': 'supernatural',
+    'Survival': 'survival',
+    'Suspense': 'suspense',
+    'System': 'system',
+    'Thriller': 'thriller',
+    'Time Travel': 'time-travel',
+    'Time Travel (Future)': 'time-travel-future',
+    'tower': 'tower',
+    'Tragedy': 'tragedy',
+    'Video Game': 'video-game',
+    'Video Games': 'video-games',
+    'Villain': 'villain',
+    'Virtual Game': 'virtual-game',
+    'Virtual Reality': 'virtual-reality',
+    'Virtual World': 'virtual-world',
+    'Webtoon': 'webtoon',
+    'Wuxia': 'wuxia',
   };
 }

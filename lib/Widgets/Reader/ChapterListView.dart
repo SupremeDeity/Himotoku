@@ -1,6 +1,6 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names,
 
-import 'package:firebase_performance/firebase_performance.dart';
+// TODO: add support for disabling firebase logging
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:himotoku/rustlib/rustlib.dart';
@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:http/retry.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 import 'package:himotoku/Data/Constants.dart';
 import 'package:himotoku/Data/models/Manga.dart';
@@ -54,9 +55,10 @@ class _ChapterListViewState extends State<ChapterListView> {
             headers: {"Referer": widget.manga.mangaLink});
 
         var image;
+
         if (splitTallImages) {
-          var imagePieces =
-              await api.rustCropImage(imageBytes: response.bodyBytes, maxHeight: 6000);
+          var imagePieces = await api.rustCropImage(
+              imageBytes: response.bodyBytes, maxHeight: 6000);
           image = Column(
             children: List.generate(
                 imagePieces?.length ?? 0,

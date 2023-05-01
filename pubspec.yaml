@@ -69,10 +69,10 @@ flutter:
     - assets/splash.png
     - assets/splash-light.png
     - pubspec.yaml
-  # fonts:
-  #   - family: Nunito
-  #     fonts:
-  #      - asset: assets/Fonts/Nunito/Nunito.ttf
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-VariableFont.ttf
 flutter_icons:
   android: true
   ios: false

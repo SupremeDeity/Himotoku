@@ -7,8 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 
 class Manganato extends Source {
-  final sort = "all";
-
   final _baseChapterListQuery = ".chapter-name";
   final _baseUrl = "manganato.com";
   final String _chapterPageListQuery = ".container-chapter-reader > img";
@@ -102,13 +100,19 @@ class Manganato extends Source {
   }
 
   @override
-  Future<List<Manga>>? getMangaList(int pageKey,
-      {String searchQuery = "", String? sort = ""}) async {
+  Future<List<Manga>>? getMangaList(
+    int pageKey, {
+    String searchQuery = "",
+    String? orderBy = "",
+    String? statusBy = "",
+    String? typesBy = "",
+    List<String>? genresBy = const [],
+  }) async {
     try {
       Uri url;
       if (searchQuery.isEmpty) {
-        url = Uri.https(
-            _baseUrl, "/advanced_search", {'orby': sort, 'page': '$pageKey'});
+        url = Uri.https(_baseUrl, "/advanced_search",
+            {'orby': orderBy, 'page': '$pageKey'});
       } else {
         url = Uri.https(
             _baseUrl,
@@ -154,7 +158,7 @@ class Manganato extends Source {
   String get name => "Manganato";
 
   @override
-  Map<String, String> get sourceSortOptions => {
+  Map<String, String> get orderBySortOptions => {
         "Latest": "latest",
         "Top View": "topview",
         "New": "newest",

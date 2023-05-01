@@ -34,11 +34,21 @@ class _MainViewState extends State<MainView> {
         body: IndexedStack(children: routes, index: _currentIndex),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(icon: Icon(Icons.book), label: "Library"),
             BottomNavigationBarItem(
-                icon: Icon(Icons.explore), label: "Explore"),
+              icon: Icon(Icons.book_outlined),
+              activeIcon: Icon(Icons.book),
+              label: "Library",
+            ),
             BottomNavigationBarItem(
-                icon: Icon(Icons.settings), label: "Settings")
+              icon: Icon(Icons.explore_outlined),
+              activeIcon: Icon(Icons.explore),
+              label: "Explore",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings_outlined),
+              activeIcon: Icon(Icons.settings),
+              label: "Settings",
+            )
           ],
           currentIndex: _currentIndex,
           onTap: (itemIndex) {

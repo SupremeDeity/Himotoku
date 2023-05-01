@@ -157,7 +157,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
                       ]
                     : [
                         const Text(
-                            "Please set \"Export Location\" prior to this.")
+                            "Please set \"Backup Location\" prior to this.")
                       ]),
           ),
           actions: <Widget>[
@@ -179,7 +179,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Backup")),
+      appBar: AppBar(title: const Text("Backup & Restore")),
       body: ListView(children: [
         Padding(
           padding: const EdgeInsets.only(left: 12.0, top: 12.0),
@@ -191,8 +191,12 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           ),
         ),
         ListTile(
-          title: const Text("Export Location"),
-          leading: const Icon(Icons.folder_outlined),
+          title: const Text("Backup Location",
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          leading: Icon(
+            Icons.folder_outlined,
+            color: Theme.of(context).colorScheme.primary,
+          ),
           subtitle: Text(
             backupExportLocation.isNotEmpty ? backupExportLocation : "Not set",
           ),
@@ -201,10 +205,14 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           },
         ),
         ListTile(
-          title: const Text("Local Export"),
-          leading: const Icon(Icons.phone_android_outlined),
+          title: const Text("Create Backup",
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          leading: Icon(
+            Icons.phone_android_outlined,
+            color: Theme.of(context).colorScheme.primary,
+          ),
           subtitle: const Text(
-            "Export to local storage.",
+            "Export backup to local storage.",
           ),
           trailing: const Icon(Icons.arrow_forward),
           onTap: () {
@@ -221,8 +229,12 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
           ),
         ),
         ListTile(
-          title: const Text("Local Import"),
-          leading: const Icon(Icons.import_export_outlined),
+          title: const Text("Restore Backup",
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          leading: Icon(
+            Icons.settings_backup_restore,
+            color: Theme.of(context).colorScheme.primary,
+          ),
           subtitle: const Text(
             "Import backup from local storage.",
           ),

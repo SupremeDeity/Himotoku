@@ -1,6 +1,8 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/time_util.dart';
 import 'package:himotoku/Widgets/MangaView/MangaDetailsHeader.dart';
@@ -141,7 +143,25 @@ class _MangaViewState extends State<MangaView> {
                 itemCount: manga!.chapters.length + 1,
                 itemBuilder: (context, index) {
                   if (index == 0) {
-                    return MangaDetailsHeader(manga!);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        MangaDetailsHeader(
+                          manga!,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(18.0),
+                          child: Text(
+                            textAlign: TextAlign.left,
+                            "Chapters [${manga?.chapters.length}]",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
                   } else {
                     return ChapterListItem(index, context);
                   }

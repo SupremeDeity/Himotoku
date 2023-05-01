@@ -303,7 +303,10 @@ class _LibraryState extends State<Library> {
                           TextButton(
                               onPressed: () => Navigator.of(context)
                                   .push(createRoute(Explore())),
-                              child: const Text("Explore")),
+                              child: const Text(
+                                "Explore",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              )),
                           const Text("to add to your library.")
                         ],
                       )),

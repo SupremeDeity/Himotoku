@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -7,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 class MangaDetailsHeader extends StatefulWidget {
   MangaDetailsHeader(this.manga, {Key? key}) : super(key: key);
   final Manga manga;
+
   @override
   _MangaDetailsHeaderState createState() => _MangaDetailsHeaderState();
 }
@@ -34,14 +36,51 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
-                    filterQuality: FilterQuality.medium,
-                    alignment: Alignment.centerLeft,
-                    imageUrl: widget.manga.mangaCover,
-                    memCacheHeight: 512,
-                    maxHeightDiskCache: 512,
+                child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (dialogContext) {
+                        return Dialog(
+                          backgroundColor: Colors.transparent,
+                          insetPadding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                height: 512,
+                                child: InteractiveViewer(
+                                  child: CachedNetworkImage(
+                                    fit: BoxFit.contain,
+                                    filterQuality: FilterQuality.medium,
+                                    alignment: Alignment.centerLeft,
+                                    imageUrl: widget.manga.mangaCover,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                  tooltip: "Download cover image.",
+                                  iconSize: 30,
+                                  onPressed: () {
+                                    downloadCover();
+                                  },
+                                  icon: Icon(Icons.download))
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: CachedNetworkImage(
+                      filterQuality: FilterQuality.medium,
+                      alignment: Alignment.centerLeft,
+                      imageUrl: widget.manga.mangaCover,
+                      memCacheHeight: 512,
+                      maxHeightDiskCache: 512,
+                    ),
                   ),
                 ),
               ),
@@ -150,7 +189,9 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
           Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
-                title: Text("Description"),
+                title: Text("Description",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                tilePadding: EdgeInsets.all(8),
                 childrenPadding: const EdgeInsets.all(8.0),
                 children: [Text(widget.manga.synopsis)],
                 initiallyExpanded:
@@ -169,19 +210,17 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
                   visualDensity: VisualDensity.compact),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              textAlign: TextAlign.left,
-              "${widget.manga.chapters.length} Chapters",
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-          ),
         ],
       ),
     );
+  }
+
+  void downloadCover() async {
+    // ! PATH IS ANDROID ONLY
+    FlutterDownloader.enqueue(
+        url: widget.manga.mangaCover,
+        saveInPublicStorage: true,
+        savedDir: 'storage/emulated/0/Download',
+        fileName: widget.manga.mangaName);
   }
 }
