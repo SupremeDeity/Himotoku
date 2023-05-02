@@ -30,7 +30,6 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
 
   updateSettings() async {
     var settings = await isarDB.settings.get(0);
-
     setState(() {
       backupExportLocation = settings!.backupExportLocation;
     });
@@ -45,6 +44,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
 
         // TODO(SupremeDeity): Try minimizing the exported fields to only the
         // required fields of [Manga]
+
         await isarDB.mangas
             .where()
             .inLibraryEqualTo(true)
@@ -187,7 +187,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
             "Export",
             style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w500),
+                fontWeight: FontWeight.bold),
           ),
         ),
         ListTile(
@@ -225,7 +225,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
             "Import",
             style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w500),
+                fontWeight: FontWeight.bold),
           ),
         ),
         ListTile(

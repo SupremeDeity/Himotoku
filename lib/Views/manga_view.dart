@@ -1,8 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/time_util.dart';
 import 'package:himotoku/Widgets/MangaView/MangaDetailsHeader.dart';

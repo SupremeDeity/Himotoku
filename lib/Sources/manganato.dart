@@ -106,19 +106,17 @@ class Manganato extends Source {
     String? orderBy = "",
     String? statusBy = "",
     String? typesBy = "",
-    List<String>? genresBy = const [],
+    Map<String, bool> genresBy = const {},
   }) async {
     try {
       Uri url;
-      if (searchQuery.isEmpty) {
-        url = Uri.https(_baseUrl, "/advanced_search",
-            {'orby': orderBy, 'page': '$pageKey'});
-      } else {
-        url = Uri.https(
-            _baseUrl,
-            "/search/story/${searchQuery.trim().replaceAll(RegExp('[\\s]'), "_")}",
-            {'page': '$pageKey'});
-      }
+
+      url = Uri.https(_baseUrl, "/advanced_search", {
+        'orby': orderBy,
+        'sts': statusBy,
+        'page': '$pageKey',
+        'keyw': searchQuery.trim().replaceAll(RegExp("\\s+"), "_"),
+      });
 
       var response = await http.get(url).onError(
           (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));
@@ -127,8 +125,13 @@ class Manganato extends Source {
 
       // Query1: gets title and link
 
-      var q1 = parsedHtml.querySelectorAll(
-          searchQuery.isEmpty ? _mangaListQuery : ".item-img.bookmark_check");
+      var q1 = parsedHtml.querySelectorAll(_mangaListQuery);
+
+      // var q2 =
+      //     parsedHtml.querySelectorAll(".advanced-search-tool-genres-list span");
+      // for (var span in q2) {
+      //   debugPrint("'${span.text}': '${span.attributes['data-i']}',");
+      // }
 
       for (int x = 0; x < q1.length; x++) {
         var title = q1[x].attributes['title'];
@@ -163,5 +166,57 @@ class Manganato extends Source {
         "Top View": "topview",
         "New": "newest",
         "A-Z": "az",
+      };
+  @override
+  Map<String, String> get statusSortOptions => {
+        "Ongoing and Complete": "",
+        "Ongoing": "ongoing",
+        "Complete": "completed",
+      };
+
+  @override
+  Map<String, String> get genreSortOptions => {
+        'Action': '2',
+        'Adult': '3',
+        'Adventure': '4',
+        'Comedy': '6',
+        'Cooking': '7',
+        'Doujinshi': '9',
+        'Drama': '10',
+        'Ecchi': '11',
+        'Erotica': '48',
+        'Fantasy': '12',
+        'Gender bender': '13',
+        'Harem': '14',
+        'Historical': '15',
+        'Horror': '16',
+        'Isekai': '45',
+        'Josei': '17',
+        'Manhua': '44',
+        'Manhwa': '43',
+        'Martial arts': '19',
+        'Mature': '20',
+        'Mecha': '21',
+        'Medical': '22',
+        'Mystery': '24',
+        'One shot': '25',
+        'Pornographic': '47',
+        'Psychological': '26',
+        'Romance': '27',
+        'School life': '28',
+        'Sci fi': '29',
+        'Seinen': '30',
+        'Shoujo': '31',
+        'Shoujo ai': '32',
+        'Shounen': '33',
+        'Shounen ai': '34',
+        'Slice of life': '35',
+        'Smut': '36',
+        'Sports': '37',
+        'Supernatural': '38',
+        'Tragedy': '39',
+        'Webtoons': '40',
+        'Yaoi': '41',
+        'Yuri': '42',
       };
 }

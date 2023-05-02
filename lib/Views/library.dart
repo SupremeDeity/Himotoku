@@ -396,42 +396,45 @@ class _LibraryState extends State<Library> {
   void validatePermissions() async {
     if (!await Permission.manageExternalStorage.isGranted) {
       showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          shape: Border.all(),
-          title: RichText(
-            text: TextSpan(
-              style: TextStyle(fontSize: 20),
-              children: [
-                TextSpan(text: "Allow "),
-                TextSpan(
-                    text: "Himotoku",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                TextSpan(text: " to manage files on your device?"),
-              ],
-            ),
-          ),
-          content: Text(
-              "Himotoku needs permission to manage files on your device for backup, downloading chapters etc."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-              child: Text("Deny"),
-            ),
-            TextButton(
-              onPressed: () async {
-                await Permission.manageExternalStorage.request();
-                Navigator.of(ctx).pop();
-              },
-              child: Text("Allow"),
-            )
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => FilePermissionDialog(ctx));
+    }
+  }
+
+  FilePermissionDialog(BuildContext ctx) {
+    return AlertDialog(
+      shape: Border.all(),
+      title: RichText(
+        text: TextSpan(
+          style: TextStyle(fontSize: 20),
+          children: [
+            TextSpan(text: "Allow "),
+            TextSpan(
+                text: "Himotoku",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            TextSpan(text: " to manage files on your device?"),
           ],
         ),
-      );
-    }
+      ),
+      content: Text(
+          "Himotoku needs permission to manage files on your device for backup, downloading chapters etc."),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(ctx).pop();
+          },
+          child: Text("Deny"),
+        ),
+        TextButton(
+          onPressed: () async {
+            await Permission.manageExternalStorage.request();
+            Navigator.of(ctx).pop();
+          },
+          child: Text("Allow"),
+        )
+      ],
+    );
   }
 }
 

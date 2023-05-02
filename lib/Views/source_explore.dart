@@ -149,7 +149,17 @@ class _SourceExploreState extends State<SourceExplore> {
                                 ),
                               if (widget.source.genreSortOptions.isNotEmpty)
                                 ExpansionTile(
-                                  title: Text("Genres"),
+                                  title: Text(
+                                    "Genres",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: Text(
+                                      "Exclusion of genres is not available on all sources.",
+                                      style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .error)),
                                   children: [
                                     ListView.builder(
                                         physics: NeverScrollableScrollPhysics(),
@@ -161,16 +171,21 @@ class _SourceExploreState extends State<SourceExplore> {
                                               .source.genreSortOptions.keys
                                               .elementAt(index);
                                           return CheckboxListTile(
-                                            value: genreBy[genreName] ?? false,
+                                            tristate: true,
+                                            value:
+                                                genreBy.containsKey(genreName)
+                                                    ? (genreBy[genreName]!
+                                                        ? genreBy[genreName]
+                                                        : null)
+                                                    : false,
                                             onChanged: (value) {
-                                              if (value ?? false) {
-                                                genreBy[genreName] = true;
-                                              } else {
+                                              if (value != null && !value) {
                                                 genreBy.remove(genreName);
+                                              } else {
+                                                genreBy[genreName] =
+                                                    value ?? false;
                                               }
-
                                               setModalState(() {});
-                                              debugPrint("$genreBy");
                                             },
                                             title: Text(genreName),
                                           );
@@ -191,7 +206,7 @@ class _SourceExploreState extends State<SourceExplore> {
         orderBy: orderBy,
         statusBy: statusBy,
         typeBy: typeBy,
-        genreBy: genreBy.keys.toList(),
+        genreBy: genreBy,
       ),
     );
   }

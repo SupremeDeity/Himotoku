@@ -37,14 +37,14 @@ class Manga {
   String mangaLink;
 
   /// Title of manga.
-  @Index(type: IndexType.hash)
+  @Index()
   String mangaName;
 
   /// Studio of manga
   String mangaStudio = "-";
 
   /// Status of manga
-  @Index(type: IndexType.hash)
+  @Index()
   String status = "-";
 
   /// Synopsis/Description of comic

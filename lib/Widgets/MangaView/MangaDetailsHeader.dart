@@ -97,7 +97,7 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
                         maxLines: 2,
                         style: TextStyle(
                           overflow: TextOverflow.ellipsis,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.bold,
                           fontSize: 18,
                           color: Theme.of(context).colorScheme.primary,
                         ),
@@ -112,7 +112,7 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
                                 maxLines: 2,
                                 style: const TextStyle(
                                   overflow: TextOverflow.ellipsis,
-                                  fontWeight: FontWeight.w400,
+                                  fontWeight: FontWeight.normal,
                                   fontSize: 15,
                                 ),
                               ),
@@ -125,7 +125,7 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
                         maxLines: 1,
                         style: const TextStyle(
                           overflow: TextOverflow.ellipsis,
-                          fontWeight: FontWeight.w400,
+                          fontWeight: FontWeight.normal,
                           fontSize: 15,
                         ),
                       ),
@@ -133,7 +133,7 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
                         widget.manga.source,
                         style: const TextStyle(
                           overflow: TextOverflow.ellipsis,
-                          fontWeight: FontWeight.w400,
+                          fontWeight: FontWeight.normal,
                           fontSize: 15,
                         ),
                       ),

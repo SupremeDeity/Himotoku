@@ -160,14 +160,15 @@ class _SettingsAboutState extends State<SettingsAbout> {
             Center(
               child: Text(
                 description,
-                style: TextStyle(color: Theme.of(context).hintColor),
+                style: TextStyle(color: Theme.of(context).colorScheme.outline),
               ),
             ),
             Center(
               child: RichText(
                 text: TextSpan(
                     text: "Licensed under ",
-                    style: TextStyle(color: Theme.of(context).hintColor),
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.outline),
                     children: [
                       TextSpan(
                           text: "GNU GPLv3",
@@ -184,7 +185,7 @@ class _SettingsAboutState extends State<SettingsAbout> {
                   style: TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text(
                 "${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch} ${currentVersion.isPreRelease ? currentVersion.preRelease[0].capitalize() : ""}",
-                style: TextStyle(color: Theme.of(context).hintColor),
+                style: TextStyle(color: Theme.of(context).colorScheme.outline),
               ),
             ),
             ListTile(

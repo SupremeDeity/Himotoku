@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
@@ -119,7 +118,7 @@ class Asura extends Source {
     String orderBy = "",
     String statusBy = "",
     String typesBy = "",
-    List<String>? genresBy = const [],
+    Map<String, bool> genresBy = const {},
   }) async {
     try {
       Uri url;
@@ -132,13 +131,14 @@ class Asura extends Source {
           "order": orderBy,
           "status": statusBy,
           "type": typesBy,
-          "genre[]": genresBy
+          "genre[]": genresBy.entries
+              .where((element) => element.value)
+              .map((e) => genreSortOptions[e.key])
+              .toList()
         });
       } else {
         url = Uri.https(_baseUrl, "/page/$pageKey", {'s': searchQuery});
       }
-
-      debugPrint("$url");
 
       var response = await http
           .get(url)
@@ -164,10 +164,11 @@ class Asura extends Source {
         var mangaCover = q2[x].attributes['src'];
 
         Manga m = Manga(
-            source: name,
-            mangaName: title!,
-            mangaCover: mangaCover!,
-            mangaLink: mangaLink!);
+          source: name,
+          mangaName: title!,
+          mangaCover: mangaCover!,
+          mangaLink: mangaLink!,
+        );
 
         mangaList.add(m);
       }

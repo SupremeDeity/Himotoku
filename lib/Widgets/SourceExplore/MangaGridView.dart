@@ -15,7 +15,7 @@ class MangaGridView extends StatefulWidget {
     this.orderBy = "",
     this.statusBy = "",
     this.typeBy = "",
-    this.genreBy = const [],
+    this.genreBy = const {},
   }) : super(key: key);
 
   final Source source;
@@ -24,7 +24,7 @@ class MangaGridView extends StatefulWidget {
 
   final String orderBy;
   final String statusBy;
-  final List<String> genreBy;
+  final Map<String, bool> genreBy;
   final String typeBy;
 
   @override

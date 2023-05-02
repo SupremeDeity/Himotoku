@@ -4,5 +4,5 @@ import 'bridge_generated.dart';
 
 const base = 'rustlib';
 final path = Platform.isWindows ? '$base.dll' : 'lib$base.so';
-late final dylib = loadDylib(path);
+late final dylib = loadLibForFlutter(path);
 late final api = RustlibImpl(dylib);

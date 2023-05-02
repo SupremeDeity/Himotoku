@@ -5,6 +5,8 @@ import 'package:himotoku/Views/Settings/settings-backup.dart';
 import 'package:himotoku/Views/Settings/settings-reader.dart';
 import 'package:himotoku/Views/Settings/settings-theme.dart';
 
+import 'Settings/settings-data-statistics.dart';
+
 class Settings extends StatefulWidget {
   const Settings({Key? key}) : super(key: key);
 
@@ -17,6 +19,7 @@ class _SettingsState extends State<Settings> {
     "Appearance": [Icons.palette, SettingsTheme()],
     "Reader": [Icons.menu_book_rounded, ReaderSettings()],
     "Backup & Restore": [Icons.backup_outlined, ImportExportSettings()],
+    "Data and Statistics": [Icons.data_usage, DataStatisticsSettings()],
     "About": [Icons.info_outline_rounded, SettingsAbout()],
   };
 

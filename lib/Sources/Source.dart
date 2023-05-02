@@ -19,7 +19,8 @@ abstract class Source {
     String orderBy,
     String statusBy,
     String typesBy,
-    List<String>? genresBy,
+    // Genre, excluded
+    Map<String, bool> genresBy,
   });
 
   // Second stage:

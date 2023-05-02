@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
@@ -116,18 +115,18 @@ class ReaperScans extends Source {
   Future<List<Manga>> getMangaList(
     int pageKey, {
     String searchQuery = "",
-    String? orderBy = "",
-    String? statusBy = "",
-    String? typesBy = "",
-    List<String>? genresBy = const [],
+    String orderBy = "",
+    String statusBy = "",
+    String typesBy = "",
+    Map<String, bool> genresBy = const {},
   }) async {
     try {
       if (searchQuery.isNotEmpty) {
         throw APP_ERROR.SOURCE_SEARCH_NOT_SUPPORTED;
       }
 
-      Uri url = Uri.https(_baseUrl, orderBy ?? "/comics", {'page': "$pageKey"});
-      debugPrint("$url");
+      Uri url = Uri.https(_baseUrl, orderBy.isEmpty ? "/comics" : orderBy,
+          {'page': "$pageKey"});
 
       var response = await http.get(url).onError(
           (error, stackTrace) => Future.error(APP_ERROR.SOURCE_HOST_ERROR));

@@ -37,7 +37,6 @@ class _ComfortableTileState extends State<ComfortableTile> {
               maxLines: 2,
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w400,
               ),
             ),
           ),
