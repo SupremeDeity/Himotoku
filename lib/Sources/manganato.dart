@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
@@ -111,11 +112,24 @@ class Manganato extends Source {
     try {
       Uri url;
 
+      String g_i = "";
+      String g_e = "";
+      for (var entry in genresBy.entries) {
+        if (entry.value) {
+          g_i += "_" + genreSortOptions[entry.key]!;
+        }
+        if (!entry.value) {
+          g_e += "_" + genreSortOptions[entry.key]!;
+        }
+      }
+
       url = Uri.https(_baseUrl, "/advanced_search", {
         'orby': orderBy,
         'sts': statusBy,
         'page': '$pageKey',
         'keyw': searchQuery.trim().replaceAll(RegExp("\\s+"), "_"),
+        'g_i': g_i,
+        'g_e': g_e,
       });
 
       var response = await http.get(url).onError(

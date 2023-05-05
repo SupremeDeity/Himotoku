@@ -82,7 +82,6 @@ class Asura extends Source {
       final allManga = isarDB.mangas;
       for (int x = 0; x < q3.length; x++) {
         var chapterName = q3a[x].text.trim().replaceAll(RegExp("\n"), " ");
-        debugPrint("trim $x: $chapterName");
         DateTime? chapterReleaseDate =
             DateNormalize(q3b[x].text.trim(), "MMMM dd, yyyy");
         var chapterLink = q3[x].attributes['href']!;
@@ -126,6 +125,13 @@ class Asura extends Source {
     }
   }
 
+  createGenreList({Map<String, bool> genresBy = const {}}) {
+    return genresBy.entries
+        .where((element) => element.value)
+        .map((e) => genreSortOptions[e.key])
+        .toList();
+  }
+
   @override
   Future<List<Manga>>? getMangaList(
     int pageKey, {
@@ -135,7 +141,6 @@ class Asura extends Source {
     String typesBy = "",
     Map<String, bool> genresBy = const {},
   }) async {
-    debugPrint(searchQuery);
     try {
       Uri url;
       if (searchQuery.isEmpty) {
@@ -144,16 +149,11 @@ class Asura extends Source {
           "order": orderBy,
           "status": statusBy,
           "type": typesBy,
-          "genre[]": genresBy.entries
-              .where((element) => element.value)
-              .map((e) => genreSortOptions[e.key])
-              .toList()
+          "genre[]": createGenreList(genresBy: genresBy)
         });
       } else {
         url = Uri.https(_baseUrl, "/page/$pageKey", {'s': searchQuery});
       }
-
-      debugPrint("$url");
 
       var response = await http
           .get(url)
@@ -166,11 +166,11 @@ class Asura extends Source {
       // Query2: gets cover art
       var q2 = parsedHtml.querySelectorAll("$_mangaListQuery img");
 
-      // ? sample code to print all filters and values
+      // // ? sample code to print all filters and values
       // var q3 = parsedHtml.querySelectorAll(".dropdown-menu.c4.genrez li");
       // for (int x = 0; x < q3.length; x++) {
       //   debugPrint(
-      //       "'${q3[x].text.trim()}': '${q3[x].firstChild?.attributes['value']}',");
+      //       "'${q3[x].text.trim()}': '${q3[x].children[0].attributes['value']}',");
       // }
 
       for (int x = 0; x < q1.length; x++) {
@@ -218,7 +218,6 @@ class Asura extends Source {
     "Manhwa": "manhwa",
     "Manhua": "manhua",
     "Comic": "comic",
-    "Novel": "novel",
   };
 
   @override
@@ -322,15 +321,81 @@ class FlameScans extends Asura {
   @override
   String get name => "Flame Scans";
 
-  @override
-  Map<String, String> orderBySortOptions = {};
+  createGenreList({Map<String, bool> genresBy = const {}}) {
+    var genreList = [];
+    for (var entry in genresBy.entries) {
+      if (entry.value) {
+        genreList.add(genreSortOptions[entry.key]);
+      }
+      if (!entry.value) {
+        genreList.add("-" + genreSortOptions[entry.key]!);
+      }
+    }
+    return genreList;
+  }
 
   @override
-  Map<String, String> typeSortOptions = {};
-
-  @override
-  Map<String, String> statusSortOptions = {};
-
-  @override
-  Map<String, String> genreSortOptions = {};
+  Map<String, String> genreSortOptions = {
+    'Action': '7',
+    'Adventure': '8',
+    'Apocalypse': '55',
+    'Betrayal': '190',
+    'Calm Protagonist': '191',
+    'Comedy': '18',
+    'Coming Soon': '85',
+    'Cultivation': '110',
+    'Dragons': '193',
+    'Drama': '13',
+    'Dungeons': '160',
+    'Ecchi': '19',
+    'Ecchi comedy': '239',
+    'Fantasy': '9',
+    'Fusion Fantasy': '88',
+    'Games': '161',
+    'Harem': '14',
+    'Historical': '152',
+    'Horror': '77',
+    'Hunter': '215',
+    'Isekai': '36',
+    'Josei': '148',
+    'Leveling': '170',
+    'Magic': '37',
+    'Martial Arts': '24',
+    'Mature': '98',
+    'Military': '136',
+    'Modern Fantasy': '217',
+    'Monster': '93',
+    'moster': '237',
+    'Murim': '138',
+    'Mystery': '122',
+    'Novel': '50',
+    'Official': '60',
+    'Pokemon': '96',
+    'Post-Apocalyptic': '168',
+    'Psychological': '81',
+    'Regression': '242',
+    'Reincarnation': '38',
+    'Revenge': '209',
+    'Romance': '15',
+    'School Life': '20',
+    'Sci-fi': '97',
+    'Seinen': '16',
+    'Shoujo': '34',
+    'Shoujo Ai': '174',
+    'Shounen': '10',
+    'Slice of Life': '27',
+    'Sports': '28',
+    'Supernatural': '21',
+    'Survival': '133',
+    'Sword and Magic': '192',
+    'System': '94',
+    'Thriller': '82',
+    'Time Travel': '184',
+    'Tragedy': '106',
+    'Transmigration': '185',
+    'Video Games': '29',
+    'VR': '162',
+    'Youth': '221',
+    'Zombies': '167',
+  };
 }
