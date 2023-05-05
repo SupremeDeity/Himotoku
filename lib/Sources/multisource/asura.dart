@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/Constants.dart';
@@ -7,8 +8,14 @@ import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 
 class Asura extends Source {
-  final _baseChapterListQuery = "#chapterlist .eph-num a";
+  final _baseChapterListQuery = "#chapterlist a";
+  final _chNumSuffix = " .chapternum";
+  final _chDateSuffix = " .chapterdate";
   final _baseUrl = "asurascans.com";
+  final _comicSubUrl = "/manga";
+  final _authorQueryIndex = 1;
+  final _artistQueryIndex = 2;
+
   final _chapterPageListQuery = "#readerarea img:not(.asurascans)";
   final _mangaAuthorQuery = ".fmed span";
   final _mangaListQuery = ".listupd .bs a"; // base query to get manga list
@@ -63,6 +70,10 @@ class Asura extends Source {
       var q2 = parsedHtml.querySelectorAll(_mangaStatusQuery);
       // Query3: Gets chapter list
       var q3 = parsedHtml.querySelectorAll(_baseChapterListQuery);
+      var q3a =
+          parsedHtml.querySelectorAll(_baseChapterListQuery + _chNumSuffix);
+      var q3b =
+          parsedHtml.querySelectorAll(_baseChapterListQuery + _chDateSuffix);
       // Query4: Gets synopsis
       var q4 = parsedHtml.querySelector(_mangaSynopsisQuery);
       // Query4: Gets genres
@@ -70,9 +81,10 @@ class Asura extends Source {
 
       final allManga = isarDB.mangas;
       for (int x = 0; x < q3.length; x++) {
-        var chapterName = q3[x].children[0].text.trim();
+        var chapterName = q3a[x].text.trim().replaceAll(RegExp("\n"), " ");
+        debugPrint("trim $x: $chapterName");
         DateTime? chapterReleaseDate =
-            DateNormalize(q3[x].children[1].text.trim(), "MMMM dd, yyyy");
+            DateNormalize(q3b[x].text.trim(), "MMMM dd, yyyy");
         var chapterLink = q3[x].attributes['href']!;
 
         var isRead =
@@ -88,12 +100,15 @@ class Asura extends Source {
       }
 
       Manga updatedManga = manga.copyWith(
-        authorName: q1[1].previousElementSibling?.text.trim() == "Author"
-            ? q1[1].text.trim()
+        authorName: q1[_authorQueryIndex].previousElementSibling?.text.trim() ==
+                "Author"
+            ? q1[_authorQueryIndex].text.trim()
             : null,
-        mangaStudio: q1[2].previousElementSibling?.text.trim() == "Artist"
-            ? q1[2].text.trim()
-            : null,
+        mangaStudio:
+            q1[_artistQueryIndex].previousElementSibling?.text.trim() ==
+                    "Artist"
+                ? q1[_artistQueryIndex].text.trim()
+                : null,
         synopsis: q4?.text.trim() ?? "",
         status: q2[0].text.trim(),
         chapters: chapterList,
@@ -120,13 +135,11 @@ class Asura extends Source {
     String typesBy = "",
     Map<String, bool> genresBy = const {},
   }) async {
+    debugPrint(searchQuery);
     try {
       Uri url;
-      if (searchQuery.isEmpty ||
-          statusBy.isEmpty ||
-          typesBy.isEmpty ||
-          orderBy.isEmpty) {
-        url = Uri.https(_baseUrl, "/manga", {
+      if (searchQuery.isEmpty) {
+        url = Uri.https(_baseUrl, _comicSubUrl, {
           'page': "$pageKey",
           "order": orderBy,
           "status": statusBy,
@@ -139,6 +152,8 @@ class Asura extends Source {
       } else {
         url = Uri.https(_baseUrl, "/page/$pageKey", {'s': searchQuery});
       }
+
+      debugPrint("$url");
 
       var response = await http
           .get(url)
@@ -292,4 +307,30 @@ class Asura extends Source {
     'Webtoon': 'webtoon',
     'Wuxia': 'wuxia',
   };
+}
+
+class FlameScans extends Asura {
+  final _baseUrl = "flamescans.org";
+  final _comicSubUrl = "/series";
+  final _mangaAuthorQuery = ".imptdt i";
+  final _authorQueryIndex = 4;
+  final _artistQueryIndex = 5;
+
+  @override
+  String get iconUrl => "";
+
+  @override
+  String get name => "Flame Scans";
+
+  @override
+  Map<String, String> orderBySortOptions = {};
+
+  @override
+  Map<String, String> typeSortOptions = {};
+
+  @override
+  Map<String, String> statusSortOptions = {};
+
+  @override
+  Map<String, String> genreSortOptions = {};
 }

@@ -21,9 +21,6 @@ dependencies:
   cached_network_image: ^3.2.2
   ffi: ^2.0.1
   file_picker: ^5.2.0+1
-  firebase_core: ^2.7.1
-  firebase_crashlytics: ^3.0.16
-  firebase_performance: ^0.9.0+15
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.3.0
@@ -34,7 +31,6 @@ dependencies:
   flutter_native_splash: ^2.2.9
   flutter_rust_bridge: ^1.59.0
   freezed_annotation: ^2.2.0
-  google_fonts: ^4.0.4
   html: ^0.15.1
   http: ^0.13.5
   infinite_scroll_pagination: ^3.2.0
@@ -70,7 +66,10 @@ flutter:
     - assets/splash.png
     - assets/splash-light.png
     - pubspec.yaml
-    - assets/fonts/Inter/
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter/Inter-VariableFont_slnt,wght.ttf
 
 flutter_icons:
   android: true

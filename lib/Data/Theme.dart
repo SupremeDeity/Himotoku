@@ -1,7 +1,6 @@
 // ignore_for_file: , non_constant_identifier_names
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Provides definitions for pre-made themes
 class Themes {
@@ -21,14 +20,14 @@ class Themes {
         seedColor: crimsonPrimary,
         brightness: Brightness.dark,
       ),
-      fontFamily: GoogleFonts.inter().fontFamily,
+      fontFamily: "Inter",
     );
   }
 
   static ThemeData get crimsonLightTheme {
     return ThemeData(
         useMaterial3: true,
-        fontFamily: GoogleFonts.inter().fontFamily,
+        fontFamily: "Inter",
         colorScheme: ColorScheme.fromSeed(
           seedColor: crimsonPrimary,
         ));
@@ -37,7 +36,7 @@ class Themes {
   static ThemeData get PeriwinkleLight {
     return ThemeData(
         useMaterial3: true,
-        fontFamily: GoogleFonts.inter().fontFamily,
+        fontFamily: "Inter",
         colorScheme: ColorScheme.fromSeed(
           seedColor: periwinklePrimary,
         ));
@@ -46,7 +45,7 @@ class Themes {
   static ThemeData get PeriwinkleDark {
     return ThemeData(
         useMaterial3: true,
-        fontFamily: GoogleFonts.inter().fontFamily,
+        fontFamily: "Inter",
         scaffoldBackgroundColor: crimsonBackground,
         bottomNavigationBarTheme:
             BottomNavigationBarThemeData(backgroundColor: crimsonBackground),
@@ -59,7 +58,7 @@ class Themes {
   static ThemeData get WarmDark {
     return ThemeData(
       useMaterial3: true,
-      fontFamily: GoogleFonts.inter().fontFamily,
+      fontFamily: "Inter",
       scaffoldBackgroundColor: crimsonBackground,
       bottomNavigationBarTheme:
           BottomNavigationBarThemeData(backgroundColor: crimsonBackground),
@@ -73,7 +72,7 @@ class Themes {
   static ThemeData get WarmLight {
     return ThemeData(
         useMaterial3: true,
-        fontFamily: GoogleFonts.inter().fontFamily,
+        fontFamily: "Inter",
         colorScheme: ColorScheme.fromSeed(
           seedColor: warmPrimary,
         ));

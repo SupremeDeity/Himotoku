@@ -42,6 +42,9 @@ class _ExploreState extends State<Explore> {
                         width: 24,
                         memCacheHeight: 70,
                         maxHeightDiskCache: 70,
+                        errorWidget: (context, url, error) {
+                          return Placeholder();
+                        },
                       ),
                       trailing: Icon(Icons.arrow_circle_right_outlined),
                       title: Text(

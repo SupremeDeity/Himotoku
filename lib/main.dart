@@ -1,39 +1,26 @@
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:himotoku/Data/database/database.dart';
 
 import 'package:himotoku/Data/models/Setting.dart';
 import 'package:himotoku/Data/Theme.dart';
 import 'package:himotoku/Views/main_view.dart';
 
-// Firebase
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-
 // import 'package:himotoku/test.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  GoogleFonts.config.allowRuntimeFetching = false;
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
-  FlutterError.onError = (errorDetails) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  };
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   await FlutterDownloader.initialize(
     debug:
         kDebugMode, // optional: set to false to disable printing logs to console (default: true)
   );
-
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await getIsar();
 
   runApp(
@@ -95,7 +82,7 @@ class _himotokuMainState extends State<himotokuMain> {
   void initMisc() async {
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
         FlutterLocalNotificationsPlugin();
-// initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
+    // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('splash');
     final InitializationSettings initializationSettings =

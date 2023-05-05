@@ -23,5 +23,5 @@ var APP_ICON_LIGHT = Image.asset(
 
 var APP_REPO_RELEASE = "https://github.com/SupremeDeity08/himotoku/releases";
 
-const ISAR_INSTANCE_NAME = "isarInstance";
+const ISAR_INSTANCE_NAME = "himotokuDBInstance";
 const DEFAULT_LIBRARY_SORT = LibrarySort.az;
