@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Setting.dart';
 
+import '../../Widgets/Settings/SectionHeader.dart';
+
 class ReaderSettings extends StatefulWidget {
   const ReaderSettings({Key? key}) : super(key: key);
 
@@ -49,19 +51,7 @@ class _ReaderSettingsState extends State<ReaderSettings> {
     return Scaffold(
       appBar: AppBar(title: const Text("Reader")),
       body: ListView(children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 12.0, top: 12.0),
-          child: Row(
-            children: [
-              Text(
-                "View",
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-        ),
+        SectionHeader("View"),
         ListTile(
             title: const Text("Fullscreen",
                 style: TextStyle(fontWeight: FontWeight.bold)),

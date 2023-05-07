@@ -10,14 +10,9 @@ crate-type = ["lib","staticlib","cdylib",]
 [dependencies]
 flutter_rust_bridge = "1"
 image = "0.24.6"
+android_logger = "0.13.1"
+log = "0.4"
 
 [build-dependencies]
 flutter_rust_bridge_codegen = "1"
 
-
-# [profile.release]
-# strip = true
-# opt-level = "z"
-# lto = true
-# codegen-units = 1
-# panic = "abort"

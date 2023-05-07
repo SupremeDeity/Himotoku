@@ -8,6 +8,8 @@ import 'package:himotoku/Data/models/Manga.dart';
 import 'package:himotoku/Data/models/Setting.dart';
 import 'package:isar/isar.dart';
 
+import '../../Widgets/Settings/SectionHeader.dart';
+
 class DataStatisticsSettings extends StatefulWidget {
   const DataStatisticsSettings({Key? key}) : super(key: key);
 
@@ -48,20 +50,7 @@ class _DataStatisticsSettingsState extends State<DataStatisticsSettings> {
     return Scaffold(
       appBar: AppBar(title: const Text("Data and Statistics")),
       body: ListView(children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 12.0, top: 12.0),
-          child: Row(
-            children: [
-              Text(
-                "Statistics",
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
+        SectionHeader("Statistics"),
         ListTile(
           dense: true,
           title: Text(
@@ -136,20 +125,7 @@ class _DataStatisticsSettingsState extends State<DataStatisticsSettings> {
             style: TextStyle(color: Theme.of(context).colorScheme.outline),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(left: 12.0, top: 12.0),
-          child: Row(
-            children: [
-              Text(
-                "Actions",
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
+        SectionHeader("Actions"),
         ListTile(
           onTap: () {
             clearNonLibraryEntry();

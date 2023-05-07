@@ -56,18 +56,26 @@ class _ChapterListViewState extends State<ChapterListView> {
 
         var image;
 
-        if (splitTallImages) {
-          var imagePieces = await api.rustCropImage(
-              imageBytes: response.bodyBytes, maxHeight: 6000);
-          image = Column(
-            children: List.generate(
-                imagePieces?.length ?? 0,
-                (index) => Image.memory(
-                      imagePieces![index].data,
-                      fit: BoxFit.cover,
-                    )),
-          );
-        } else {
+        try {
+          if (splitTallImages) {
+            var imagePieces = await api.rustCropImage(
+                imageBytes: response.bodyBytes, maxHeight: 6000);
+
+            image = Column(
+              children: List.generate(
+                  imagePieces?.length ?? 0,
+                  (index) => Image.memory(
+                        imagePieces![index].data,
+                        fit: BoxFit.cover,
+                      )),
+            );
+          } else {
+            image = Image.memory(
+              response.bodyBytes,
+              fit: BoxFit.cover,
+            );
+          }
+        } catch (e) {
           image = Image.memory(
             response.bodyBytes,
             fit: BoxFit.cover,

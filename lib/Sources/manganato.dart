@@ -104,9 +104,9 @@ class Manganato extends Source {
   Future<List<Manga>>? getMangaList(
     int pageKey, {
     String searchQuery = "",
-    String? orderBy = "",
-    String? statusBy = "",
-    String? typesBy = "",
+    String orderBy = "",
+    String statusBy = "",
+    String typesBy = "",
     Map<String, bool> genresBy = const {},
   }) async {
     try {

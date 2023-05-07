@@ -42,12 +42,14 @@ class _ComfortableTileState extends State<ComfortableTile> {
           ),
           child: widget.cacheImage
               ? CachedNetworkImage(
+                  httpHeaders: {"Referer": widget.manga.mangaLink},
                   fit: BoxFit.cover,
                   imageUrl: widget.manga.mangaCover,
                   memCacheHeight: 512,
                   maxHeightDiskCache: 512,
                 )
               : Image.network(
+                  headers: {"Referer": widget.manga.mangaLink},
                   widget.manga.mangaCover,
                   width: 512,
                   fit: BoxFit.cover,

@@ -2,6 +2,11 @@ use super::*;
 // Section: wire functions
 
 #[wasm_bindgen]
+pub fn wire_init_android_logger(port_: MessagePort) {
+    wire_init_android_logger_impl(port_)
+}
+
+#[wasm_bindgen]
 pub fn wire_rust_crop_image(port_: MessagePort, image_bytes: Box<[u8]>, max_height: u32) {
     wire_rust_crop_image_impl(port_, image_bytes, max_height)
 }

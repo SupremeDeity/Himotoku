@@ -9,6 +9,7 @@ import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Setting.dart';
 import 'package:himotoku/Data/Theme.dart';
 import 'package:himotoku/Views/main_view.dart';
+import 'package:himotoku/rustlib/rustlib.dart';
 
 // import 'package:himotoku/test.dart';
 
@@ -98,6 +99,7 @@ class _himotokuMainState extends State<himotokuMain> {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.requestPermission();
     await FlutterDownloader.registerCallback(downloaderCallback);
+    await api.initAndroidLogger();
     FlutterNativeSplash.remove();
   }
 

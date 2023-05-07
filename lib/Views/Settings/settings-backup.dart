@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
+import 'package:himotoku/Widgets/Settings/SectionHeader.dart';
 import 'package:isar/isar.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:himotoku/Data/models/Manga.dart';
@@ -181,15 +182,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
     return Scaffold(
       appBar: AppBar(title: const Text("Backup & Restore")),
       body: ListView(children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 12.0, top: 12.0),
-          child: Text(
-            "Export",
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold),
-          ),
-        ),
+        SectionHeader("Export"),
         ListTile(
           title: const Text("Backup Location",
               style: TextStyle(fontWeight: FontWeight.bold)),
@@ -219,15 +212,7 @@ class _ImportExportSettingsState extends State<ImportExportSettings> {
             _showMyDialog();
           },
         ),
-        Padding(
-          padding: const EdgeInsets.only(left: 12.0, top: 12.0),
-          child: Text(
-            "Import",
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold),
-          ),
-        ),
+        SectionHeader("Import"),
         ListTile(
           title: const Text("Restore Backup",
               style: TextStyle(fontWeight: FontWeight.bold)),

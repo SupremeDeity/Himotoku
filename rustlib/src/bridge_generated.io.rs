@@ -2,6 +2,11 @@ use super::*;
 // Section: wire functions
 
 #[no_mangle]
+pub extern "C" fn wire_init_android_logger(port_: i64) {
+    wire_init_android_logger_impl(port_)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_rust_crop_image(
     port_: i64,
     image_bytes: *mut wire_uint_8_list,

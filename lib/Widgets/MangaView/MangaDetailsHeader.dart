@@ -52,6 +52,9 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
                                 height: 512,
                                 child: InteractiveViewer(
                                   child: CachedNetworkImage(
+                                    httpHeaders: {
+                                      "Referer": widget.manga.mangaLink
+                                    },
                                     fit: BoxFit.contain,
                                     filterQuality: FilterQuality.medium,
                                     alignment: Alignment.centerLeft,
@@ -75,6 +78,7 @@ class _MangaDetailsHeaderState extends State<MangaDetailsHeader> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: CachedNetworkImage(
+                      httpHeaders: {"Referer": widget.manga.mangaLink},
                       filterQuality: FilterQuality.medium,
                       alignment: Alignment.centerLeft,
                       imageUrl: widget.manga.mangaCover,
