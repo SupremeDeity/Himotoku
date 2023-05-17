@@ -68,10 +68,10 @@ class _LibraryState extends State<Library> {
             filterOptions?.started == true,
             (query) =>
                 query.chaptersElement((chapter) => chapter.isReadEqualTo(true)))
-        .optional(
-            filterOptions?.unread == true,
-            (query) => query
-                .chaptersElement((chapter) => chapter.isReadEqualTo(false)));
+        // ! technically the same condition as above with "false" would
+        // work but this might be faster and is clearer.
+        .optional(filterOptions?.unread == true,
+            (query) => query.unreadCountGreaterThan(0));
 
     QueryBuilder<Manga, Manga, QAfterSortBy>? sortQuery;
     List<Manga> library = [];
@@ -88,6 +88,19 @@ class _LibraryState extends State<Library> {
         break;
       case LibrarySort.statusDesc:
         sortQuery = inLibrary.sortByStatusDesc();
+        break;
+      case LibrarySort.chapterCount:
+        sortQuery = inLibrary.sortByChapterCount();
+        break;
+      case LibrarySort.chapterCountDesc:
+        sortQuery = inLibrary.sortByChapterCountDesc();
+        break;
+      case LibrarySort.unreadCount:
+        sortQuery = inLibrary.sortByUnreadCount();
+        break;
+      case LibrarySort.unreadCountDesc:
+        sortQuery = inLibrary.sortByUnreadCountDesc();
+
         break;
       default:
         sortQuery = null;
@@ -158,6 +171,58 @@ class _LibraryState extends State<Library> {
           },
           title: const Text("Status"),
         ),
+        ListTile(
+          leading: sortSettings == LibrarySort.chapterCount
+              ? const Icon(Icons.arrow_upward)
+              : (sortSettings == LibrarySort.chapterCountDesc
+                  ? const Icon(Icons.arrow_downward)
+                  : null),
+          onTap: () async {
+            // Cause update in modal.
+            setModalState(() {
+              if (sortSettings == LibrarySort.chapterCount) {
+                sortSettings = LibrarySort.chapterCountDesc;
+              } else {
+                sortSettings = LibrarySort.chapterCount;
+              }
+            });
+            // Update library.
+            sortAndFilterLibrary();
+
+            await isarDB.writeTxn(() async {
+              var settings = await isarDB.settings.get(0);
+              await isarDB.settings
+                  .put(settings!.copyWith(newSortSettings: sortSettings));
+            });
+          },
+          title: const Text("Chapter Count"),
+        ),
+        ListTile(
+          leading: sortSettings == LibrarySort.unreadCount
+              ? const Icon(Icons.arrow_upward)
+              : (sortSettings == LibrarySort.unreadCountDesc
+                  ? const Icon(Icons.arrow_downward)
+                  : null),
+          onTap: () async {
+            // Cause update in modal.
+            setModalState(() {
+              if (sortSettings == LibrarySort.unreadCount) {
+                sortSettings = LibrarySort.unreadCountDesc;
+              } else {
+                sortSettings = LibrarySort.unreadCount;
+              }
+            });
+            // Update library.
+            sortAndFilterLibrary();
+
+            await isarDB.writeTxn(() async {
+              var settings = await isarDB.settings.get(0);
+              await isarDB.settings
+                  .put(settings!.copyWith(newSortSettings: sortSettings));
+            });
+          },
+          title: const Text("Unread Count"),
+        ),
       ],
     );
   }
@@ -175,7 +240,7 @@ class _LibraryState extends State<Library> {
             await isarDB.writeTxn(() async {
               var settings = await isarDB.settings.get(0);
               await isarDB.settings.put(settings!.copyWith(
-                  newFilterOptions:
+                  nFilterOptions:
                       settings.filterOptions.copyWith(newStarted: value)));
             });
           },
@@ -191,7 +256,7 @@ class _LibraryState extends State<Library> {
             await isarDB.writeTxn(() async {
               var settings = await isarDB.settings.get(0);
               await isarDB.settings.put(settings!.copyWith(
-                  newFilterOptions:
+                  nFilterOptions:
                       settings.filterOptions.copyWith(newUnread: value)));
             });
           },

@@ -156,10 +156,12 @@ class _ChapterListViewState extends State<ChapterListView> {
   setChapterAsRead() async {
     setState(() {
       isRead = true;
-    });
-    await isarDB.writeTxn(() {
       widget.manga.chapters[widget.chapterIndex].isRead = true;
-      return isarDB.mangas.put(widget.manga);
+      widget.manga.unreadCount = widget.manga.getUnreadCount();
+    });
+
+    await isarDB.writeTxn(() async {
+      await isarDB.mangas.put(widget.manga);
     });
   }
 

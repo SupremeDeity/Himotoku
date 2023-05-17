@@ -67,7 +67,7 @@ class _himotokuMainState extends State<himotokuMain> {
 
     if (currentSettings == null) {
       isarDB.writeTxnSync(() {
-        isarDB.settings.putSync(Setting().copyWith(newTheme: defaultTheme));
+        isarDB.settings.putSync(Setting().copyWith(nTheme: defaultTheme));
       });
     }
     Stream<void> instanceChanged =

@@ -11,13 +11,24 @@ class Manga {
     required this.mangaName,
     required this.mangaCover,
     required this.mangaLink,
-  });
+    this.id,
+    this.inLibrary = false,
+    this.authorName = "-",
+    this.mangaStudio = "-",
+    this.status = "-",
+    this.chapters = const [],
+    this.synopsis = "",
+    this.genres = const [],
+  }) {
+    this.chapterCount = chapters.length;
+    this.unreadCount = getUnreadCount();
+  }
 
   /// Author of manga
-  String authorName = "-";
+  String authorName;
 
   /// Read chapters
-  List<Chapter> chapters = [];
+  List<Chapter> chapters;
 
   /// Source of Manga
   @Index(type: IndexType.hash)
@@ -27,7 +38,7 @@ class Manga {
   Id? id;
 
   @Index()
-  bool inLibrary = false;
+  bool inLibrary;
 
   /// Image link to cover image.
   String mangaCover;
@@ -41,16 +52,26 @@ class Manga {
   String mangaName;
 
   /// Studio of manga
-  String mangaStudio = "-";
+  String mangaStudio;
 
   /// Status of manga
   @Index()
-  String status = "-";
+  String status;
 
   /// Synopsis/Description of comic
-  String synopsis = "";
+  String synopsis;
 
-  List<String> genres = [];
+  List<String> genres;
+
+  // ! The following are exposed for convinience and to allow sorting through isar
+  @Index()
+  int chapterCount = 0;
+  @Index()
+  int unreadCount = 0;
+
+  int getUnreadCount() {
+    return chapters.where((element) => !element.isRead).length;
+  }
 
   @Ignore()
   Manga copyWith({
@@ -72,15 +93,15 @@ class Manga {
       mangaCover: mangaCover ?? this.mangaCover,
       mangaName: mangaName ?? this.mangaName,
       mangaLink: mangaLink ?? this.mangaLink,
-    )
-      ..id = id ?? this.id
-      ..inLibrary = inLibrary ?? this.inLibrary
-      ..authorName = authorName ?? this.authorName
-      ..mangaStudio = mangaStudio ?? this.mangaStudio
-      ..status = status ?? this.status
-      ..chapters = chapters ?? this.chapters
-      ..synopsis = synopsis ?? this.synopsis
-      ..genres = genres ?? this.genres;
+      id: id ?? this.id,
+      inLibrary: inLibrary ?? this.inLibrary,
+      authorName: authorName ?? this.authorName,
+      mangaStudio: mangaStudio ?? this.mangaStudio,
+      status: status ?? this.status,
+      chapters: chapters ?? this.chapters,
+      synopsis: synopsis ?? this.synopsis,
+      genres: genres ?? this.genres,
+    );
   }
 }
 

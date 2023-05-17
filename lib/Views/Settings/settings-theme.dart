@@ -89,8 +89,7 @@ class _SettingsThemeState extends State<SettingsTheme> {
               onChanged: (value) async {
                 await isarDB.writeTxn(() async {
                   var settings = await isarDB.settings.get(0);
-                  await isarDB.settings
-                      .put(settings!.copyWith(newTheme: value));
+                  await isarDB.settings.put(settings!.copyWith(nTheme: value));
                 });
               },
             );

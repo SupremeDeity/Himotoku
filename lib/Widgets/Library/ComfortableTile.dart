@@ -30,6 +30,17 @@ class _ComfortableTileState extends State<ComfortableTile> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: GridTile(
+          header: widget.manga.inLibrary && widget.manga.unreadCount > 0
+              ? Row(children: [
+                  Container(
+                    padding: EdgeInsets.all(2),
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    child: Text(
+                      "${widget.manga.unreadCount}",
+                    ),
+                  ),
+                ])
+              : null,
           footer: GridTileBar(
             backgroundColor: Colors.black38,
             title: Text(

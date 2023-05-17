@@ -103,20 +103,21 @@ Setting _settingDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = Setting();
-  object.backupExportLocation = reader.readString(offsets[0]);
+  final object = Setting(
+    backupExportLocation: reader.readStringOrNull(offsets[0]) ?? "",
+    fullscreen: reader.readBoolOrNull(offsets[2]) ?? true,
+    id: id,
+    sortSettings:
+        _SettingsortSettingsValueEnumMap[reader.readByteOrNull(offsets[3])] ??
+            LibrarySort.az,
+    splitTallImages: reader.readBoolOrNull(offsets[4]) ?? true,
+  );
   object.filterOptions = reader.readObjectOrNull<FilterOptions>(
         offsets[1],
         FilterOptionsSchema.deserialize,
         allOffsets,
       ) ??
       FilterOptions();
-  object.fullscreen = reader.readBool(offsets[2]);
-  object.id = id;
-  object.sortSettings =
-      _SettingsortSettingsValueEnumMap[reader.readByteOrNull(offsets[3])] ??
-          LibrarySort.az;
-  object.splitTallImages = reader.readBool(offsets[4]);
   object.theme = reader.readString(offsets[5]);
   return object;
 }
@@ -129,7 +130,7 @@ P _settingDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset) ?? "") as P;
     case 1:
       return (reader.readObjectOrNull<FilterOptions>(
             offset,
@@ -138,12 +139,12 @@ P _settingDeserializeProp<P>(
           ) ??
           FilterOptions()) as P;
     case 2:
-      return (reader.readBool(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 3:
       return (_SettingsortSettingsValueEnumMap[reader.readByteOrNull(offset)] ??
           LibrarySort.az) as P;
     case 4:
-      return (reader.readBool(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 5:
       return (reader.readString(offset)) as P;
     default:
@@ -156,12 +157,20 @@ const _SettingsortSettingsEnumValueMap = {
   'za': 1,
   'status': 2,
   'statusDesc': 3,
+  'chapterCount': 4,
+  'chapterCountDesc': 5,
+  'unreadCount': 6,
+  'unreadCountDesc': 7,
 };
 const _SettingsortSettingsValueEnumMap = {
   0: LibrarySort.az,
   1: LibrarySort.za,
   2: LibrarySort.status,
   3: LibrarySort.statusDesc,
+  4: LibrarySort.chapterCount,
+  5: LibrarySort.chapterCountDesc,
+  6: LibrarySort.unreadCount,
+  7: LibrarySort.unreadCountDesc,
 };
 
 Id _settingGetId(Setting object) {
@@ -949,9 +958,10 @@ FilterOptions _filterOptionsDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = FilterOptions();
-  object.started = reader.readBool(offsets[0]);
-  object.unread = reader.readBool(offsets[1]);
+  final object = FilterOptions(
+    started: reader.readBoolOrNull(offsets[0]) ?? false,
+    unread: reader.readBoolOrNull(offsets[1]) ?? false,
+  );
   return object;
 }
 
@@ -963,9 +973,9 @@ P _filterOptionsDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readBool(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 1:
-      return (reader.readBool(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }

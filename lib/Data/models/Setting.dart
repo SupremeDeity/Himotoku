@@ -10,6 +10,10 @@ enum LibrarySort {
   za,
   status,
   statusDesc,
+  chapterCount,
+  chapterCountDesc,
+  unreadCount,
+  unreadCountDesc,
 }
 
 @Collection()
@@ -34,44 +38,58 @@ class Setting {
 
   /// Library sort options
   @enumerated
-  LibrarySort sortSettings = LibrarySort.az;
+  LibrarySort sortSettings;
 
   @Ignore()
   Setting copyWith({
-    String? newTheme,
+    String? nTheme,
     bool? newFullscreen,
     bool? newSplitTallImages,
     String? newBackupExportLocation,
-    FilterOptions? newFilterOptions,
+    FilterOptions? nFilterOptions,
     LibrarySort? newSortSettings,
   }) {
-    return Setting()
-      ..id = 0
-      ..theme = newTheme ?? theme
-      ..fullscreen = newFullscreen ?? fullscreen
-      ..splitTallImages = newSplitTallImages ?? splitTallImages
-      ..backupExportLocation = newBackupExportLocation ?? backupExportLocation
-      ..filterOptions = newFilterOptions ?? filterOptions
-      ..sortSettings = newSortSettings ?? sortSettings;
+    return Setting(
+      id: 0,
+      newTheme: nTheme ?? theme,
+      fullscreen: newFullscreen ?? fullscreen,
+      splitTallImages: newSplitTallImages ?? splitTallImages,
+      backupExportLocation: newBackupExportLocation ?? backupExportLocation,
+      newFilterOptions: nFilterOptions ?? filterOptions,
+      sortSettings: newSortSettings ?? sortSettings,
+    );
   }
 
-  Setting();
+  Setting({
+    this.id = 0,
+    String? newTheme,
+    this.fullscreen = true,
+    this.splitTallImages = true,
+    this.backupExportLocation = "",
+    FilterOptions? newFilterOptions,
+    this.sortSettings = LibrarySort.az,
+  }) {
+    this.theme = newTheme ?? ThemesMap.keys.elementAt(0);
+    this.filterOptions = newFilterOptions ?? FilterOptions();
+  }
 }
 
 @embedded
 class FilterOptions {
-  FilterOptions();
+  FilterOptions({
+    this.started = false,
+    this.unread = false,
+  });
 
   @Ignore()
   FilterOptions copyWith({
     bool? newStarted,
     bool? newUnread,
   }) {
-    return FilterOptions()
-      ..started = newStarted ?? started
-      ..unread = newUnread ?? unread;
+    return FilterOptions(
+        started: newStarted ?? started, unread: newUnread ?? unread);
   }
 
-  bool started = false;
-  bool unread = false;
+  bool started;
+  bool unread;
 }

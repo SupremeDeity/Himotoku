@@ -22,56 +22,66 @@ const MangaSchema = CollectionSchema(
       name: r'authorName',
       type: IsarType.string,
     ),
-    r'chapters': PropertySchema(
+    r'chapterCount': PropertySchema(
       id: 1,
+      name: r'chapterCount',
+      type: IsarType.long,
+    ),
+    r'chapters': PropertySchema(
+      id: 2,
       name: r'chapters',
       type: IsarType.objectList,
       target: r'Chapter',
     ),
     r'genres': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'genres',
       type: IsarType.stringList,
     ),
     r'inLibrary': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'inLibrary',
       type: IsarType.bool,
     ),
     r'mangaCover': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'mangaCover',
       type: IsarType.string,
     ),
     r'mangaLink': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'mangaLink',
       type: IsarType.string,
     ),
     r'mangaName': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'mangaName',
       type: IsarType.string,
     ),
     r'mangaStudio': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'mangaStudio',
       type: IsarType.string,
     ),
     r'source': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'source',
       type: IsarType.string,
     ),
     r'status': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'status',
       type: IsarType.string,
     ),
     r'synopsis': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'synopsis',
       type: IsarType.string,
+    ),
+    r'unreadCount': PropertySchema(
+      id: 12,
+      name: r'unreadCount',
+      type: IsarType.long,
     )
   },
   estimateSize: _mangaEstimateSize,
@@ -144,6 +154,32 @@ const MangaSchema = CollectionSchema(
           caseSensitive: true,
         )
       ],
+    ),
+    r'chapterCount': IndexSchema(
+      id: 6961688089466230365,
+      name: r'chapterCount',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'chapterCount',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
+    r'unreadCount': IndexSchema(
+      id: 1929747360533418796,
+      name: r'unreadCount',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'unreadCount',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
     )
   },
   links: {},
@@ -193,21 +229,23 @@ void _mangaSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.authorName);
+  writer.writeLong(offsets[1], object.chapterCount);
   writer.writeObjectList<Chapter>(
-    offsets[1],
+    offsets[2],
     allOffsets,
     ChapterSchema.serialize,
     object.chapters,
   );
-  writer.writeStringList(offsets[2], object.genres);
-  writer.writeBool(offsets[3], object.inLibrary);
-  writer.writeString(offsets[4], object.mangaCover);
-  writer.writeString(offsets[5], object.mangaLink);
-  writer.writeString(offsets[6], object.mangaName);
-  writer.writeString(offsets[7], object.mangaStudio);
-  writer.writeString(offsets[8], object.source);
-  writer.writeString(offsets[9], object.status);
-  writer.writeString(offsets[10], object.synopsis);
+  writer.writeStringList(offsets[3], object.genres);
+  writer.writeBool(offsets[4], object.inLibrary);
+  writer.writeString(offsets[5], object.mangaCover);
+  writer.writeString(offsets[6], object.mangaLink);
+  writer.writeString(offsets[7], object.mangaName);
+  writer.writeString(offsets[8], object.mangaStudio);
+  writer.writeString(offsets[9], object.source);
+  writer.writeString(offsets[10], object.status);
+  writer.writeString(offsets[11], object.synopsis);
+  writer.writeLong(offsets[12], object.unreadCount);
 }
 
 Manga _mangaDeserialize(
@@ -217,25 +255,27 @@ Manga _mangaDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Manga(
-    mangaCover: reader.readString(offsets[4]),
-    mangaLink: reader.readString(offsets[5]),
-    mangaName: reader.readString(offsets[6]),
-    source: reader.readString(offsets[8]),
+    authorName: reader.readStringOrNull(offsets[0]) ?? "-",
+    chapters: reader.readObjectList<Chapter>(
+          offsets[2],
+          ChapterSchema.deserialize,
+          allOffsets,
+          Chapter(),
+        ) ??
+        const [],
+    genres: reader.readStringList(offsets[3]) ?? const [],
+    id: id,
+    inLibrary: reader.readBoolOrNull(offsets[4]) ?? false,
+    mangaCover: reader.readString(offsets[5]),
+    mangaLink: reader.readString(offsets[6]),
+    mangaName: reader.readString(offsets[7]),
+    mangaStudio: reader.readStringOrNull(offsets[8]) ?? "-",
+    source: reader.readString(offsets[9]),
+    status: reader.readStringOrNull(offsets[10]) ?? "-",
+    synopsis: reader.readStringOrNull(offsets[11]) ?? "",
   );
-  object.authorName = reader.readString(offsets[0]);
-  object.chapters = reader.readObjectList<Chapter>(
-        offsets[1],
-        ChapterSchema.deserialize,
-        allOffsets,
-        Chapter(),
-      ) ??
-      [];
-  object.genres = reader.readStringList(offsets[2]) ?? [];
-  object.id = id;
-  object.inLibrary = reader.readBool(offsets[3]);
-  object.mangaStudio = reader.readString(offsets[7]);
-  object.status = reader.readString(offsets[9]);
-  object.synopsis = reader.readString(offsets[10]);
+  object.chapterCount = reader.readLong(offsets[1]);
+  object.unreadCount = reader.readLong(offsets[12]);
   return object;
 }
 
@@ -247,21 +287,21 @@ P _mangaDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset) ?? "-") as P;
     case 1:
+      return (reader.readLong(offset)) as P;
+    case 2:
       return (reader.readObjectList<Chapter>(
             offset,
             ChapterSchema.deserialize,
             allOffsets,
             Chapter(),
           ) ??
-          []) as P;
-    case 2:
-      return (reader.readStringList(offset) ?? []) as P;
+          const []) as P;
     case 3:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringList(offset) ?? const []) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 5:
       return (reader.readString(offset)) as P;
     case 6:
@@ -269,11 +309,15 @@ P _mangaDeserializeProp<P>(
     case 7:
       return (reader.readString(offset)) as P;
     case 8:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset) ?? "-") as P;
     case 9:
       return (reader.readString(offset)) as P;
     case 10:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset) ?? "-") as P;
+    case 11:
+      return (reader.readStringOrNull(offset) ?? "") as P;
+    case 12:
+      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -302,6 +346,22 @@ extension MangaQueryWhereSort on QueryBuilder<Manga, Manga, QWhere> {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         const IndexWhereClause.any(indexName: r'inLibrary'),
+      );
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhere> anyChapterCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'chapterCount'),
+      );
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhere> anyUnreadCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'unreadCount'),
       );
     });
   }
@@ -595,6 +655,186 @@ extension MangaQueryWhere on QueryBuilder<Manga, Manga, QWhereClause> {
       }
     });
   }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> chapterCountEqualTo(
+      int chapterCount) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'chapterCount',
+        value: [chapterCount],
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> chapterCountNotEqualTo(
+      int chapterCount) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'chapterCount',
+              lower: [],
+              upper: [chapterCount],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'chapterCount',
+              lower: [chapterCount],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'chapterCount',
+              lower: [chapterCount],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'chapterCount',
+              lower: [],
+              upper: [chapterCount],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> chapterCountGreaterThan(
+    int chapterCount, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'chapterCount',
+        lower: [chapterCount],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> chapterCountLessThan(
+    int chapterCount, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'chapterCount',
+        lower: [],
+        upper: [chapterCount],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> chapterCountBetween(
+    int lowerChapterCount,
+    int upperChapterCount, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'chapterCount',
+        lower: [lowerChapterCount],
+        includeLower: includeLower,
+        upper: [upperChapterCount],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> unreadCountEqualTo(
+      int unreadCount) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'unreadCount',
+        value: [unreadCount],
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> unreadCountNotEqualTo(
+      int unreadCount) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'unreadCount',
+              lower: [],
+              upper: [unreadCount],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'unreadCount',
+              lower: [unreadCount],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'unreadCount',
+              lower: [unreadCount],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'unreadCount',
+              lower: [],
+              upper: [unreadCount],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> unreadCountGreaterThan(
+    int unreadCount, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'unreadCount',
+        lower: [unreadCount],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> unreadCountLessThan(
+    int unreadCount, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'unreadCount',
+        lower: [],
+        upper: [unreadCount],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterWhereClause> unreadCountBetween(
+    int lowerUnreadCount,
+    int upperUnreadCount, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'unreadCount',
+        lower: [lowerUnreadCount],
+        includeLower: includeLower,
+        upper: [upperUnreadCount],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension MangaQueryFilter on QueryBuilder<Manga, Manga, QFilterCondition> {
@@ -724,6 +964,59 @@ extension MangaQueryFilter on QueryBuilder<Manga, Manga, QFilterCondition> {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'authorName',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> chapterCountEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'chapterCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> chapterCountGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'chapterCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> chapterCountLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'chapterCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> chapterCountBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'chapterCount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }
@@ -2011,6 +2304,59 @@ extension MangaQueryFilter on QueryBuilder<Manga, Manga, QFilterCondition> {
       ));
     });
   }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> unreadCountEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'unreadCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> unreadCountGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'unreadCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> unreadCountLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'unreadCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterFilterCondition> unreadCountBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'unreadCount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension MangaQueryObject on QueryBuilder<Manga, Manga, QFilterCondition> {
@@ -2034,6 +2380,18 @@ extension MangaQuerySortBy on QueryBuilder<Manga, Manga, QSortBy> {
   QueryBuilder<Manga, Manga, QAfterSortBy> sortByAuthorNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'authorName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterSortBy> sortByChapterCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'chapterCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterSortBy> sortByChapterCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'chapterCount', Sort.desc);
     });
   }
 
@@ -2132,6 +2490,18 @@ extension MangaQuerySortBy on QueryBuilder<Manga, Manga, QSortBy> {
       return query.addSortBy(r'synopsis', Sort.desc);
     });
   }
+
+  QueryBuilder<Manga, Manga, QAfterSortBy> sortByUnreadCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'unreadCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterSortBy> sortByUnreadCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'unreadCount', Sort.desc);
+    });
+  }
 }
 
 extension MangaQuerySortThenBy on QueryBuilder<Manga, Manga, QSortThenBy> {
@@ -2144,6 +2514,18 @@ extension MangaQuerySortThenBy on QueryBuilder<Manga, Manga, QSortThenBy> {
   QueryBuilder<Manga, Manga, QAfterSortBy> thenByAuthorNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'authorName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterSortBy> thenByChapterCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'chapterCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterSortBy> thenByChapterCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'chapterCount', Sort.desc);
     });
   }
 
@@ -2254,6 +2636,18 @@ extension MangaQuerySortThenBy on QueryBuilder<Manga, Manga, QSortThenBy> {
       return query.addSortBy(r'synopsis', Sort.desc);
     });
   }
+
+  QueryBuilder<Manga, Manga, QAfterSortBy> thenByUnreadCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'unreadCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QAfterSortBy> thenByUnreadCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'unreadCount', Sort.desc);
+    });
+  }
 }
 
 extension MangaQueryWhereDistinct on QueryBuilder<Manga, Manga, QDistinct> {
@@ -2261,6 +2655,12 @@ extension MangaQueryWhereDistinct on QueryBuilder<Manga, Manga, QDistinct> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'authorName', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Manga, Manga, QDistinct> distinctByChapterCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'chapterCount');
     });
   }
 
@@ -2324,6 +2724,12 @@ extension MangaQueryWhereDistinct on QueryBuilder<Manga, Manga, QDistinct> {
       return query.addDistinctBy(r'synopsis', caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<Manga, Manga, QDistinct> distinctByUnreadCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'unreadCount');
+    });
+  }
 }
 
 extension MangaQueryProperty on QueryBuilder<Manga, Manga, QQueryProperty> {
@@ -2336,6 +2742,12 @@ extension MangaQueryProperty on QueryBuilder<Manga, Manga, QQueryProperty> {
   QueryBuilder<Manga, String, QQueryOperations> authorNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'authorName');
+    });
+  }
+
+  QueryBuilder<Manga, int, QQueryOperations> chapterCountProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'chapterCount');
     });
   }
 
@@ -2396,6 +2808,12 @@ extension MangaQueryProperty on QueryBuilder<Manga, Manga, QQueryProperty> {
   QueryBuilder<Manga, String, QQueryOperations> synopsisProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'synopsis');
+    });
+  }
+
+  QueryBuilder<Manga, int, QQueryOperations> unreadCountProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'unreadCount');
     });
   }
 }
