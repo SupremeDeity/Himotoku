@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -60,7 +59,7 @@ class _himotokuMainState extends State<himotokuMain> {
   }
 
   initPrefs() async {
-    var brightness = SchedulerBinding.instance.window.platformBrightness;
+    var brightness = PlatformDispatcher.instance.platformBrightness;
     bool isDarkMode = brightness == Brightness.dark;
     var defaultTheme =
         isDarkMode ? ThemesMap.keys.elementAt(1) : ThemesMap.keys.elementAt(0);
@@ -114,4 +113,4 @@ class _himotokuMainState extends State<himotokuMain> {
 }
 
 @pragma('vm:entry-point')
-void downloaderCallback(String id, DownloadTaskStatus status, int progress) {}
+void downloaderCallback(String id, int status, int progress) {}
