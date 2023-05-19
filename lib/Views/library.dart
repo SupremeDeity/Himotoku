@@ -3,11 +3,10 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
-import 'package:himotoku/Sources/SourceHelper.dart';
 import 'package:himotoku/Views/RouteBuilder.dart';
 import 'package:isar/isar.dart';
 import 'package:himotoku/Data/Constants.dart';
@@ -15,6 +14,8 @@ import 'package:himotoku/Data/models/Setting.dart';
 import 'package:himotoku/Views/explore.dart';
 import 'package:himotoku/Widgets/Library/ComfortableTile.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+import '../Sources/SourceHelper.dart';
 
 class Library extends StatefulWidget {
   const Library({Key? key}) : super(key: key);
@@ -383,77 +384,75 @@ class _LibraryState extends State<Library> {
 
   void refreshLibrary() async {
     int notifID = 1;
+
     var updates = {};
 
     for (int mangaIndex = 0; mangaIndex < mangaInLibrary.length; mangaIndex++) {
       // Somewhat temp way to check if notification has been cancelled.
-      final List<ActiveNotification>? activeNotifications =
-          await FlutterLocalNotificationsPlugin().getActiveNotifications();
-      if ((activeNotifications == null || activeNotifications.isEmpty) &&
-          mangaIndex != 0) break;
+      // final List<ActiveNotification>? activeNotifications =
+      //     await FlutterLocalNotificationsPlugin().getActiveNotifications();
+      // if ((activeNotifications == null || activeNotifications.isEmpty) &&
+      //     mangaIndex != 0) break;
       final int progress =
           min(((mangaIndex + 1) / mangaInLibrary.length * 100).round(), 100);
 
       Manga manga = mangaInLibrary[mangaIndex];
 
-      AndroidNotificationDetails androidNotificationDetails =
-          AndroidNotificationDetails('library_update', 'Library updates',
-              channelDescription:
-                  'A channel for displaying library update notifications.',
-              icon: "splash",
-              importance: Importance.defaultImportance,
-              priority: Priority.defaultPriority,
-              showProgress: true,
-              maxProgress: 100,
-              autoCancel: false,
-              category: AndroidNotificationCategory.progress,
-              channelShowBadge: false,
-              ongoing: true,
-              onlyAlertOnce: true,
-              progress: progress,
-              actions: [AndroidNotificationAction("CANCEL", "Cancel")]);
-      NotificationDetails notificationDetails =
-          NotificationDetails(android: androidNotificationDetails);
-
-      await FlutterLocalNotificationsPlugin().show(
-        notifID,
-        'Updating library (${mangaIndex + 1}/${mangaInLibrary.length})',
-        manga.mangaName,
-        notificationDetails,
+      await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: notifID,
+          channelKey: 'library_update',
+          groupKey: "library_update_group",
+          title:
+              'Updating library (${mangaIndex + 1}/${mangaInLibrary.length})',
+          body: '${manga.mangaName}',
+          actionType: ActionType.Default,
+          autoDismissible: false,
+          category: NotificationCategory.Progress,
+          locked: true,
+          progress: progress,
+          color: Theme.of(context).colorScheme.primary,
+          notificationLayout: NotificationLayout.ProgressBar,
+        ),
+        actionButtons: [
+          NotificationActionButton(key: "CANCEL", label: "Cancel")
+        ],
       );
 
-      var newManga = await SourcesMap[manga.source]?.getMangaDetails(manga);
-
-      var diff = newManga?.chapters
-          .where((element) =>
-              !mangaInLibrary[mangaIndex].chapters.contains(element))
-          .toList();
-      if (diff?.isNotEmpty ?? false) {
-        updates[newManga?.mangaName] = diff?.map((e) => e.name).toList();
+      try {
+        var newManga = await SourcesMap[manga.source]?.getMangaDetails(manga);
+        var diff = newManga?.chapters
+            .where((element) =>
+                !mangaInLibrary[mangaIndex].chapters.contains(element))
+            .toList();
+        if (diff?.isNotEmpty ?? false) {
+          updates[newManga?.mangaName] = diff?.map((e) => e.name).toList();
+        }
+      } catch (APP_ERROR) {
+        await AwesomeNotifications().createNotification(
+          content: NotificationContent(
+              id: notifID + 1,
+              channelKey: "library_update",
+              groupKey: "library_update_group",
+              title: "${manga.mangaName}",
+              body: "Error while fetching update."),
+        );
       }
     }
-    FlutterLocalNotificationsPlugin().cancel(notifID);
 
-    // Update notifications
-    var updatesNotificationDetails = AndroidNotificationDetails(
-      'library_update',
-      'Library updates',
-      channelDescription:
-          'A channel for displaying library update notifications.',
-      importance: Importance.defaultImportance,
-      priority: Priority.defaultPriority,
-      onlyAlertOnce: true,
-      groupKey: "library_new_update",
-    );
-    NotificationDetails notificationDetails =
-        NotificationDetails(android: updatesNotificationDetails);
+    await AwesomeNotifications().cancel(notifID);
+
+    // Update notification
     for (var updateIndex = 0; updateIndex < updates.length; updateIndex++) {
       var chapters = updates.values.elementAt(updateIndex).toString();
-      await FlutterLocalNotificationsPlugin().show(
-        updateIndex,
-        updates.keys.elementAt(updateIndex),
-        chapters.substring(1, chapters.length - 1),
-        notificationDetails,
+      await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: updateIndex,
+          channelKey: "library_update",
+          groupKey: "library_update_group",
+          title: updates.keys.elementAt(updateIndex),
+          body: chapters.substring(1, chapters.length - 1),
+        ),
       );
     }
   }

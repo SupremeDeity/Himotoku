@@ -1,7 +1,7 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:himotoku/Data/database/database.dart';
 
@@ -9,6 +9,8 @@ import 'package:himotoku/Data/models/Setting.dart';
 import 'package:himotoku/Data/Theme.dart';
 import 'package:himotoku/Views/main_view.dart';
 import 'package:himotoku/rustlib/rustlib.dart';
+
+import 'Data/notification_controller.dart';
 
 // import 'package:himotoku/test.dart';
 
@@ -22,6 +24,27 @@ void main() async {
         kDebugMode, // optional: set to false to disable printing logs to console (default: true)
   );
   await getIsar();
+
+  AwesomeNotifications().initialize(
+    null, // TODO: fix this
+    [
+      // Library Updates channel
+      NotificationChannel(
+        channelGroupKey: 'library_update_group',
+        channelKey: 'library_update',
+        channelName: 'Library Updates',
+        channelDescription: 'Notification channel for library updates.',
+        // defaultColor: Colors.red,
+        // ledColor: Colors.white,
+      )
+    ],
+    channelGroups: [
+      NotificationChannelGroup(
+          channelGroupKey: 'library_update_group',
+          channelGroupName: 'Library updates group')
+    ],
+    debug: kDebugMode,
+  );
 
   runApp(
     const himotokuMain(),
@@ -80,23 +103,22 @@ class _himotokuMainState extends State<himotokuMain> {
   }
 
   void initMisc() async {
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-    // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('splash');
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-      android: initializationSettingsAndroid,
-    );
-    await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-    );
+    AwesomeNotifications().setListeners(
+        onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+        onNotificationCreatedMethod:
+            NotificationController.onNotificationCreatedMethod,
+        onNotificationDisplayedMethod:
+            NotificationController.onNotificationDisplayedMethod,
+        onDismissActionReceivedMethod:
+            NotificationController.onDismissActionReceivedMethod);
 
-    flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestPermission();
+    // TODO: Add better handling for this.
+    AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
+      if (!isAllowed) {
+        AwesomeNotifications().requestPermissionToSendNotifications();
+      }
+    });
+
     await FlutterDownloader.registerCallback(downloaderCallback);
     await api.initAndroidLogger();
     FlutterNativeSplash.remove();

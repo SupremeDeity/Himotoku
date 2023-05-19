@@ -18,27 +18,22 @@ environment:
 
 dependencies:
   archive: ^3.3.5
+  awesome_notifications: ^0.7.4+1
   cached_network_image: ^3.2.2
   ffi: ^2.0.1
   file_picker: ^5.2.0+1
   flutter:
     sdk: flutter
-  flutter_cache_manager: ^3.3.0
   flutter_downloader: ^1.10.2
-  flutter_isolate: ^2.0.4
-  flutter_local_notifications: ^14.0.0+1
   flutter_markdown: ^0.6.13
   flutter_native_splash: ^2.2.9
   flutter_rust_bridge: ^1.59.0
-  freezed_annotation: ^2.2.0
   html: ^0.15.1
   http: ^0.13.5
   infinite_scroll_pagination: ^3.2.0
-  inview_notifier_list: ^3.0.0
   isar: ^3.0.2
   isar_flutter_libs: ^3.0.2
   jiffy: ^6.1.0
-  json_annotation: ^4.8.0
   path_provider: ^2.0.11
   permission_handler: ^10.1.0
   rechron: ^0.2.0
@@ -53,7 +48,6 @@ dev_dependencies:
   flutter_lints: ^2.0.0
   # flutter_test:
   #   sdk: flutter
-  freezed: ^2.3.2
   isar_generator: ^3.0.2
 
 # The following section is specific to Flutter packages.

@@ -1,6 +1,5 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names,
 
-// TODO: add support for disabling firebase logging
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:himotoku/rustlib/rustlib.dart';
