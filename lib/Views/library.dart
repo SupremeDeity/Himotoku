@@ -1,9 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'dart:async';
-import 'dart:math';
 
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:himotoku/Data/database/database.dart';
 import 'package:himotoku/Data/models/Manga.dart';
@@ -14,8 +12,7 @@ import 'package:himotoku/Data/models/Setting.dart';
 import 'package:himotoku/Views/explore.dart';
 import 'package:himotoku/Widgets/Library/ComfortableTile.dart';
 import 'package:permission_handler/permission_handler.dart';
-
-import '../Sources/SourceHelper.dart';
+import 'package:workmanager/workmanager.dart';
 
 class Library extends StatefulWidget {
   const Library({Key? key}) : super(key: key);
@@ -271,8 +268,9 @@ class _LibraryState extends State<Library> {
     return AppBar(
       title: const Text("Library"),
       actions: [
+        // IconButton(onPressed: onTest, icon: Icon(Icons.abc)),
         IconButton(
-            onPressed: refreshLibrary,
+            onPressed: issueUpdateWorker,
             icon: Icon(Icons.refresh_rounded),
             tooltip: "Update library"),
         IconButton(
@@ -382,81 +380,6 @@ class _LibraryState extends State<Library> {
     );
   }
 
-  void refreshLibrary() async {
-    int notifID = 1;
-
-    var updates = {};
-
-    for (int mangaIndex = 0; mangaIndex < mangaInLibrary.length; mangaIndex++) {
-      // Somewhat temp way to check if notification has been cancelled.
-      // final List<ActiveNotification>? activeNotifications =
-      //     await FlutterLocalNotificationsPlugin().getActiveNotifications();
-      // if ((activeNotifications == null || activeNotifications.isEmpty) &&
-      //     mangaIndex != 0) break;
-      final int progress =
-          min(((mangaIndex + 1) / mangaInLibrary.length * 100).round(), 100);
-
-      Manga manga = mangaInLibrary[mangaIndex];
-
-      await AwesomeNotifications().createNotification(
-        content: NotificationContent(
-          id: notifID,
-          channelKey: 'library_update',
-          groupKey: "library_update_group",
-          title:
-              'Updating library (${mangaIndex + 1}/${mangaInLibrary.length})',
-          body: '${manga.mangaName}',
-          actionType: ActionType.Default,
-          autoDismissible: false,
-          category: NotificationCategory.Progress,
-          locked: true,
-          progress: progress,
-          color: Theme.of(context).colorScheme.primary,
-          notificationLayout: NotificationLayout.ProgressBar,
-        ),
-        actionButtons: [
-          NotificationActionButton(key: "CANCEL", label: "Cancel")
-        ],
-      );
-
-      try {
-        var newManga = await SourcesMap[manga.source]?.getMangaDetails(manga);
-        var diff = newManga?.chapters
-            .where((element) =>
-                !mangaInLibrary[mangaIndex].chapters.contains(element))
-            .toList();
-        if (diff?.isNotEmpty ?? false) {
-          updates[newManga?.mangaName] = diff?.map((e) => e.name).toList();
-        }
-      } catch (APP_ERROR) {
-        await AwesomeNotifications().createNotification(
-          content: NotificationContent(
-              id: notifID + 1,
-              channelKey: "library_update",
-              groupKey: "library_update_group",
-              title: "${manga.mangaName}",
-              body: "Error while fetching update."),
-        );
-      }
-    }
-
-    await AwesomeNotifications().cancel(notifID);
-
-    // Update notification
-    for (var updateIndex = 0; updateIndex < updates.length; updateIndex++) {
-      var chapters = updates.values.elementAt(updateIndex).toString();
-      await AwesomeNotifications().createNotification(
-        content: NotificationContent(
-          id: updateIndex,
-          channelKey: "library_update",
-          groupKey: "library_update_group",
-          title: updates.keys.elementAt(updateIndex),
-          body: chapters.substring(1, chapters.length - 1),
-        ),
-      );
-    }
-  }
-
   void validatePermissions() async {
     if (!await Permission.manageExternalStorage.isGranted) {
       showDialog(
@@ -500,6 +423,26 @@ class _LibraryState extends State<Library> {
       ],
     );
   }
+
+  issueUpdateWorker() async {
+    await Workmanager().registerOneOffTask("library_update", "library_update");
+  }
+
+  // void onTest() async {
+  //   var updatedManga = mangaInLibrary[0];
+  //   var updatedManga2 = mangaInLibrary[1];
+  //   var updatedChap = List<Chapter>.from(updatedManga.chapters);
+  //   var updatedChap2 = List<Chapter>.from(updatedManga2.chapters);
+  //   updatedChap.removeAt(Random().nextInt(updatedChap.length));
+  //   updatedChap2.removeAt(Random().nextInt(updatedChap2.length));
+  //   updatedManga.chapters = updatedChap;
+  //   updatedManga2.chapters = updatedChap2;
+
+  //   await isarDB.writeTxn(() async {
+  //     await isarDB.mangas.put(updatedManga);
+  //     await isarDB.mangas.put(updatedManga2);
+  //   });
+  // }
 }
 
 class CustomSearchClass extends SearchDelegate {

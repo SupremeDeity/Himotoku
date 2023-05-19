@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 late Isar isarDB;
 
-getIsar() async {
+Future<void> getIsar() async {
   var dir = await getApplicationDocumentsDirectory();
   isarDB = Isar.openSync(
     [MangaSchema, SettingSchema],

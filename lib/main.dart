@@ -7,8 +7,10 @@ import 'package:himotoku/Data/database/database.dart';
 
 import 'package:himotoku/Data/models/Setting.dart';
 import 'package:himotoku/Data/Theme.dart';
+import 'package:himotoku/Data/worker.dart';
 import 'package:himotoku/Views/main_view.dart';
 import 'package:himotoku/rustlib/rustlib.dart';
+import 'package:workmanager/workmanager.dart';
 
 import 'Data/notification_controller.dart';
 
@@ -20,29 +22,15 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   await FlutterDownloader.initialize(
-    debug:
-        kDebugMode, // optional: set to false to disable printing logs to console (default: true)
+    debug: kDebugMode,
   );
   await getIsar();
+  Workmanager().initialize(workManagerDispatch, isInDebugMode: kDebugMode);
 
   AwesomeNotifications().initialize(
     null, // TODO: fix this
-    [
-      // Library Updates channel
-      NotificationChannel(
-        channelGroupKey: 'library_update_group',
-        channelKey: 'library_update',
-        channelName: 'Library Updates',
-        channelDescription: 'Notification channel for library updates.',
-        // defaultColor: Colors.red,
-        // ledColor: Colors.white,
-      )
-    ],
-    channelGroups: [
-      NotificationChannelGroup(
-          channelGroupKey: 'library_update_group',
-          channelGroupName: 'Library updates group')
-    ],
+    NotificationController.notificationChannels,
+    channelGroups: NotificationController.notificationChannelGroups,
     debug: kDebugMode,
   );
 
